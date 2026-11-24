@@ -85,15 +85,18 @@
         </button>
       </div>
 
-      <!-- E-Truck Filter Bar -->
-      <div class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
-        <div class="flex items-center gap-2">
-          <i data-lucide="truck" class="w-4 h-4 text-amber-400"></i>
-          <span class="text-xs font-medium text-slate-200">E-Truck Compatible Only</span>
+      <!-- Exclusive Vehicle Mode Selector (E-Truck vs Standard EV) -->
+      <div class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 shrink-0">
+        <div class="grid grid-cols-2 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition">
+            <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+            <span>E-Truck (<span id="countTruckStations">21</span>)</span>
+          </button>
+          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="car" class="w-3.5 h-3.5"></i>
+            <span>Standard EV (<span id="countStandardStations">0</span>)</span>
+          </button>
         </div>
-        <button id="btnTruckFilter" onclick="toggleTruckFilter()" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-slate-950 transition shadow">
-          ON (<span id="filteredStationCount">21</span>)
-        </button>
       </div>
 
       <!-- Navigation Tabs -->
@@ -132,7 +135,7 @@
           </div>
 
           <div class="flex items-center justify-between px-1">
-            <h3 class="text-xs font-semibold text-slate-300">Stations (<span id="listModeLabel">E-Truck Ready</span> • Nearest First)</h3>
+            <h3 class="text-xs font-semibold text-slate-300">Stations (<span id="listModeLabel">E-Truck Only</span> • Nearest First)</h3>
             <span class="text-[11px] text-sky-400">Tap to view route</span>
           </div>
 
@@ -200,7 +203,7 @@
         <!-- TAB 4: Admin Real-Time Cloud Management -->
         <div id="panel-pins" class="hidden space-y-3 pb-6">
           <div class="bg-amber-500/15 border border-amber-500/40 rounded-xl p-2.5 text-xs text-amber-200 flex items-center justify-between">
-            <span><b>Admin Mode Active:</b> Changes sync live to all users.</span>
+            <span><b>Admin Mode:</b> Syncs live to all users.</span>
             <button onclick="toggleMapClickPin()" id="btnMapPick" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px]">
               Pick on Map: OFF
             </button>
@@ -241,7 +244,7 @@
 
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <h4 class="text-xs font-semibold text-slate-400">Live Database Stations (<span id="totalPinCount">0</span>)</h4>
+              <h4 class="text-xs font-semibold text-slate-400">Live Database Locations (<span id="totalPinCount">0</span>)</h4>
               <button onclick="seedInitialDatabase(true)" class="text-[11px] text-amber-400 underline">Restore Default 21 E-Trucks</button>
             </div>
             <div id="allPinsManageList" class="space-y-1.5"></div>
@@ -289,13 +292,9 @@
           <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
           <span class="text-slate-200">Warehouse</span>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
-          <span class="text-slate-200">E-Truck</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
-          <span class="text-slate-200">Standard EV</span>
+        <div id="legendStationItem" class="flex items-center gap-1.5">
+          <span id="legendStationDot" class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
+          <span id="legendStationText" class="text-slate-200">E-Truck Station</span>
         </div>
       </div>
     </main>
@@ -310,7 +309,7 @@
     // ==========================================
     // ADMIN SETTINGS & FIREBASE CONFIGURATION
     // ==========================================
-    const ADMIN_PIN = "1234"; // Change your admin PIN here
+    const ADMIN_PIN = "1234";
     const BLUEDOT_LOGO_URL = "";
 
     const firebaseConfig = {
@@ -326,34 +325,34 @@
     const defaultLocations = [
       { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" },
       { id: "loc-1795421391963", type: "station", truckReady: true, name: "KM7 Hub", lat: 18.009939, lng: 102.647811, power: "400 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
-      { id: "loc-1795421586747", type: "station", name: "PTT Donnoun", truckReady: true, lat: 18.061477, lng: 102.667622, power: "180 kW DC", connector: "GB/T & CCS2", note: "" },
-      { id: "loc-1795421900766", type: "station", name: "Cafe Amazon DongDok", truckReady: true, lat: 18.033393, lng: 102.636484, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795422161216", type: "station", name: "PTT Nongteng", truckReady: true, lat: 18.022178, lng: 102.547236, power: "40 / 180 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
-      { id: "loc-1795422384108", type: "station", name: "PTT DonKoy", truckReady: true, lat: 17.922054, lng: 102.651047, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795422738469", type: "station", name: "PTT Dongchong", truckReady: true, lat: 17.992525, lng: 102.663695, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795423542725", type: "station", name: "Blue Dot EV - Toyota Phonthan", truckReady: true, lat: 17.967326, lng: 102.6419, power: "120 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795423810926", type: "station", name: "PTT SomHong", truckReady: true, lat: 17.878762, lng: 102.611889, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795423998173", type: "station", name: "Kaiyi-BlueDot EV, Dongnaxok", truckReady: true, lat: 17.979667, lng: 102.586137, power: "120 kW", connector: "GB/T + GB/T", note: "2 Charging Guns" },
-      { id: "loc-1795424182047", type: "station", name: "BlueDot - Holly Mall, Hatkiang", truckReady: true, lat: 18.183859, lng: 102.663021, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795424268723", type: "station", name: "BlueDot - Dong Hua Khua Market, Naxaithong", truckReady: true, lat: 18.098326, lng: 102.510092, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795424978669", type: "station", name: "River Moon Camping, Huayhom", truckReady: true, lat: 17.991277, lng: 102.42355, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425042958", type: "station", name: "Kasemrad, Donnokkhoum", truckReady: true, lat: 17.939179, lng: 102.642224, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425249623", type: "station", name: "Thongpong Oil Station", truckReady: true, lat: 17.994494, lng: 102.533756, power: "40 kW", connector: "GB/T / CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425420046", type: "station", name: "LTC Saiy Lom", truckReady: true, lat: 17.969346, lng: 102.61248, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795426111349", type: "station", name: "Neko Sushi Restaurant, Tanmixay", truckReady: true, lat: 18.037034, lng: 102.621591, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-1795485589147", type: "station", name: "Sokxay Dondaeng", truckReady: true, lat: 18.003702, lng: 102.609158, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-1795485788779", type: "station", name: "Shithi Samket", truckReady: true, lat: 18.032959, lng: 102.590505, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "bd-1795485913231", type: "station", name: "ST Bank", truckReady: true, lat: 17.971428, lng: 102.566732, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "bd-1795486085326", type: "station", name: "Daofa Vientiane, Khamsavath", truckReady: true, lat: 17.96124, lng: 102.680471, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-ptt-phontong", type: "station", name: "PTT Phontong", truckReady: true, lat: 17.993463, lng: 102.62472, power: "180 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" }
+      { id: "loc-1795421586747", type: "station", truckReady: true, name: "PTT Donnoun", lat: 18.061477, lng: 102.667622, power: "180 kW DC", connector: "GB/T & CCS2", note: "" },
+      { id: "loc-1795421900766", type: "station", truckReady: true, name: "Cafe Amazon DongDok", lat: 18.033393, lng: 102.636484, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      { id: "loc-1795422161216", type: "station", truckReady: true, name: "PTT Nongteng", lat: 18.022178, lng: 102.547236, power: "40 / 180 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
+      { id: "loc-1795422384108", type: "station", truckReady: true, name: "PTT DonKoy", lat: 17.922054, lng: 102.651047, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
+      { id: "loc-1795422738469", type: "station", truckReady: true, name: "PTT Dongchong", lat: 17.992525, lng: 102.663695, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
+      { id: "loc-1795423542725", type: "station", truckReady: true, name: "Blue Dot EV - Toyota Phonthan", lat: 17.967326, lng: 102.6419, power: "120 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
+      { id: "loc-1795423810926", type: "station", truckReady: true, name: "PTT SomHong", lat: 17.878762, lng: 102.611889, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      { id: "loc-1795423998173", type: "station", truckReady: true, name: "Kaiyi-BlueDot EV, Dongnaxok", lat: 17.979667, lng: 102.586137, power: "120 kW", connector: "GB/T + GB/T", note: "2 Charging Guns" },
+      { id: "loc-1795424182047", type: "station", truckReady: true, name: "BlueDot - Holly Mall, Hatkiang", lat: 18.183859, lng: 102.663021, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "loc-1795424268723", type: "station", truckReady: true, name: "BlueDot - Dong Hua Khua Market, Naxaithong", lat: 18.098326, lng: 102.510092, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "loc-1795424978669", type: "station", truckReady: true, name: "River Moon Camping, Huayhom", lat: 17.991277, lng: 102.42355, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      { id: "loc-1795425042958", type: "station", truckReady: true, name: "Kasemrad, Donnokkhoum", lat: 17.939179, lng: 102.642224, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      { id: "loc-1795425249623", type: "station", truckReady: true, name: "Thongpong Oil Station", lat: 17.994494, lng: 102.533756, power: "40 kW", connector: "GB/T / CCS2", note: "4 Charging Guns" },
+      { id: "loc-1795425420046", type: "station", truckReady: true, name: "LTC Saiy Lom", lat: 17.969346, lng: 102.61248, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "loc-1795426111349", type: "station", truckReady: true, name: "Neko Sushi Restaurant, Tanmixay", lat: 18.037034, lng: 102.621591, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "bd-1795485589147", type: "station", truckReady: true, name: "Sokxay Dondaeng", lat: 18.003702, lng: 102.609158, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "bd-1795485788779", type: "station", truckReady: true, name: "Shithi Samket", lat: 18.032959, lng: 102.590505, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      { id: "bd-1795485913231", type: "station", truckReady: true, name: "ST Bank", lat: 17.971428, lng: 102.566732, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
+      { id: "bd-1795486085326", type: "station", truckReady: true, name: "Daofa Vientiane, Khamsavath", lat: 17.96124, lng: 102.680471, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
+      { id: "bd-ptt-phontong", type: "station", truckReady: true, name: "PTT Phontong", lat: 17.993463, lng: 102.62472, power: "180 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" }
     ];
 
     let cloudLocations = [...defaultLocations];
     let localCustomWarehouses = [];
     let currentTab = 'warehouse';
+    let vehicleMode = 'truck'; // 'truck' = E-Truck ONLY, 'standard' = Standard EV ONLY
     let isAdmin = false;
     let mapPickMode = false;
-    let truckOnlyMode = true;
     let isHybrid = false;
     let showLabels = true;
     let isSheetCollapsed = false;
@@ -381,7 +380,6 @@
     locationsRef.on("value", (snapshot) => {
       const data = snapshot.val();
       if (!data) {
-        // Auto-seed initial 21 E-Truck stations if database is empty
         seedInitialDatabase(false);
       } else {
         cloudLocations = Object.keys(data).map(key => ({
@@ -404,27 +402,41 @@
       locationsRef.set(updates);
     }
 
+    // Exclusive filtering: shows ONLY E-Truck stations OR ONLY Standard EV stations
     function getActiveLocations() {
       const combined = [...localCustomWarehouses, ...cloudLocations];
-      if (!truckOnlyMode) return combined;
-      return combined.filter(l => l.type === 'warehouse' || l.truckReady === true);
+      return combined.filter(l => {
+        if (l.type === 'warehouse') return true;
+        if (vehicleMode === 'truck') return l.truckReady === true;
+        return l.truckReady !== true;
+      });
     }
 
-    function toggleTruckFilter() {
-      truckOnlyMode = !truckOnlyMode;
-      const btn = document.getElementById('btnTruckFilter');
+    function setVehicleMode(mode) {
+      vehicleMode = mode;
+      const btnTruck = document.getElementById('btnModeTruck');
+      const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
-      const activeStationsCount = getActiveLocations().filter(l => l.type === 'station').length;
+      const legendDot = document.getElementById('legendStationDot');
+      const legendText = document.getElementById('legendStationText');
 
-      if (truckOnlyMode) {
-        btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-slate-950 transition shadow";
-        btn.innerHTML = `ON (${activeStationsCount})`;
-        modeLbl.textContent = "E-Truck Ready";
+      if (mode === 'truck') {
+        btnTruck.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition";
+        btnStd.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
+        modeLbl.textContent = "E-Truck Only";
+        legendDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 inline-block";
+        legendText.textContent = "E-Truck Station";
       } else {
-        btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-200 transition";
-        btn.innerHTML = `OFF • All (${activeStationsCount})`;
-        modeLbl.textContent = "All EV Stations";
+        btnStd.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 shadow transition";
+        btnTruck.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
+        modeLbl.textContent = "Standard EV Only";
+        legendDot.className = "w-2.5 h-2.5 rounded-full bg-sky-400 inline-block";
+        legendText.textContent = "Standard EV Station";
       }
+
+      // Clear active route & trip stops when switching modes so incompatible stations don't stay selected
+      tripStops = [];
+      routeLayer.clearLayers();
       refreshAllUI();
     }
 
@@ -632,8 +644,8 @@
         const badge = loc.type === 'warehouse'
           ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Warehouse / Hub</span>`
           : (loc.truckReady
-              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">E-TRUCK READY</span>`
-              : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">PASSENGER EV</span>`);
+              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">E-TRUCK STATION</span>`
+              : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">STANDARD EV STATION</span>`);
 
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
         const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
@@ -711,19 +723,24 @@
     }
 
     function refreshAllUI() {
+      const allStations = cloudLocations.filter(l => l.type === 'station');
+      const truckCount = allStations.filter(l => l.truckReady === true).length;
+      const standardCount = allStations.filter(l => l.truckReady !== true).length;
+
+      document.getElementById('countTruckStations').textContent = truckCount;
+      document.getElementById('countStandardStations').textContent = standardCount;
+      document.getElementById('totalPinCount').textContent = cloudLocations.length;
+
       const activeLocs = getActiveLocations();
       const warehouses = activeLocs.filter(l => l.type === 'warehouse');
       const stations = activeLocs.filter(l => l.type === 'station');
-
-      document.getElementById('filteredStationCount').textContent = stations.length;
-      document.getElementById('totalPinCount').textContent = cloudLocations.length;
 
       const whSelect = document.getElementById('selectWarehouse');
       const prevWh = whSelect.value;
       whSelect.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
       if (prevWh && warehouses.some(w => w.id === prevWh)) whSelect.value = prevWh;
 
-      const allOptions = activeLocs.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : (l.truckReady ? 'E-Truck' : 'EV')}] ${l.name}</option>`).join('');
+      const allOptions = activeLocs.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : (l.truckReady ? 'E-Truck' : 'Standard EV')}] ${l.name}</option>`).join('');
       const p2pOrigin = document.getElementById('p2pOrigin');
       const p2pDest = document.getElementById('p2pDest');
       const prevO = p2pOrigin.value;
@@ -746,9 +763,11 @@
       manageList.innerHTML = cloudLocations.map(l => `
         <div class="flex items-center justify-between bg-slate-800/80 border border-slate-700/70 rounded-lg px-3 py-2 text-xs">
           <div class="truncate pr-2 flex items-center gap-1.5">
-            <span class="${l.type === 'warehouse' ? 'text-amber-400' : 'text-blue-400'} font-bold">●</span>
+            <span class="${l.type === 'warehouse' ? 'text-amber-400' : (l.truckReady ? 'text-blue-400' : 'text-sky-400')} font-bold">●</span>
             <span class="text-slate-200 truncate">${l.name}</span>
-            ${l.type === 'station' && l.truckReady ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">E-Truck</span>' : ''}
+            ${l.type === 'station' ? (l.truckReady
+              ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">E-Truck</span>'
+              : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 shrink-0">Standard</span>') : ''}
           </div>
           <div class="flex items-center gap-1 shrink-0">
             <button onclick="editLocation('${l.id}')" class="text-sky-400 p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
@@ -771,7 +790,9 @@
       const container = document.getElementById('warehouseStationList');
 
       if (!wh || stations.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400">No stations matching filter.</p>`;
+        container.innerHTML = `<div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 text-center text-xs text-slate-400">
+          ${vehicleMode === 'standard' ? 'No Standard EV-only stations added yet. Switch to E-Truck mode or add stations in Admin Edit.' : 'No stations available in this mode.'}
+        </div>`;
         return;
       }
 
@@ -793,7 +814,9 @@
                 <h4 class="font-semibold text-sm text-white truncate">${item.station.name}</h4>
               </div>
               <div class="flex items-center gap-1.5 mt-1">
-                ${item.station.truckReady ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">E-TRUCK</span>' : ''}
+                ${item.station.truckReady
+                  ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">E-TRUCK</span>'
+                  : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">STANDARD EV</span>'}
                 <p class="text-xs text-slate-400 truncate">${item.station.power} • ${item.station.connector} ${item.station.note ? `(${item.station.note})` : ''}</p>
               </div>
             </div>
@@ -823,7 +846,11 @@
       const dId = document.getElementById('p2pDest').value;
       const origin = activeLocs.find(l => l.id === oId);
       const dest = activeLocs.find(l => l.id === dId);
-      if (!origin || !dest) return;
+      if (!origin || !dest) {
+        document.getElementById('p2pKm').textContent = '--';
+        document.getElementById('p2pTime').textContent = '-- min';
+        return;
+      }
 
       if (origin.id === dest.id) {
         document.getElementById('p2pKm').textContent = '0.0';
@@ -948,7 +975,7 @@
       if (!loc) return;
       document.getElementById('editId').value = loc.id;
       document.getElementById('pinType').value = loc.type;
-      document.getElementById('pinTruckReady').checked = loc.truckReady !== false;
+      document.getElementById('pinTruckReady').checked = loc.truckReady === true;
       document.getElementById('pinName').value = loc.name;
       document.getElementById('pinLat').value = loc.lat;
       document.getElementById('pinLng').value = loc.lng;
@@ -981,10 +1008,11 @@
       if (!isAdmin) return;
       const editId = document.getElementById('editId').value;
       const id = editId || ('bd-' + Date.now());
+      const isTruck = document.getElementById('pinTruckReady').checked;
       const locData = {
         id: id,
         type: document.getElementById('pinType').value,
-        truckReady: document.getElementById('pinTruckReady').checked,
+        truckReady: isTruck,
         name: document.getElementById('pinName').value.trim(),
         lat: parseFloat(document.getElementById('pinLat').value),
         lng: parseFloat(document.getElementById('pinLng').value),
@@ -996,6 +1024,7 @@
       locationsRef.child(id).set(locData)
         .then(() => {
           cancelEdit();
+          setVehicleMode(isTruck ? 'truck' : 'standard');
           map.setView([locData.lat, locData.lng], 14);
         })
         .catch(err => alert("Database write failed: " + err.message));
