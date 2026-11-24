@@ -14,67 +14,67 @@
     body { font-family: 'Inter', sans-serif; overscroll-behavior: none; }
     #map { height: 100%; width: 100%; z-index: 1; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f0f9ff; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #7dd3fc; border-radius: 3px; }
     .leaflet-popup-content-wrapper {
       background-color: #ffffff;
-      color: #0f172a;
-      border: 1.5px solid #26b0e8;
+      color: #0c4a6e;
+      border: 1.5px solid #38bdf8;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.16);
     }
     .leaflet-popup-tip { background-color: #ffffff; }
     .station-label {
       background-color: rgba(255, 255, 255, 0.96);
-      color: #0f172a;
-      border: 1px solid #26b0e8;
+      color: #0369a1;
+      border: 1px solid #38bdf8;
       border-radius: 8px;
       padding: 2px 7px;
       font-size: 10px;
       font-weight: 600;
       font-family: 'Inter', sans-serif;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.14);
       white-space: nowrap;
     }
     .station-label::before { display: none; }
   </style>
 </head>
-<body class="bg-[#f4f7fa] text-slate-800 h-[100dvh] flex flex-col overflow-hidden">
+<body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden">
 
-  <!-- BlueDot App Style Gradient Header -->
-  <header class="bg-gradient-to-r from-[#26b0e8] via-[#2192ea] to-[#1e6eeb] px-3.5 py-2.5 flex items-center justify-between z-30 shrink-0 shadow-sm">
-    <div class="flex items-center gap-2.5">
-      <img src="blue.png" alt="Blue Dot EV" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0" />
-      <div>
+  <!-- Ocean Sky Blue & White Header -->
+  <header class="bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-3.5 py-2.5 flex items-center justify-between z-30 shrink-0 shadow-sm">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <img src="blue.png" alt="Blue Dot EV" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
+      <div class="min-w-0">
         <div class="flex items-center gap-1.5">
-          <h1 class="font-bold text-base md:text-lg text-white tracking-wide">BlueDot EV</h1>
-          <span id="liveBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30 flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping"></span> LIVE
+          <h1 class="font-bold text-base md:text-lg text-white tracking-wide truncate">BLUE DOT EV</h1>
+          <span id="liveBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/25 text-white border border-white/40 flex items-center gap-1 shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-ping"></span> LIVE
           </span>
         </div>
-        <p class="hidden md:block text-xs text-white/90">Blue Dot EV Charging Network & Distance Planner (Laos Nationwide)</p>
+        <p class="hidden md:block text-xs text-sky-50 truncate">Blue Dot EV Charging Network & Distance Planner (Laos Nationwide)</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1.5">
-      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/30 transition" title="Use Current GPS Location">
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/40 transition" title="Use Current GPS Location">
         <i data-lucide="locate-fixed" class="w-4 h-4"></i>
         <span>My GPS</span>
       </button>
 
-      <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#1e6eeb] hover:bg-sky-50 shadow-sm transition">
-        <i id="adminLockIcon" data-lucide="lock" class="w-3.5 h-3.5 text-[#1e6eeb]"></i>
+      <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
+        <i id="adminLockIcon" data-lucide="lock" class="w-3.5 h-3.5 text-[#0284c7]"></i>
         <span id="adminAuthLabel">Admin</span>
       </button>
     </div>
   </header>
 
   <!-- Admin Login Modal -->
-  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
+  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-sky-950/35 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-sky-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="p-2 rounded-xl bg-sky-50 text-[#26b0e8] border border-sky-200">
+          <div class="p-2 rounded-xl bg-sky-50 text-[#0ea5e9] border border-sky-200">
             <i data-lucide="shield-check" class="w-5 h-5"></i>
           </div>
           <div>
@@ -90,14 +90,14 @@
       <form onsubmit="submitAdminLogin(event)" class="space-y-3">
         <div>
           <label class="text-[11px] font-medium text-slate-600 block mb-1">Admin Email</label>
-          <input id="adminEmailInput" type="email" required placeholder="sansombath@gmail.com" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#26b0e8]" />
+          <input id="adminEmailInput" type="email" required placeholder="sansombath@gmail.com" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
         </div>
         <div>
           <label class="text-[11px] font-medium text-slate-600 block mb-1">Password</label>
-          <input id="adminPasswordInput" type="password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#26b0e8]" />
+          <input id="adminPasswordInput" type="password" required placeholder="••••••••" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
         </div>
         <p id="adminLoginError" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
-        <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] hover:opacity-95 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow">
+        <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] hover:opacity-95 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow">
           Sign In as Admin
         </button>
       </form>
@@ -107,30 +107,30 @@
   <!-- Main Workspace -->
   <div class="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
     
-    <!-- Bottom Sheet / Left Sidebar (Clean White & Soft Gray App Theme) -->
-    <aside id="controlPanel" class="w-full md:w-[430px] bg-[#f4f7fa] border-t md:border-t-0 md:border-r border-slate-200 flex flex-col h-[54%] md:h-full z-20 shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-8px_25px_rgba(15,23,42,0.1)] md:shadow-none">
+    <!-- Bottom Sheet / Left Sidebar (Clean White & Sky Blue) -->
+    <aside id="controlPanel" class="w-full md:w-[430px] bg-white border-t md:border-t-0 md:border-r border-sky-100 flex flex-col h-[56%] md:h-full z-20 shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-8px_25px_rgba(14,165,233,0.12)] md:shadow-none">
       
       <!-- Mobile Sheet Drag / Expand Toggle Bar -->
-      <div class="md:hidden flex items-center justify-between px-4 py-2 border-b border-slate-200/80 bg-white rounded-t-3xl">
+      <div class="md:hidden flex items-center justify-between px-4 py-2 border-b border-sky-100 bg-white rounded-t-3xl">
         <span class="text-[11px] text-slate-500 font-medium">Distance Calculator & Stations</span>
-        <button onclick="toggleSheetHeight()" class="flex items-center gap-1 text-xs font-semibold text-[#1e6eeb] py-1 px-2.5 rounded-lg bg-sky-50 border border-sky-100">
+        <button onclick="toggleSheetHeight()" class="flex items-center gap-1 text-xs font-semibold text-[#0284c7] py-1 px-2.5 rounded-lg bg-sky-50 border border-sky-200">
           <i id="sheetToggleIcon" data-lucide="chevrons-down" class="w-3.5 h-3.5"></i>
           <span id="sheetToggleText">Minimize / Expand Map</span>
         </button>
       </div>
 
       <!-- 3-Option Vehicle Mode Selector (All Stations / E-Truck / Standard EV) -->
-      <div class="px-3.5 py-2.5 bg-white border-b border-slate-200/80 shrink-0">
-        <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/70">
-          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] text-white shadow-sm transition">
+      <div class="px-3.5 py-2.5 bg-white border-b border-sky-100 shrink-0">
+        <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
+          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
             <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">All (<span id="countAllStations">63</span>)</span>
           </button>
-          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 transition">
+          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">E-Truck (<span id="countTruckStations">21</span>)</span>
           </button>
-          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 transition">
+          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">Standard (<span id="countStandardStations">42</span>)</span>
           </button>
@@ -138,8 +138,8 @@
       </div>
 
       <!-- Navigation Tabs -->
-      <div id="tabGrid" class="grid grid-cols-3 border-b border-slate-200 bg-white text-xs font-medium shrink-0">
-        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2.5 px-1 border-b-2 border-[#26b0e8] text-[#1e6eeb] font-semibold flex flex-col items-center justify-center gap-1 min-h-[50px]">
+      <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0">
+        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2.5 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex flex-col items-center justify-center gap-1 min-h-[50px]">
           <i data-lucide="warehouse" class="w-4 h-4"></i>
           <span>Warehouse</span>
         </button>
@@ -158,63 +158,71 @@
       </div>
 
       <!-- Tab Content Container -->
-      <div class="flex-1 overflow-y-auto p-3.5 custom-scrollbar space-y-3">
+      <div class="flex-1 overflow-y-auto p-3.5 custom-scrollbar space-y-3 bg-[#f7fcff]">
 
         <!-- TAB 1: Warehouse to Blue Dot Stations -->
         <div id="panel-warehouse" class="space-y-3">
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
+          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div>
               <label class="text-[11px] font-medium text-slate-500 block mb-1">Starting Point (Warehouse / Current Location)</label>
-              <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#26b0e8]"></select>
+              <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
             </div>
-            <button onclick="promptCustomWarehouse()" class="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-[#d8f6eb] to-[#cbe0fd] hover:opacity-90 border border-sky-200/70 text-slate-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#1e6eeb]"></i> Set Custom Warehouse Coordinates
+            <button onclick="promptCustomWarehouse()" class="w-full py-2 px-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-[#0284c7] text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Set Custom Warehouse Coordinates
             </button>
           </div>
 
           <div class="flex items-center justify-between px-1">
             <h3 class="text-xs font-bold text-slate-700">Stations (<span id="listModeLabel">All Stations</span> • Nearest First)</h3>
-            <span class="text-[11px] font-medium text-[#1e6eeb]">Tap to view route</span>
+            <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap to view route</span>
           </div>
 
           <div id="warehouseStationList" class="space-y-2.5 pb-4"></div>
         </div>
 
-        <!-- TAB 2: Station to Station -->
+        <!-- TAB 2: Station to Station (With up to 4 Waypoints / Stops) -->
         <div id="panel-p2p" class="hidden space-y-3 pb-4">
-          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-sky-800">
-            The map displays only the selected Origin and Destination pins.
+          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-[#0369a1]">
+            The map displays Origin, up to 4 Waypoint Stops, and Destination pins along the route.
           </div>
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
+          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div>
-              <label class="text-[11px] font-medium text-slate-500 block mb-1">Origin</label>
-              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium"></select>
+              <label class="text-[11px] font-semibold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
+              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
             </div>
-            <div class="flex justify-center">
-              <button onclick="swapP2P()" class="px-4 py-1.5 rounded-full bg-sky-50 active:bg-sky-100 text-[#1e6eeb] border border-sky-200 text-xs font-semibold flex items-center gap-1.5">
-                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> Swap Locations
+
+            <!-- Dynamic Waypoint Stops Container (Max 4 Stops) -->
+            <div id="p2pWaypointsContainer" class="space-y-2"></div>
+
+            <div class="flex items-center justify-center gap-2 pt-0.5">
+              <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="px-3.5 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center gap-1 transition">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Add Stop (<span id="p2pWaypointCount">0</span>/4)
+              </button>
+              <button type="button" onclick="swapP2P()" class="px-3.5 py-1.5 rounded-full bg-white hover:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center gap-1 transition">
+                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Swap Ends
               </button>
             </div>
+
             <div>
-              <label class="text-[11px] font-medium text-slate-500 block mb-1">Destination</label>
-              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium"></select>
+              <label class="text-[11px] font-semibold text-[#0284c7] block mb-1">Destination (จุดหมายปลายทาง)</label>
+              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
             </div>
           </div>
 
-          <!-- Mint-to-Sky Highlight Card matching BlueDot App -->
-          <div id="p2pResultCard" class="bg-gradient-to-br from-[#d8f6eb] via-[#e2f2fc] to-[#c7ddfc] border border-sky-200 rounded-2xl p-4 text-center space-y-1 shadow-sm">
-            <p class="text-xs font-medium text-slate-600">Driving Distance (Road Route)</p>
-            <div class="text-3xl font-bold text-[#1e6eeb]"><span id="p2pKm">--</span> <span class="text-base font-medium text-slate-600">km</span></div>
+          <!-- White & Ocean Sky Blue Result Card -->
+          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-4 text-center space-y-1 shadow-sm">
+            <p class="text-xs font-semibold text-[#0369a1]">Total Driving Distance (<span id="p2pLegCount">Direct Route</span>)</p>
+            <div class="text-3xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-base font-medium text-sky-600">km</span></div>
             <p class="text-xs text-slate-600">Estimated Travel Time: <span id="p2pTime" class="text-slate-900 font-bold">-- min</span></p>
           </div>
         </div>
 
         <!-- TAB 3: Custom Multi-Stop Trip Planner -->
         <div id="panel-trip" class="hidden space-y-3 pb-4">
-          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-sky-800">
+          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-[#0369a1]">
             The map displays only the stops added to your custom route below.
           </div>
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
+          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-700">Tap to add stops in sequence</span>
               <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200">Clear All</button>
@@ -227,10 +235,10 @@
             <div id="tripStopsList" class="space-y-1.5"></div>
           </div>
 
-          <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-[#d8f6eb] to-[#c7ddfc] border border-sky-200 rounded-2xl p-3.5 space-y-1.5 shadow-sm">
+          <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-1.5 shadow-sm">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-medium text-slate-700">Total Trip Distance:</span>
-              <span class="text-xl font-bold text-[#1e6eeb]"><span id="tripTotalKm">0</span> km</span>
+              <span class="text-xs font-semibold text-[#0369a1]">Total Trip Distance:</span>
+              <span class="text-xl font-bold text-[#0284c7]"><span id="tripTotalKm">0</span> km</span>
             </div>
             <div class="flex justify-between items-center text-xs">
               <span class="text-slate-600">Estimated Total Time:</span>
@@ -243,40 +251,40 @@
         <div id="panel-pins" class="hidden space-y-3 pb-6">
           <div class="bg-sky-50 border border-sky-200 rounded-2xl p-2.5 text-xs text-slate-700 flex items-center justify-between">
             <span><b>Admin Authenticated:</b> Live sync active.</span>
-            <button onclick="toggleMapClickPin()" id="btnMapPick" class="px-2.5 py-1 rounded-lg bg-[#26b0e8] text-white font-semibold text-[11px] shadow-sm">
+            <button onclick="toggleMapClickPin()" id="btnMapPick" class="px-2.5 py-1 rounded-lg bg-[#0ea5e9] text-white font-semibold text-[11px] shadow-sm">
               Pick on Map: OFF
             </button>
           </div>
 
-          <form onsubmit="saveLocationForm(event)" class="bg-white border border-slate-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
+          <form onsubmit="saveLocationForm(event)" class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div class="flex items-center justify-between">
               <h4 id="formTitle" class="text-xs font-bold text-slate-800">Add / Update Live Station</h4>
               <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs font-semibold text-amber-600">Cancel Edit</button>
             </div>
             <input type="hidden" id="editId" value="" />
             <div class="grid grid-cols-2 gap-2">
-              <select id="pinType" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 font-medium">
+              <select id="pinType" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 font-medium">
                 <option value="station">EV Charging Station</option>
                 <option value="warehouse">Warehouse / Hub</option>
               </select>
-              <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-700 cursor-pointer">
-                <input id="pinTruckReady" type="checkbox" checked class="w-4 h-4 accent-[#26b0e8]" />
+              <label class="flex items-center gap-2 bg-sky-50/40 border border-sky-200 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-700 cursor-pointer">
+                <input id="pinTruckReady" type="checkbox" checked class="w-4 h-4 accent-[#0ea5e9]" />
                 <span>E-Truck Ready</span>
               </label>
             </div>
             <div>
-              <input id="pinName" type="text" required placeholder="Station Name (e.g., PTT Phontong)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              <input id="pinName" type="text" required placeholder="Station Name (e.g., PTT Phontong)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <input id="pinLat" type="number" step="any" required placeholder="Latitude (17.9934)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
-              <input id="pinLng" type="number" step="any" required placeholder="Longitude (102.6247)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              <input id="pinLat" type="number" step="any" required placeholder="Latitude (17.9934)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              <input id="pinLng" type="number" step="any" required placeholder="Longitude (102.6247)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <input id="pinPower" type="text" placeholder="Power (e.g., 180 kW)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
-              <input id="pinConnector" type="text" placeholder="Connector (GB/T + CCS2)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              <input id="pinPower" type="text" placeholder="Power (e.g., 180 kW)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              <input id="pinConnector" type="text" placeholder="Connector (GB/T + CCS2)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
             </div>
-            <input id="pinNote" type="text" placeholder="Notes (e.g., 4 Charging Guns)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
-            <button type="submit" id="btnSubmitPin" class="w-full bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] active:opacity-90 text-white font-semibold py-2.5 rounded-xl text-sm shadow">
+            <input id="pinNote" type="text" placeholder="Notes (e.g., 4 Charging Guns)" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+            <button type="submit" id="btnSubmitPin" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] active:opacity-90 text-white font-semibold py-2.5 rounded-xl text-sm shadow">
               Save & Publish Live
             </button>
           </form>
@@ -284,19 +292,19 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-bold text-slate-700">Live Database Locations (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="seedInitialDatabase(true)" class="text-[11px] font-semibold text-[#1e6eeb] underline">Load 63 Nationwide Template</button>
+              <button onclick="seedInitialDatabase(true)" class="text-[11px] font-semibold text-[#0284c7] underline">Load 63 Nationwide Template</button>
             </div>
             <div class="pt-1">
-              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name to edit..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#26b0e8]" />
+              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name to edit..." class="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
             </div>
             <div id="allPinsManageList" class="space-y-1.5"></div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
-            <button onclick="exportData()" class="bg-white text-slate-700 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm">
-              <i data-lucide="download" class="w-3.5 h-3.5 text-[#26b0e8]"></i> Backup JSON
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-sky-100">
+            <button onclick="exportData()" class="bg-white text-slate-700 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Backup JSON
             </button>
-            <label class="bg-white text-slate-700 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm cursor-pointer">
+            <label class="bg-white text-slate-700 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm cursor-pointer">
               <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> Import JSON to Cloud
               <input type="file" accept=".json" onchange="importDataToCloud(event)" class="hidden" />
             </label>
@@ -307,39 +315,39 @@
     </aside>
 
     <!-- Map Container -->
-    <main id="mapWrapper" class="flex-1 relative h-[46%] md:h-full transition-all duration-300">
+    <main id="mapWrapper" class="flex-1 relative h-[44%] md:h-full transition-all duration-300">
       <div id="map"></div>
 
       <!-- Floating Map Controls (Clean White Pill Style) -->
       <div class="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
-        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
-          <i data-lucide="tag" class="w-3.5 h-3.5 text-[#26b0e8]"></i>
+        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+          <i data-lucide="tag" class="w-3.5 h-3.5 text-[#0ea5e9]"></i>
           <span id="labelToggleText">Labels: On</span>
         </button>
-        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-[#1e6eeb]"></i>
+        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-[#0284c7]"></i>
           <span id="mapStyleLabel">Map: Street</span>
         </button>
       </div>
 
       <!-- Floating Admin Banner -->
-      <div id="adminBanner" class="hidden absolute top-3 left-3 right-32 z-[1000] bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
+      <div id="adminBanner" class="hidden absolute top-3 left-3 right-32 z-[1000] bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
         <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i>
         <span>Tap on map to pick Lat/Lng</span>
       </div>
 
       <!-- Compact Legend -->
-      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-medium flex items-center gap-3 shadow-md">
+      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-3 py-2 text-[11px] font-medium flex items-center gap-3 shadow-md">
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
           <span class="text-slate-700">Warehouse</span>
         </div>
         <div id="legendTruckItem" class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#1e6eeb] inline-block"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#0284c7] inline-block"></span>
           <span class="text-slate-700">E-Truck</span>
         </div>
         <div id="legendStdItem" class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#26b0e8] inline-block"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8] inline-block"></span>
           <span class="text-slate-700">Standard EV</span>
         </div>
       </div>
@@ -451,6 +459,7 @@
     let showLabels = true;
     let isSheetCollapsed = false;
     let tripStops = [];
+    let p2pWaypoints = []; // Up to 4 intermediate stops in Point-to-Point
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
@@ -475,7 +484,7 @@
       if (user) {
         isAdmin = true;
         document.getElementById('tab-pins').classList.remove('hidden');
-        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-slate-200 bg-white text-xs font-medium shrink-0";
+        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
         document.getElementById('adminAuthLabel').textContent = "Admin ON";
         document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 shadow-sm transition";
         
@@ -489,9 +498,9 @@
         mapPickMode = false;
         document.getElementById('adminBanner').classList.add('hidden');
         document.getElementById('tab-pins').classList.add('hidden');
-        document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-slate-200 bg-white text-xs font-medium shrink-0";
+        document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
         document.getElementById('adminAuthLabel').textContent = "Admin";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#1e6eeb] hover:bg-sky-50 shadow-sm transition";
+        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition";
         if (currentTab === 'pins') switchTab('warehouse');
       }
       if (window.lucide) lucide.createIcons();
@@ -543,8 +552,8 @@
       const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
 
-      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] text-white shadow-sm transition";
-      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 transition";
+      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
+      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition";
 
       btnAll.className = mode === 'all' ? activeBlue : inactive;
       btnTruck.className = mode === 'truck' ? activeBlue : inactive;
@@ -555,6 +564,7 @@
       else modeLbl.textContent = "Standard EV Only";
 
       tripStops = [];
+      p2pWaypoints = [];
       routeLayer.clearLayers();
       refreshAllUI();
     }
@@ -725,8 +735,8 @@
       const isWh = loc.type === 'warehouse';
       const isTruck = loc.truckReady === true;
       const bg = isWh ? '#f59e0b' : '#ffffff';
-      const border = isWh ? '#ffffff' : (isTruck ? '#1e6eeb' : '#26b0e8');
-      const ring = isWh ? 'rgba(245, 158, 11, 0.35)' : (isTruck ? 'rgba(30, 110, 235, 0.35)' : 'rgba(38, 176, 232, 0.35)');
+      const border = isWh ? '#ffffff' : (isTruck ? '#0284c7' : '#38bdf8');
+      const ring = isWh ? 'rgba(245, 158, 11, 0.35)' : (isTruck ? 'rgba(2, 132, 199, 0.32)' : 'rgba(56, 189, 248, 0.35)');
 
       let innerHtml = '';
       if (isWh) {
@@ -737,7 +747,7 @@
 
       return L.divIcon({
         className: 'custom-pin',
-        html: `<div style="background:${bg}; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid ${border}; box-shadow:0 0 0 4px ${ring}, 0 4px 10px rgba(15,23,42,0.25); overflow:hidden;">${innerHtml}</div>`,
+        html: `<div style="background:${bg}; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid ${border}; box-shadow:0 0 0 4px ${ring}, 0 4px 10px rgba(14,165,233,0.22); overflow:hidden;">${innerHtml}</div>`,
         iconSize: [34, 34],
         iconAnchor: [17, 17],
         popupAnchor: [0, -17]
@@ -749,7 +759,8 @@
       if (currentTab === 'p2p') {
         const oId = document.getElementById('p2pOrigin').value;
         const dId = document.getElementById('p2pDest').value;
-        return active.filter(l => l.id === oId || l.id === dId);
+        const selectedIds = new Set([oId, dId, ...p2pWaypoints]);
+        return active.filter(l => selectedIds.has(l.id));
       }
       if (currentTab === 'trip') {
         const selectedIds = new Set(tripStops.map(s => s.id));
@@ -778,12 +789,12 @@
         const badge = loc.type === 'warehouse'
           ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Warehouse / Hub</span>`
           : (loc.truckReady
-              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-[#1e6eeb] border border-blue-200">E-TRUCK STATION</span>`
-              : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7] border border-sky-200">STANDARD EV STATION</span>`);
+              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7] border border-sky-200">E-TRUCK STATION</span>`
+              : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV STATION</span>`);
 
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
         const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
-          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#26b0e8] to-[#1e6eeb] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route from Warehouse</button>`
+          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route from Warehouse</button>`
           : '';
 
         const editQuickBtn = isAdmin
@@ -795,15 +806,15 @@
             ${badge}
             <h3 class="font-bold text-sm text-slate-900 leading-snug pt-0.5">${loc.name}</h3>
             ${loc.type === 'station' ? `
-              <div class="flex justify-between text-xs pt-1 border-t border-slate-100">
-                <span class="text-[#1e6eeb] font-bold">${loc.power}</span>
+              <div class="flex justify-between text-xs pt-1 border-t border-sky-100">
+                <span class="text-[#0284c7] font-bold">${loc.power}</span>
                 <span class="text-emerald-600 font-semibold">${loc.connector}</span>
               </div>
             ` : ''}
             ${loc.note ? `<p class="text-xs text-slate-500">${loc.note}</p>` : ''}
             ${actionBtn}
             ${editQuickBtn}
-            <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-xl border border-slate-200 transition">
+            <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-sky-50 hover:bg-sky-100 text-[#0284c7] text-xs font-semibold py-2 px-3 rounded-xl border border-sky-200 transition">
               Navigate in Google Maps ↗
             </a>
           </div>
@@ -852,7 +863,7 @@
       }
     }
 
-    function drawRouteOnMap(geometry, color = '#1e6eeb') {
+    function drawRouteOnMap(geometry, color = '#0284c7') {
       routeLayer.clearLayers();
       const geoLayer = L.geoJSON(geometry, {
         style: { color: color, weight: 5, opacity: 0.9 }
@@ -868,21 +879,89 @@
 
       const manageList = document.getElementById('allPinsManageList');
       manageList.innerHTML = filtered.map(l => `
-        <div class="flex items-center justify-between bg-white border border-slate-200/80 rounded-xl px-3 py-2 text-xs shadow-sm">
+        <div class="flex items-center justify-between bg-white border border-sky-200/80 rounded-xl px-3 py-2 text-xs shadow-sm">
           <div class="truncate pr-2 flex items-center gap-1.5">
-            <span class="${l.type === 'warehouse' ? 'text-amber-500' : (l.truckReady ? 'text-[#1e6eeb]' : 'text-[#26b0e8]')} font-bold">●</span>
+            <span class="${l.type === 'warehouse' ? 'text-amber-500' : (l.truckReady ? 'text-[#0284c7]' : 'text-[#38bdf8]')} font-bold">●</span>
             <span class="text-slate-800 font-medium truncate">${l.name}</span>
             ${l.type === 'station' ? (l.truckReady
-              ? '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-blue-50 text-[#1e6eeb] border border-blue-200 shrink-0">E-Truck</span>'
-              : '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">Standard</span>') : ''}
+              ? '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">E-Truck</span>'
+              : '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200 shrink-0">Standard</span>') : ''}
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="editLocation('${l.id}')" class="text-[#1e6eeb] p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+            <button onclick="editLocation('${l.id}')" class="text-[#0284c7] p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
             <button onclick="deleteLocation('${l.id}')" class="text-rose-500 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
         </div>
       `).join('');
       if (window.lucide) lucide.createIcons();
+    }
+
+    // ==========================================
+    // POINT-TO-POINT WITH UP TO 4 WAYPOINT STOPS
+    // ==========================================
+    function renderP2PWaypoints() {
+      const activeLocs = getActiveLocations();
+      const container = document.getElementById('p2pWaypointsContainer');
+      const countSpan = document.getElementById('p2pWaypointCount');
+      const addBtn = document.getElementById('btnAddP2PStop');
+
+      if (countSpan) countSpan.textContent = p2pWaypoints.length;
+      if (addBtn) {
+        if (p2pWaypoints.length >= 4) {
+          addBtn.disabled = true;
+          addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          addBtn.disabled = false;
+          addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      }
+
+      const optionsHtml = activeLocs.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : (l.truckReady ? 'E-Truck' : 'Standard EV')}] ${l.name}</option>`).join('');
+
+      container.innerHTML = p2pWaypoints.map((wpId, idx) => `
+        <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-2 space-y-1">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-semibold text-[#0369a1]">Stop #${idx + 1} (จุดแวะพักที่ ${idx + 1})</label>
+            <button type="button" onclick="removeP2PWaypoint(${idx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold px-1.5">✕ Remove</button>
+          </div>
+          <select onchange="updateP2PWaypoint(${idx}, this.value)" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]">
+            ${optionsHtml}
+          </select>
+        </div>
+      `).join('');
+
+      // Set selected values for each waypoint dropdown
+      const selects = container.querySelectorAll('select');
+      selects.forEach((sel, idx) => {
+        if (p2pWaypoints[idx] && activeLocs.some(l => l.id === p2pWaypoints[idx])) {
+          sel.value = p2pWaypoints[idx];
+        } else if (activeLocs.length > 0) {
+          p2pWaypoints[idx] = activeLocs[0].id;
+          sel.value = activeLocs[0].id;
+        }
+      });
+    }
+
+    function addP2PWaypoint() {
+      if (p2pWaypoints.length >= 4) return;
+      const activeLocs = getActiveLocations();
+      const stations = activeLocs.filter(l => l.type === 'station');
+      const defaultPick = stations[Math.min(p2pWaypoints.length + 1, stations.length - 1)] || activeLocs[0];
+      if (!defaultPick) return;
+      p2pWaypoints.push(defaultPick.id);
+      renderP2PWaypoints();
+      calculateP2P();
+    }
+
+    function updateP2PWaypoint(index, newId) {
+      p2pWaypoints[index] = newId;
+      calculateP2P();
+    }
+
+    function removeP2PWaypoint(index) {
+      p2pWaypoints.splice(index, 1);
+      renderP2PWaypoints();
+      calculateP2P();
     }
 
     function refreshAllUI() {
@@ -916,9 +995,11 @@
       if (prevD && activeLocs.some(l => l.id === prevD)) p2pDest.value = prevD;
       else if (stations.length > 1) p2pDest.value = stations[1].id;
 
+      renderP2PWaypoints();
+
       const tripBtns = document.getElementById('tripAvailableButtons');
       tripBtns.innerHTML = activeLocs.map(l => `
-        <button onclick="addTripStop('${l.id}')" class="text-xs font-medium px-3 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#1e6eeb]'}">
+        <button onclick="addTripStop('${l.id}')" class="text-xs font-medium px-3 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#0284c7]'}">
           + ${l.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim()}
         </button>
       `).join('');
@@ -938,7 +1019,7 @@
       const container = document.getElementById('warehouseStationList');
 
       if (!wh || stations.length === 0) {
-        container.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl p-4 text-center text-xs text-slate-500 shadow-sm">
+        container.innerHTML = `<div class="bg-white border border-sky-200 rounded-2xl p-4 text-center text-xs text-slate-500 shadow-sm">
           No stations available in this mode.
         </div>`;
         return;
@@ -950,22 +1031,22 @@
       })).sort((a, b) => a.approxKm - b.approxKm);
 
       container.innerHTML = withHaversine.map((item, idx) => `
-        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-white hover:bg-sky-50/60 active:bg-sky-100/70 border border-slate-200/80 rounded-2xl p-3 transition shadow-sm">
+        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-white hover:bg-sky-50/80 active:bg-sky-100/70 border border-sky-200/80 rounded-2xl p-3 transition shadow-sm">
           <div class="flex justify-between items-center gap-2">
             <div class="min-w-0">
               <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-bold bg-sky-100 text-[#1e6eeb] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
+                <span class="text-[10px] font-bold bg-sky-100 text-[#0284c7] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
                 <h4 class="font-bold text-sm text-slate-800 truncate">${item.station.name}</h4>
               </div>
               <div class="flex items-center gap-1.5 mt-1">
                 ${item.station.truckReady
-                  ? '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#1e6eeb] border border-blue-200">E-TRUCK</span>'
-                  : '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">STANDARD EV</span>'}
+                  ? '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">E-TRUCK</span>'
+                  : '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV</span>'}
                 <p class="text-xs text-slate-500 truncate">${item.station.power} • ${item.station.connector} ${item.station.note ? `(${item.station.note})` : ''}</p>
               </div>
             </div>
             <div class="text-right shrink-0 pl-2">
-              <div class="text-base font-bold text-[#1e6eeb]" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span></div>
+              <div class="text-base font-bold text-[#0284c7]" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span></div>
               <div class="text-[11px] text-slate-500" id="dist-min-${item.station.id}">~${Math.round((item.approxKm / 45) * 60)} min</div>
             </div>
           </div>
@@ -993,7 +1074,7 @@
       const minEl = document.getElementById(`dist-min-${st.id}`);
       if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span>`;
       if (minEl) minEl.textContent = `~${route.min} min`;
-      drawRouteOnMap(route.geometry, '#1e6eeb');
+      drawRouteOnMap(route.geometry, '#0284c7');
     }
 
     async function calculateP2P() {
@@ -1003,13 +1084,32 @@
       const dId = document.getElementById('p2pDest').value;
       const origin = activeLocs.find(l => l.id === oId);
       const dest = activeLocs.find(l => l.id === dId);
+      const legLabel = document.getElementById('p2pLegCount');
+
       if (!origin || !dest) {
         document.getElementById('p2pKm').textContent = '--';
         document.getElementById('p2pTime').textContent = '-- min';
         return;
       }
 
-      if (origin.id === dest.id) {
+      // Build full ordered sequence: Origin -> Stop 1..N -> Destination
+      const routePoints = [origin];
+      p2pWaypoints.forEach(wpId => {
+        const wpObj = activeLocs.find(l => l.id === wpId);
+        if (wpObj) routePoints.push(wpObj);
+      });
+      routePoints.push(dest);
+
+      if (legLabel) {
+        legLabel.textContent = p2pWaypoints.length > 0
+          ? `Via ${p2pWaypoints.length} Stop${p2pWaypoints.length > 1 ? 's' : ''}`
+          : 'Direct Route';
+      }
+
+      // Remove consecutive duplicate points before querying OSRM
+      const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
+
+      if (uniqueSeq.length < 2) {
         document.getElementById('p2pKm').textContent = '0.0';
         document.getElementById('p2pTime').textContent = '0 min';
         routeLayer.clearLayers();
@@ -1017,10 +1117,10 @@
         return;
       }
 
-      const route = await fetchRoadRoute([origin, dest]);
+      const route = await fetchRoadRoute(uniqueSeq);
       document.getElementById('p2pKm').textContent = route.km.toFixed(1);
       document.getElementById('p2pTime').textContent = `${route.min} min`;
-      if (currentTab === 'p2p') drawRouteOnMap(route.geometry, '#1e6eeb');
+      if (currentTab === 'p2p') drawRouteOnMap(route.geometry, '#0284c7');
     }
 
     function swapP2P() {
@@ -1029,6 +1129,8 @@
       const temp = o.value;
       o.value = d.value;
       d.value = temp;
+      p2pWaypoints.reverse();
+      renderP2PWaypoints();
       calculateP2P();
     }
 
@@ -1066,9 +1168,9 @@
       }
 
       list.innerHTML = tripStops.map((stop, i) => `
-        <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs shadow-sm">
+        <div class="flex items-center justify-between bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs shadow-sm">
           <div class="flex items-center gap-2 truncate">
-            <span class="w-5 h-5 rounded-full bg-sky-100 text-[#1e6eeb] font-bold flex items-center justify-center shrink-0">${i + 1}</span>
+            <span class="w-5 h-5 rounded-full bg-sky-100 text-[#0284c7] font-bold flex items-center justify-center shrink-0">${i + 1}</span>
             <span class="truncate text-slate-800 font-medium">${stop.name}</span>
           </div>
           <button onclick="removeTripStop(${i})" class="text-slate-400 hover:text-rose-500 p-1">✕</button>
@@ -1084,7 +1186,7 @@
         document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
         document.getElementById('tripTotalMin').textContent = route.min;
         summaryBox.classList.remove('hidden');
-        if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#1e6eeb');
+        if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#0284c7');
       }
     }
 
@@ -1094,13 +1196,13 @@
       ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
         document.getElementById(`panel-${t}`).classList.add('hidden');
         const btn = document.getElementById(`tab-${t}`);
-        btn.classList.remove('border-[#26b0e8]', 'text-[#1e6eeb]', 'font-semibold');
+        btn.classList.remove('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
         btn.classList.add('border-transparent', 'text-slate-500');
       });
 
       document.getElementById(`panel-${tabName}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`tab-${tabName}`);
-      activeBtn.classList.add('border-[#26b0e8]', 'text-[#1e6eeb]', 'font-semibold');
+      activeBtn.classList.add('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
       activeBtn.classList.remove('border-transparent', 'text-slate-500');
 
       routeLayer.clearLayers();
