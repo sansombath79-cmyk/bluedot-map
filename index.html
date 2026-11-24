@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Blue Dot EV Charger — Vientiane Network</title>
+  <title>Blue Dot EV Charger — Vientiane Capital Network & Route Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Noto Sans Thai', sans-serif; overscroll-behavior: none; }
+    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; }
     #map { height: 100%; width: 100%; z-index: 1; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
@@ -31,7 +31,7 @@
       padding: 2px 6px;
       font-size: 10px;
       font-weight: 600;
-      font-family: 'Noto Sans Thai', sans-serif;
+      font-family: 'Inter', sans-serif;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
       white-space: nowrap;
     }
@@ -49,28 +49,26 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-bold text-sm md:text-lg text-white tracking-wide">BLUE DOT EV</h1>
-          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">21 สถานี</span>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">21 Stations</span>
         </div>
-        <p class="hidden md:block text-xs text-blue-200/70">เครือข่ายสถานีชาร์จ Blue Dot & ระบบคำนวณระยะทาง (นครหลวงเวียงจันทน์)</p>
+        <p class="hidden md:block text-xs text-blue-200/70">Blue Dot EV Charging Network & Distance Planner (Vientiane Capital)</p>
       </div>
     </div>
 
     <div class="flex items-center gap-1.5">
-      <!-- GPS My Location Button -->
-      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium bg-emerald-600/20 active:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 transition" title="ใช้ตำแหน่ง GPS ปัจจุบัน">
+      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium bg-emerald-600/20 active:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 transition" title="Use Current GPS Location">
         <i data-lucide="locate-fixed" class="w-4 h-4"></i>
-        <span>พิกัดฉัน</span>
+        <span>My GPS</span>
       </button>
 
-      <!-- Admin Pin Toggle -->
       <button id="btnModeToggle" onclick="toggleAdminMode()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium bg-amber-500/20 active:bg-amber-500/40 text-amber-300 border border-amber-500/40 transition">
         <i data-lucide="map-pin-plus" class="w-4 h-4"></i>
-        <span id="modeLabel">ปักหมุด</span>
+        <span id="modeLabel">Add Pin</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Workspace (Map Top / Controls Bottom on Mobile, Side-by-Side on Desktop) -->
+  <!-- Main Workspace -->
   <div class="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
     
     <!-- Bottom Sheet / Left Sidebar -->
@@ -78,30 +76,30 @@
       
       <!-- Mobile Sheet Drag / Expand Toggle Bar -->
       <div class="md:hidden flex items-center justify-between px-4 py-1.5 border-b border-slate-800/80 bg-slate-900 rounded-t-2xl">
-        <span class="text-[11px] text-slate-400 font-medium">เมนูคำนวณระยะทาง & รายชื่อสถานี</span>
+        <span class="text-[11px] text-slate-400 font-medium">Distance Calculator & Stations</span>
         <button onclick="toggleSheetHeight()" class="flex items-center gap-1 text-xs font-semibold text-sky-400 py-1 px-2 rounded-lg bg-slate-800">
           <i id="sheetToggleIcon" data-lucide="chevrons-down" class="w-3.5 h-3.5"></i>
-          <span id="sheetToggleText">ย่อแถบ / ดูแผนที่กว้าง</span>
+          <span id="sheetToggleText">Minimize / Expand Map</span>
         </button>
       </div>
 
-      <!-- Navigation Tabs (Large Touch Targets) -->
+      <!-- Navigation Tabs -->
       <div class="grid grid-cols-4 border-b border-slate-800 bg-slate-950/70 text-xs font-medium shrink-0">
         <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2.5 px-1 border-b-2 border-blue-500 text-blue-400 flex flex-col items-center justify-center gap-1 min-h-[52px]">
           <i data-lucide="warehouse" class="w-4 h-4"></i>
-          <span>จากคลัง</span>
+          <span>Warehouse</span>
         </button>
         <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2.5 px-1 border-b-2 border-transparent text-slate-400 flex flex-col items-center justify-center gap-1 min-h-[52px]">
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>สถานี-สถานี</span>
+          <span>Point-to-Point</span>
         </button>
         <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2.5 px-1 border-b-2 border-transparent text-slate-400 flex flex-col items-center justify-center gap-1 min-h-[52px]">
           <i data-lucide="route" class="w-4 h-4"></i>
-          <span>จัดเส้นทาง</span>
+          <span>Trip Planner</span>
         </button>
         <button onclick="switchTab('pins')" id="tab-pins" class="tab-btn py-2.5 px-1 border-b-2 border-transparent text-slate-400 flex flex-col items-center justify-center gap-1 min-h-[52px]">
           <i data-lucide="map-pin" class="w-4 h-4"></i>
-          <span>จัดการหมุด</span>
+          <span>Manage Pins</span>
         </button>
       </div>
 
@@ -111,13 +109,13 @@
         <!-- TAB 1: Warehouse to Blue Dot Stations -->
         <div id="panel-warehouse" class="space-y-3">
           <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-2.5">
-            <label class="text-[11px] text-slate-400 block mb-1">จุดเริ่มต้น (คลังสินค้า / พิกัดของคุณ)</label>
+            <label class="text-[11px] text-slate-400 block mb-1">Starting Point (Warehouse / Current Location)</label>
             <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"></select>
           </div>
 
           <div class="flex items-center justify-between px-1">
-            <h3 class="text-xs font-semibold text-slate-300">สถานี Blue Dot EV (เรียงจากใกล้ที่สุด)</h3>
-            <span class="text-[11px] text-sky-400">แตะเพื่อดูเส้นทาง</span>
+            <h3 class="text-xs font-semibold text-slate-300">Blue Dot EV Stations (Nearest First)</h3>
+            <span class="text-[11px] text-sky-400">Tap to view route</span>
           </div>
 
           <div id="warehouseStationList" class="space-y-2 pb-4"></div>
@@ -125,52 +123,58 @@
 
         <!-- TAB 2: Station to Station -->
         <div id="panel-p2p" class="hidden space-y-3 pb-4">
+          <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl px-3 py-2 text-[11px] text-blue-200">
+            The map displays only the selected Origin and Destination pins.
+          </div>
           <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 space-y-2.5">
             <div>
-              <label class="text-[11px] text-slate-400 block mb-1">จุดเริ่มต้น (Origin)</label>
+              <label class="text-[11px] text-slate-400 block mb-1">Origin</label>
               <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white"></select>
             </div>
             <div class="flex justify-center">
               <button onclick="swapP2P()" class="px-4 py-1.5 rounded-full bg-blue-600/20 active:bg-blue-600/40 text-blue-300 border border-blue-500/30 text-xs flex items-center gap-1.5">
-                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> สลับต้นทาง-ปลายทาง
+                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> Swap Locations
               </button>
             </div>
             <div>
-              <label class="text-[11px] text-slate-400 block mb-1">จุดปลายทาง (Destination)</label>
+              <label class="text-[11px] text-slate-400 block mb-1">Destination</label>
               <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white"></select>
             </div>
           </div>
 
           <div id="p2pResultCard" class="bg-gradient-to-br from-blue-950 to-slate-900 border border-blue-500/40 rounded-xl p-4 text-center space-y-1">
-            <p class="text-xs text-blue-300">ระยะทางตามเส้นทางถนนจริง</p>
+            <p class="text-xs text-blue-300">Driving Distance (Road Route)</p>
             <div class="text-3xl font-bold text-white"><span id="p2pKm">--</span> <span class="text-base font-normal text-slate-400">km</span></div>
-            <p class="text-xs text-slate-400">เวลาเดินทางโดยประมาณ: <span id="p2pTime" class="text-slate-200 font-medium">-- นาที</span></p>
+            <p class="text-xs text-slate-400">Estimated Travel Time: <span id="p2pTime" class="text-slate-200 font-medium">-- min</span></p>
           </div>
         </div>
 
         <!-- TAB 3: Custom Multi-Stop Trip Planner -->
         <div id="panel-trip" class="hidden space-y-3 pb-4">
+          <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl px-3 py-2 text-[11px] text-blue-200">
+            The map displays only the stops added to your custom route below.
+          </div>
           <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-medium text-slate-200">แตะเลือกจุดแวะตามลำดับ</span>
-              <button onclick="clearTrip()" class="text-xs text-rose-400 font-medium px-2 py-0.5 rounded bg-rose-500/10">ล้างทั้งหมด</button>
+              <span class="text-xs font-medium text-slate-200">Tap to add stops in sequence</span>
+              <button onclick="clearTrip()" class="text-xs text-rose-400 font-medium px-2 py-0.5 rounded bg-rose-500/10">Clear All</button>
             </div>
             <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
           </div>
 
           <div class="space-y-1.5">
-            <h4 class="text-xs font-semibold text-slate-400">เส้นทางที่เลือก (<span id="tripCount">0</span> จุด)</h4>
+            <h4 class="text-xs font-semibold text-slate-400">Selected Route (<span id="tripCount">0</span> stops)</h4>
             <div id="tripStopsList" class="space-y-1.5"></div>
           </div>
 
           <div id="tripSummaryBox" class="hidden bg-blue-950/70 border border-blue-500/40 rounded-xl p-3.5 space-y-1.5">
             <div class="flex justify-between items-center">
-              <span class="text-xs text-blue-200">ระยะทางรวมทั้งทริป:</span>
+              <span class="text-xs text-blue-200">Total Trip Distance:</span>
               <span class="text-xl font-bold text-sky-400"><span id="tripTotalKm">0</span> km</span>
             </div>
             <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-400">เวลารวมโดยประมาณ:</span>
-              <span class="text-slate-200 font-medium"><span id="tripTotalMin">0</span> นาที</span>
+              <span class="text-slate-400">Estimated Total Time:</span>
+              <span class="text-slate-200 font-medium"><span id="tripTotalMin">0</span> min</span>
             </div>
           </div>
         </div>
@@ -178,42 +182,42 @@
         <!-- TAB 4: Pin Management -->
         <div id="panel-pins" class="hidden space-y-3 pb-6">
           <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-2.5 text-xs text-blue-200">
-            กดปุ่ม <b>"ปักหมุด"</b> มุมขวาบน แล้วแตะจุดบนแผนที่เพื่อดึงพิกัดคลังสินค้าลูกค้าได้ทันที
+            Tap <b>"Add Pin"</b> at the top right, then tap anywhere on the map to auto-fill warehouse or station coordinates.
           </div>
 
           <form onsubmit="saveLocationForm(event)" class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 space-y-2.5">
             <div class="flex items-center justify-between">
-              <h4 id="formTitle" class="text-xs font-bold text-white">เพิ่มพิกัดคลังสินค้า / สถานีชาร์จ</h4>
-              <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-amber-400">ยกเลิกแก้ไข</button>
+              <h4 id="formTitle" class="text-xs font-bold text-white">Add Warehouse / EV Station Pin</h4>
+              <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-amber-400">Cancel Edit</button>
             </div>
             <input type="hidden" id="editId" value="" />
             <div>
               <select id="pinType" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-                <option value="warehouse">คลังสินค้าลูกค้า (Warehouse)</option>
-                <option value="station">สถานีชาร์จ Blue Dot EV</option>
+                <option value="warehouse">Customer Warehouse</option>
+                <option value="station">Blue Dot EV Station</option>
               </select>
             </div>
             <div>
-              <input id="pinName" type="text" required placeholder="ชื่อสถานที่ (เช่น คลังสินค้าลูกค้า)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+              <input id="pinName" type="text" required placeholder="Location Name (e.g., Customer Warehouse)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
             </div>
             <div class="grid grid-cols-2 gap-2">
               <input id="pinLat" type="number" step="any" required placeholder="Latitude (17.9045)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
               <input id="pinLng" type="number" step="any" required placeholder="Longitude (102.7112)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <input id="pinPower" type="text" placeholder="กำลังไฟ (เช่น 180 kW)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
-              <input id="pinConnector" type="text" placeholder="หัวชาร์จ (GB/T + CCS2)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+              <input id="pinPower" type="text" placeholder="Power (e.g., 180 kW)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+              <input id="pinConnector" type="text" placeholder="Connector (GB/T + CCS2)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
             </div>
-            <input id="pinNote" type="text" placeholder="รายละเอียดเพิ่มเติม (เช่น 4 Charging Guns)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            <input id="pinNote" type="text" placeholder="Notes (e.g., 4 Charging Guns)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
             <button type="submit" id="btnSubmitPin" class="w-full bg-blue-600 active:bg-blue-500 text-white font-semibold py-2.5 rounded-lg text-sm">
-              บันทึกหมุดลงแผนที่
+              Save Pin to Map
             </button>
           </form>
 
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <h4 class="text-xs font-semibold text-slate-400">หมุดทั้งหมด (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="resetDefaultData()" class="text-[11px] text-slate-400 underline">รีเซ็ตค่าเริ่มต้น</button>
+              <h4 class="text-xs font-semibold text-slate-400">All Locations (<span id="totalPinCount">0</span>)</h4>
+              <button onclick="resetDefaultData()" class="text-[11px] text-slate-400 underline">Reset Default</button>
             </div>
             <div id="allPinsManageList" class="space-y-1.5"></div>
           </div>
@@ -236,29 +240,29 @@
     <main id="mapWrapper" class="flex-1 relative h-[48%] md:h-full transition-all duration-300">
       <div id="map"></div>
 
-      <!-- Floating Map Controls (Top Right on Map for Easy Thumb Reach) -->
+      <!-- Floating Map Controls -->
       <div class="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
         <button onclick="toggleLabels()" class="bg-slate-950/90 backdrop-blur border border-blue-500/40 text-blue-200 px-3 py-2 rounded-xl text-xs font-medium shadow-lg flex items-center gap-1.5">
           <i data-lucide="tag" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span id="labelToggleText">ชื่อ: แสดง</span>
+          <span id="labelToggleText">Labels: On</span>
         </button>
         <button onclick="toggleMapLayer()" class="bg-slate-950/90 backdrop-blur border border-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-medium shadow-lg flex items-center gap-1.5">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-sky-400"></i>
-          <span id="mapStyleLabel">แผนที่: ถนน</span>
+          <span id="mapStyleLabel">Map: Street</span>
         </button>
       </div>
 
       <!-- Floating Admin Banner -->
       <div id="adminBanner" class="hidden absolute top-3 left-3 right-32 z-[1000] bg-amber-500 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
         <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i>
-        <span>แตะบนแผนที่เพื่อดึงพิกัด Lat/Lng</span>
+        <span>Tap on map to pick Lat/Lng</span>
       </div>
 
       <!-- Compact Legend -->
       <div class="absolute bottom-3 left-3 z-[1000] bg-slate-950/85 backdrop-blur border border-blue-900/60 rounded-xl px-2.5 py-2 text-[11px] flex items-center gap-3 shadow-lg">
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-          <span class="text-slate-200">คลังสินค้า</span>
+          <span class="text-slate-200">Warehouse</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
@@ -273,7 +277,7 @@
     const BLUEDOT_LOGO_URL = '';
 
     const defaultLocations = [
-      { id: "wh-customer-main", type: "warehouse", name: "คลังสินค้าลูกค้า (โซนท่านาแล้ง)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "จุดอ้างอิงคลังสินค้าของลูกค้า" },
+      { id: "wh-customer-main", type: "warehouse", name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub (Editable in Manage Pins)" },
       { id: "loc-1795421391963", type: "station", name: "KM7 Hub", lat: 18.009939, lng: 102.647811, power: "400 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
       { id: "loc-1795421586747", type: "station", name: "PTT Donnoun", lat: 18.061477, lng: 102.667622, power: "180 kW DC", connector: "GB/T & CCS2", note: "" },
       { id: "loc-1795421900766", type: "station", name: "Cafe Amazon DongDok", lat: 18.033393, lng: 102.636484, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
@@ -298,6 +302,7 @@
     ];
 
     let locations = [...defaultLocations];
+    let currentTab = 'warehouse';
     let adminMode = false;
     let isHybrid = false;
     let showLabels = true;
@@ -335,18 +340,18 @@
       if (isSheetCollapsed) {
         panel.style.height = '92px';
         mapWrap.style.height = 'calc(100% - 92px)';
-        text.textContent = 'ขยายรายการสถานี';
+        text.textContent = 'Expand Station List';
       } else {
         panel.style.height = '';
         mapWrap.style.height = '';
-        text.textContent = 'ย่อแถบ / ดูแผนที่กว้าง';
+        text.textContent = 'Minimize / Expand Map';
       }
       setTimeout(() => map.invalidateSize(), 320);
     }
 
     function useMyGPSLocation() {
       if (!navigator.geolocation) {
-        alert('อุปกรณ์ของคุณไม่รองรับการดึงพิกัด GPS');
+        alert('Geolocation is not supported by your browser.');
         return;
       }
       navigator.geolocation.getCurrentPosition(
@@ -358,12 +363,12 @@
           const gpsLoc = {
             id: gpsId,
             type: 'warehouse',
-            name: 'ตำแหน่งปัจจุบันของฉัน (GPS)',
+            name: 'My Current Location (GPS)',
             lat: lat,
             lng: lng,
             power: '-',
             connector: '-',
-            note: 'พิกัด GPS ปัจจุบันจากมือถือ'
+            note: 'Live Mobile GPS Coordinates'
           };
           if (existingIdx !== -1) {
             locations[existingIdx] = gpsLoc;
@@ -376,7 +381,7 @@
           map.setView([lat, lng], 13);
         },
         () => {
-          alert('ไม่สามารถเข้าถึงตำแหน่ง GPS ได้ กรุณาเปิดอนุญาต Location ในเบราว์เซอร์');
+          alert('Unable to retrieve GPS location. Please allow Location permissions in your browser.');
         },
         { enableHighAccuracy: true, timeout: 8000 }
       );
@@ -387,17 +392,17 @@
       if (isHybrid) {
         map.removeLayer(googleStreets);
         googleHybrid.addTo(map);
-        document.getElementById('mapStyleLabel').textContent = 'แผนที่: ดาวเทียม';
+        document.getElementById('mapStyleLabel').textContent = 'Map: Satellite';
       } else {
         map.removeLayer(googleHybrid);
         googleStreets.addTo(map);
-        document.getElementById('mapStyleLabel').textContent = 'แผนที่: ถนน';
+        document.getElementById('mapStyleLabel').textContent = 'Map: Street';
       }
     }
 
     function toggleLabels() {
       showLabels = !showLabels;
-      document.getElementById('labelToggleText').textContent = showLabels ? 'ชื่อ: แสดง' : 'ชื่อ: ซ่อน';
+      document.getElementById('labelToggleText').textContent = showLabels ? 'Labels: On' : 'Labels: Off';
       renderMarkers();
     }
 
@@ -434,9 +439,24 @@
       });
     }
 
+    function getVisibleLocations() {
+      if (currentTab === 'p2p') {
+        const oId = document.getElementById('p2pOrigin').value;
+        const dId = document.getElementById('p2pDest').value;
+        return locations.filter(l => l.id === oId || l.id === dId);
+      }
+      if (currentTab === 'trip') {
+        const selectedIds = new Set(tripStops.map(s => s.id));
+        return locations.filter(l => selectedIds.has(l.id));
+      }
+      return locations;
+    }
+
     function renderMarkers() {
       markersLayer.clearLayers();
-      locations.forEach(loc => {
+      const visibleLocations = getVisibleLocations();
+
+      visibleLocations.forEach(loc => {
         const marker = L.marker([loc.lat, loc.lng], { icon: createMarkerIcon(loc.type) });
 
         if (showLabels) {
@@ -450,12 +470,12 @@
         }
 
         const badge = loc.type === 'warehouse'
-          ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">จุดเริ่มต้น / คลังสินค้า</span>`
+          ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Origin / Warehouse</span>`
           : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">BLUE DOT EV CHARGER</span>`;
 
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
-        const actionBtn = loc.type === 'station'
-          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-blue-600 active:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition">ดูเส้นทาง & ระยะทางจากคลัง</button>`
+        const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
+          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-blue-600 active:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition">Show Route from Warehouse</button>`
           : '';
 
         marker.bindPopup(`
@@ -471,7 +491,7 @@
             ${loc.note ? `<p class="text-xs text-slate-300">${loc.note}</p>` : ''}
             ${actionBtn}
             <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-slate-800 active:bg-slate-700 text-sky-300 text-xs font-medium py-2 px-3 rounded-lg border border-slate-700 transition">
-              นำทางด้วย Google Maps ↗
+              Navigate in Google Maps ↗
             </a>
           </div>
         `);
@@ -529,8 +549,6 @@
     }
 
     function refreshAllUI() {
-      renderMarkers();
-
       const warehouses = locations.filter(l => l.type === 'warehouse');
       const stations = locations.filter(l => l.type === 'station');
       document.getElementById('totalPinCount').textContent = locations.length;
@@ -540,7 +558,7 @@
       whSelect.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
       if (prevWh && warehouses.some(w => w.id === prevWh)) whSelect.value = prevWh;
 
-      const allOptions = locations.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'คลัง' : 'Blue Dot'}] ${l.name}</option>`).join('');
+      const allOptions = locations.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : 'Blue Dot'}] ${l.name}</option>`).join('');
       const p2pOrigin = document.getElementById('p2pOrigin');
       const p2pDest = document.getElementById('p2pDest');
       const prevO = p2pOrigin.value;
@@ -574,6 +592,7 @@
       `).join('');
 
       if (window.lucide) lucide.createIcons();
+      renderMarkers();
       updateWarehouseDistances();
       calculateP2P();
     }
@@ -585,11 +604,11 @@
       const container = document.getElementById('warehouseStationList');
 
       if (!wh || stations.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400">กรุณาเพิ่มคลังสินค้าและสถานี Blue Dot</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400">Please add at least one Warehouse and one Blue Dot station.</p>`;
         return;
       }
 
-      container.innerHTML = `<p class="text-xs text-blue-300 animate-pulse py-2">กำลังคำนวณระยะทางตามถนนทั้ง 21 สถานี...</p>`;
+      container.innerHTML = `<p class="text-xs text-blue-300 animate-pulse py-2">Calculating road distances to all 21 stations...</p>`;
 
       const results = await Promise.all(stations.map(async st => {
         const route = await fetchRoadRoute([wh, st]);
@@ -610,7 +629,7 @@
             </div>
             <div class="text-right shrink-0 pl-2">
               <div class="text-base font-bold text-sky-400">${item.route.km.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span></div>
-              <div class="text-[11px] text-slate-400">~${item.route.min} นาที</div>
+              <div class="text-[11px] text-slate-400">~${item.route.min} min</div>
             </div>
           </div>
         </div>
@@ -627,6 +646,9 @@
     }
 
     async function calculateP2P() {
+      if (currentTab === 'p2p') {
+        renderMarkers();
+      }
       const oId = document.getElementById('p2pOrigin').value;
       const dId = document.getElementById('p2pDest').value;
       const origin = locations.find(l => l.id === oId);
@@ -635,15 +657,16 @@
 
       if (origin.id === dest.id) {
         document.getElementById('p2pKm').textContent = '0.0';
-        document.getElementById('p2pTime').textContent = '0 นาที';
+        document.getElementById('p2pTime').textContent = '0 min';
         routeLayer.clearLayers();
+        if (currentTab === 'p2p') map.setView([origin.lat, origin.lng], 14);
         return;
       }
 
       const route = await fetchRoadRoute([origin, dest]);
       document.getElementById('p2pKm').textContent = route.km.toFixed(1);
-      document.getElementById('p2pTime').textContent = `${route.min} นาที`;
-      if (!document.getElementById('panel-p2p').classList.contains('hidden')) {
+      document.getElementById('p2pTime').textContent = `${route.min} min`;
+      if (currentTab === 'p2p') {
         drawRouteOnMap(route.geometry, '#0284c7');
       }
     }
@@ -677,13 +700,17 @@
     }
 
     async function renderTripStops() {
+      if (currentTab === 'trip') {
+        renderMarkers();
+      }
       document.getElementById('tripCount').textContent = tripStops.length;
       const list = document.getElementById('tripStopsList');
       const summaryBox = document.getElementById('tripSummaryBox');
 
       if (tripStops.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 italic">ยังไม่ได้เลือกจุดแวะในเส้นทาง</p>`;
+        list.innerHTML = `<p class="text-xs text-slate-500 italic">No stops added yet (map displays only selected stops).</p>`;
         summaryBox.classList.add('hidden');
+        routeLayer.clearLayers();
         return;
       }
 
@@ -697,18 +724,21 @@
         </div>
       `).join('');
 
-      if (tripStops.length >= 2) {
+      if (tripStops.length === 1) {
+        summaryBox.classList.add('hidden');
+        routeLayer.clearLayers();
+        if (currentTab === 'trip') map.setView([tripStops[0].lat, tripStops[0].lng], 14);
+      } else if (tripStops.length >= 2) {
         const route = await fetchRoadRoute(tripStops);
         document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
         document.getElementById('tripTotalMin').textContent = route.min;
         summaryBox.classList.remove('hidden');
-        drawRouteOnMap(route.geometry, '#2563eb');
-      } else {
-        summaryBox.classList.add('hidden');
+        if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#2563eb');
       }
     }
 
     function switchTab(tabName) {
+      currentTab = tabName;
       if (isSheetCollapsed) toggleSheetHeight(true);
       ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
         document.getElementById(`panel-${t}`).classList.add('hidden');
@@ -722,8 +752,19 @@
       activeBtn.classList.add('border-blue-500', 'text-blue-400');
       activeBtn.classList.remove('border-transparent', 'text-slate-400');
 
-      if (tabName === 'p2p') calculateP2P();
-      if (tabName === 'trip' && tripStops.length >= 2) renderTripStops();
+      routeLayer.clearLayers();
+      renderMarkers();
+
+      if (tabName === 'p2p') {
+        calculateP2P();
+      } else if (tabName === 'trip') {
+        renderTripStops();
+      } else {
+        if (locations.length > 0) {
+          const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
+          map.fitBounds(bounds, { padding: [40, 40] });
+        }
+      }
     }
 
     function toggleAdminMode() {
@@ -732,11 +773,11 @@
       const label = document.getElementById('modeLabel');
       if (adminMode) {
         banner.classList.remove('hidden');
-        label.textContent = 'ปักหมุด: เปิด';
+        label.textContent = 'Pin Mode: On';
         switchTab('pins');
       } else {
         banner.classList.add('hidden');
-        label.textContent = 'ปักหมุด';
+        label.textContent = 'Add Pin';
       }
     }
 
@@ -760,8 +801,8 @@
       document.getElementById('pinConnector').value = loc.connector === '-' ? '' : loc.connector;
       document.getElementById('pinNote').value = loc.note || '';
 
-      document.getElementById('formTitle').textContent = 'แก้ไขพิกัดสถานที่';
-      document.getElementById('btnSubmitPin').textContent = 'อัปเดตข้อมูลหมุด';
+      document.getElementById('formTitle').textContent = 'Edit Location Details';
+      document.getElementById('btnSubmitPin').textContent = 'Update Pin';
       document.getElementById('btnCancelEdit').classList.remove('hidden');
       map.setView([loc.lat, loc.lng], 15);
     }
@@ -774,8 +815,8 @@
       document.getElementById('pinPower').value = '';
       document.getElementById('pinConnector').value = '';
       document.getElementById('pinNote').value = '';
-      document.getElementById('formTitle').textContent = 'เพิ่มพิกัดคลังสินค้า / สถานีชาร์จ';
-      document.getElementById('btnSubmitPin').textContent = 'บันทึกหมุดลงแผนที่';
+      document.getElementById('formTitle').textContent = 'Add Warehouse / EV Station Pin';
+      document.getElementById('btnSubmitPin').textContent = 'Save Pin to Map';
       document.getElementById('btnCancelEdit').classList.add('hidden');
     }
 
@@ -806,13 +847,13 @@
     }
 
     function deleteLocation(id) {
-      if (!confirm('ต้องการลบหมุดนี้ใช่หรือไม่?')) return;
+      if (!confirm('Are you sure you want to delete this pin?')) return;
       locations = locations.filter(l => l.id !== id);
       refreshAllUI();
     }
 
     function resetDefaultData() {
-      if (!confirm('รีเซ็ตข้อมูลกลับเป็น 21 สถานีหลักของ Blue Dot EV ใช่หรือไม่?')) return;
+      if (!confirm('Reset all pins to the default 21 Blue Dot EV stations?')) return;
       locations = [...defaultLocations];
       cancelEdit();
       refreshAllUI();
@@ -837,10 +878,10 @@
           if (Array.isArray(imported)) {
             locations = imported;
             refreshAllUI();
-            alert('นำเข้าข้อมูลสถานี Blue Dot สำเร็จ!');
+            alert('Locations imported successfully!');
           }
         } catch (err) {
-          alert('ไฟล์ JSON ไม่ถูกต้อง');
+          alert('Invalid JSON file.');
         }
       };
       reader.readAsText(file);
