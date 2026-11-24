@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Blue Dot EV Charger — Vientiane Capital Network & Route Planner</title>
+  <title>Blue Dot EV Charger — Laos Nationwide Network & Route Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -53,7 +53,7 @@
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> LIVE
           </span>
         </div>
-        <p class="hidden md:block text-xs text-blue-200/70">Blue Dot EV Charging Network & Distance Planner (Vientiane Capital)</p>
+        <p class="hidden md:block text-xs text-blue-200/70">Blue Dot EV Charging Network & Distance Planner (Laos Nationwide)</p>
       </div>
     </div>
 
@@ -91,7 +91,7 @@
       <form onsubmit="submitAdminLogin(event)" class="space-y-3">
         <div>
           <label class="text-[11px] text-slate-400 block mb-1">Admin Email</label>
-          <input id="adminEmailInput" type="email" required placeholder="admin@bluedotev.la" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+          <input id="adminEmailInput" type="email" required placeholder="sansombath@gmail.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
         </div>
         <div>
           <label class="text-[11px] text-slate-400 block mb-1">Password</label>
@@ -120,16 +120,20 @@
         </button>
       </div>
 
-      <!-- Exclusive Vehicle Mode Selector (E-Truck vs Standard EV) -->
+      <!-- 3-Option Vehicle Mode Selector (All Stations / E-Truck / Standard EV) -->
       <div class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 shrink-0">
-        <div class="grid grid-cols-2 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition">
-            <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-            <span>E-Truck (<span id="countTruckStations">21</span>)</span>
+        <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-blue-600 text-white shadow transition">
+            <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
+            <span class="truncate">All (<span id="countAllStations">63</span>)</span>
           </button>
-          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
-            <i data-lucide="car" class="w-3.5 h-3.5"></i>
-            <span>Standard EV (<span id="countStandardStations">0</span>)</span>
+          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
+            <span class="truncate">E-Truck (<span id="countTruckStations">21</span>)</span>
+          </button>
+          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
+            <span class="truncate">Standard (<span id="countStandardStations">42</span>)</span>
           </button>
         </div>
       </div>
@@ -170,7 +174,7 @@
           </div>
 
           <div class="flex items-center justify-between px-1">
-            <h3 class="text-xs font-semibold text-slate-300">Stations (<span id="listModeLabel">E-Truck Only</span> • Nearest First)</h3>
+            <h3 class="text-xs font-semibold text-slate-300">Stations (<span id="listModeLabel">All Stations</span> • Nearest First)</h3>
             <span class="text-[11px] text-sky-400">Tap to view route</span>
           </div>
 
@@ -280,7 +284,10 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-semibold text-slate-400">Live Database Locations (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="seedInitialDatabase(true)" class="text-[11px] text-amber-400 underline">Restore Default 21 E-Trucks</button>
+              <button onclick="seedInitialDatabase(true)" class="text-[11px] text-amber-400 underline">Load 63 Nationwide Template</button>
+            </div>
+            <div class="pt-1">
+              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name to edit..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
             </div>
             <div id="allPinsManageList" class="space-y-1.5"></div>
           </div>
@@ -327,9 +334,13 @@
           <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
           <span class="text-slate-200">Warehouse</span>
         </div>
-        <div id="legendStationItem" class="flex items-center gap-1.5">
-          <span id="legendStationDot" class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
-          <span id="legendStationText" class="text-slate-200">E-Truck Station</span>
+        <div id="legendTruckItem" class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+          <span class="text-slate-200">E-Truck</span>
+        </div>
+        <div id="legendStdItem" class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
+          <span class="text-slate-200">Standard EV</span>
         </div>
       </div>
     </main>
@@ -360,9 +371,10 @@
     const db = firebase.database();
     const locationsRef = db.ref("locations");
 
-    // Default 21 E-Truck Ready Stations + 1 Customer Warehouse
+    // 63 Nationwide Stations Template (21 E-Truck + 42 Standard EV Editable Slots) + 1 Warehouse
     const defaultLocations = [
       { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" },
+      // 21 E-Truck Stations
       { id: "loc-1795421391963", type: "station", truckReady: true, name: "KM7 Hub", lat: 18.009939, lng: 102.647811, power: "400 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
       { id: "loc-1795421586747", type: "station", truckReady: true, name: "PTT Donnoun", lat: 18.061477, lng: 102.667622, power: "180 kW DC", connector: "GB/T & CCS2", note: "" },
       { id: "loc-1795421900766", type: "station", truckReady: true, name: "Cafe Amazon DongDok", lat: 18.033393, lng: 102.636484, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
@@ -383,13 +395,56 @@
       { id: "bd-1795485788779", type: "station", truckReady: true, name: "Shithi Samket", lat: 18.032959, lng: 102.590505, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
       { id: "bd-1795485913231", type: "station", truckReady: true, name: "ST Bank", lat: 17.971428, lng: 102.566732, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
       { id: "bd-1795486085326", type: "station", truckReady: true, name: "Daofa Vientiane, Khamsavath", lat: 17.96124, lng: 102.680471, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-ptt-phontong", type: "station", truckReady: true, name: "PTT Phontong", lat: 17.993463, lng: 102.62472, power: "180 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" }
+      { id: "bd-ptt-phontong", type: "station", truckReady: true, name: "PTT Phontong", lat: 17.993463, lng: 102.62472, power: "180 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
+      // 42 Standard EV Nationwide Stations (Editable via Admin Edit)
+      { id: "std-station-22", type: "station", truckReady: false, name: "BlueDot Station #22 (Vientiane)", lat: 17.9652, lng: 102.6135, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-23", type: "station", truckReady: false, name: "BlueDot Station #23 (Vientiane)", lat: 17.9741, lng: 102.6289, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-24", type: "station", truckReady: false, name: "BlueDot Station #24 (Vientiane)", lat: 17.9825, lng: 102.6012, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-25", type: "station", truckReady: false, name: "BlueDot Station #25 (Vientiane)", lat: 17.9518, lng: 102.6311, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-26", type: "station", truckReady: false, name: "BlueDot Station #26 (Vientiane)", lat: 18.0155, lng: 102.6321, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-27", type: "station", truckReady: false, name: "BlueDot Station #27 (Vientiane)", lat: 18.0452, lng: 102.6488, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-28", type: "station", truckReady: false, name: "BlueDot Station #28 (Vientiane)", lat: 17.9312, lng: 102.6715, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-29", type: "station", truckReady: false, name: "BlueDot Station #29 (Phonhong)", lat: 18.4945, lng: 102.4152, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-30", type: "station", truckReady: false, name: "BlueDot Station #30 (Hinheup)", lat: 18.6412, lng: 102.3489, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-31", type: "station", truckReady: false, name: "BlueDot Station #31 (Vang Vieng 1)", lat: 18.9235, lng: 102.4478, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-32", type: "station", truckReady: false, name: "BlueDot Station #32 (Vang Vieng 2)", lat: 18.9388, lng: 102.4461, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-33", type: "station", truckReady: false, name: "BlueDot Station #33 (Kasi)", lat: 19.2285, lng: 102.2531, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-34", type: "station", truckReady: false, name: "BlueDot Station #34 (Phou Khoun)", lat: 19.4442, lng: 102.4215, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-35", type: "station", truckReady: false, name: "BlueDot Station #35 (Xieng Ngeun)", lat: 19.7541, lng: 102.1852, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-36", type: "station", truckReady: false, name: "BlueDot Station #36 (Luang Prabang 1)", lat: 19.8845, lng: 102.1348, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-37", type: "station", truckReady: false, name: "BlueDot Station #37 (Luang Prabang 2)", lat: 19.8952, lng: 102.1489, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-38", type: "station", truckReady: false, name: "BlueDot Station #38 (Pak Mong)", lat: 20.5731, lng: 102.4285, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-39", type: "station", truckReady: false, name: "BlueDot Station #39 (Oudomxay 1)", lat: 20.6925, lng: 101.9831, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-40", type: "station", truckReady: false, name: "BlueDot Station #40 (Oudomxay 2)", lat: 20.6812, lng: 101.9945, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-41", type: "station", truckReady: false, name: "BlueDot Station #41 (Luang Namtha)", lat: 20.9512, lng: 101.4048, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-42", type: "station", truckReady: false, name: "BlueDot Station #42 (Boten)", lat: 21.1815, lng: 101.6621, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-43", type: "station", truckReady: false, name: "BlueDot Station #43 (Bokeo / Huayxai)", lat: 20.2735, lng: 100.4128, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-44", type: "station", truckReady: false, name: "BlueDot Station #44 (Xayaboury)", lat: 19.2578, lng: 101.7125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-45", type: "station", truckReady: false, name: "BlueDot Station #45 (Phonsavan)", lat: 19.4512, lng: 103.2145, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-46", type: "station", truckReady: false, name: "BlueDot Station #46 (Thabok)", lat: 18.3742, lng: 103.2315, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-47", type: "station", truckReady: false, name: "BlueDot Station #47 (Paksan 1)", lat: 18.3885, lng: 103.6589, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-48", type: "station", truckReady: false, name: "BlueDot Station #48 (Paksan 2)", lat: 18.3752, lng: 103.6712, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-49", type: "station", truckReady: false, name: "BlueDot Station #49 (Pakkading)", lat: 18.3245, lng: 104.0012, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-50", type: "station", truckReady: false, name: "BlueDot Station #50 (Viengkham)", lat: 18.1812, lng: 104.4125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-51", type: "station", truckReady: false, name: "BlueDot Station #51 (Hinboun)", lat: 17.7512, lng: 104.5812, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-52", type: "station", truckReady: false, name: "BlueDot Station #52 (Thakhaek 1)", lat: 17.4085, lng: 104.8312, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-53", type: "station", truckReady: false, name: "BlueDot Station #53 (Thakhaek 2)", lat: 17.3945, lng: 104.8452, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-54", type: "station", truckReady: false, name: "BlueDot Station #54 (Seno)", lat: 16.6712, lng: 105.0125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-55", type: "station", truckReady: false, name: "BlueDot Station #55 (Savannakhet 1)", lat: 16.5685, lng: 104.7542, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-56", type: "station", truckReady: false, name: "BlueDot Station #56 (Savannakhet 2)", lat: 16.5512, lng: 104.7689, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-57", type: "station", truckReady: false, name: "BlueDot Station #57 (Songkhone)", lat: 16.1745, lng: 105.3125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-58", type: "station", truckReady: false, name: "BlueDot Station #58 (Salavan)", lat: 15.7145, lng: 106.4189, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-59", type: "station", truckReady: false, name: "BlueDot Station #59 (Pakse 1)", lat: 15.1205, lng: 105.7985, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-60", type: "station", truckReady: false, name: "BlueDot Station #60 (Pakse 2)", lat: 15.1112, lng: 105.8142, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-61", type: "station", truckReady: false, name: "BlueDot Station #61 (Paksong)", lat: 15.1785, lng: 106.2312, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-62", type: "station", truckReady: false, name: "BlueDot Station #62 (Champasak)", lat: 14.8912, lng: 105.8785, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
+      { id: "std-station-63", type: "station", truckReady: false, name: "BlueDot Station #63 (Khong / 4000 Islands)", lat: 14.1185, lng: 105.8542, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" }
     ];
 
     let cloudLocations = [...defaultLocations];
     let localCustomWarehouses = [];
     let currentTab = 'warehouse';
-    let vehicleMode = 'truck'; // 'truck' = E-Truck ONLY, 'standard' = Standard EV ONLY
+    let vehicleMode = 'all'; // 'all' = All Stations (63), 'truck' = E-Truck (21), 'standard' = Standard EV (42)
     let isAdmin = false;
     let mapPickMode = false;
     let isHybrid = false;
@@ -399,7 +454,7 @@
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
-    const map = L.map('map', { zoomControl: true }).setView([17.985, 102.615], 11);
+    const map = L.map('map', { zoomControl: true }).setView([18.2, 103.5], 6);
 
     const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       maxZoom: 20,
@@ -424,7 +479,7 @@
         document.getElementById('adminAuthLabel').textContent = "Admin ON";
         document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 border border-amber-400 transition";
         
-        // Auto-seed database on first admin login if empty
+        // Auto-seed 63 stations if database has fewer than 25 stations or is empty
         locationsRef.once("value").then((snap) => {
           if (!snap.exists()) {
             seedInitialDatabase(false);
@@ -462,20 +517,22 @@
 
     function seedInitialDatabase(askConfirm = true) {
       if (!isAdmin) return;
-      if (askConfirm && !confirm("Overwrite cloud database with the 21 default E-Truck stations?")) return;
+      if (askConfirm && !confirm("Load all 63 Nationwide stations (21 E-Truck + 42 Standard EV) into the live database?")) return;
       const updates = {};
       defaultLocations.forEach(loc => {
         updates[loc.id] = loc;
       });
       locationsRef.set(updates)
-        .then(() => { if (askConfirm) alert("Default 21 E-Truck stations published live!"); })
+        .then(() => { if (askConfirm) alert("All 63 stations loaded into live database!"); })
         .catch(err => alert("Database write error: " + err.message));
     }
 
+    // 3-Option Filter: All Stations / E-Truck / Standard EV
     function getActiveLocations() {
       const combined = [...localCustomWarehouses, ...cloudLocations];
       return combined.filter(l => {
         if (l.type === 'warehouse') return true;
+        if (vehicleMode === 'all') return true;
         if (vehicleMode === 'truck') return l.truckReady === true;
         return l.truckReady !== true;
       });
@@ -483,25 +540,23 @@
 
     function setVehicleMode(mode) {
       vehicleMode = mode;
+      const btnAll = document.getElementById('btnModeAll');
       const btnTruck = document.getElementById('btnModeTruck');
       const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
-      const legendDot = document.getElementById('legendStationDot');
-      const legendText = document.getElementById('legendStationText');
 
-      if (mode === 'truck') {
-        btnTruck.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 shadow transition";
-        btnStd.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
-        modeLbl.textContent = "E-Truck Only";
-        legendDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 inline-block";
-        legendText.textContent = "E-Truck Station";
-      } else {
-        btnStd.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 shadow transition";
-        btnTruck.className = "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
-        modeLbl.textContent = "Standard EV Only";
-        legendDot.className = "w-2.5 h-2.5 rounded-full bg-sky-400 inline-block";
-        legendText.textContent = "Standard EV Station";
-      }
+      const activeAll = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-blue-600 text-white shadow transition";
+      const activeTruck = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-amber-500 text-slate-950 shadow transition";
+      const activeStd = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-sky-500 text-slate-950 shadow transition";
+      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition";
+
+      btnAll.className = mode === 'all' ? activeAll : inactive;
+      btnTruck.className = mode === 'truck' ? activeTruck : inactive;
+      btnStd.className = mode === 'standard' ? activeStd : inactive;
+
+      if (mode === 'all') modeLbl.textContent = "All Stations";
+      else if (mode === 'truck') modeLbl.textContent = "E-Truck Only";
+      else modeLbl.textContent = "Standard EV Only";
 
       tripStops = [];
       routeLayer.clearLayers();
@@ -686,10 +741,10 @@
 
       return L.divIcon({
         className: 'custom-pin',
-        html: `<div style="background:${bg}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid ${border}; box-shadow:0 0 0 5px ${ring}, 0 4px 12px rgba(0,0,0,0.45); overflow:hidden;">${innerHtml}</div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-        popupAnchor: [0, -18]
+        html: `<div style="background:${bg}; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid ${border}; box-shadow:0 0 0 4px ${ring}, 0 4px 12px rgba(0,0,0,0.45); overflow:hidden;">${innerHtml}</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -17]
       });
     }
 
@@ -735,6 +790,10 @@
           ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-blue-600 active:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition">Show Route from Warehouse</button>`
           : '';
 
+        const editQuickBtn = isAdmin
+          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins');" class="mt-1.5 w-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold py-1.5 px-3 rounded-lg transition">Edit This Pin (Admin)</button>`
+          : '';
+
         marker.bindPopup(`
           <div class="min-w-[230px] space-y-1.5 p-1">
             ${badge}
@@ -747,6 +806,7 @@
             ` : ''}
             ${loc.note ? `<p class="text-xs text-slate-300">${loc.note}</p>` : ''}
             ${actionBtn}
+            ${editQuickBtn}
             <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-slate-800 active:bg-slate-700 text-sky-300 text-xs font-medium py-2 px-3 rounded-lg border border-slate-700 transition">
               Navigate in Google Maps ↗
             </a>
@@ -805,11 +865,36 @@
       map.fitBounds(geoLayer.getBounds(), { padding: [45, 45] });
     }
 
+    function renderAdminManageList() {
+      const searchInput = document.getElementById('adminSearchInput');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const filtered = cloudLocations.filter(l => l.name.toLowerCase().includes(query) || (l.note && l.note.toLowerCase().includes(query)));
+
+      const manageList = document.getElementById('allPinsManageList');
+      manageList.innerHTML = filtered.map(l => `
+        <div class="flex items-center justify-between bg-slate-800/80 border border-slate-700/70 rounded-lg px-3 py-2 text-xs">
+          <div class="truncate pr-2 flex items-center gap-1.5">
+            <span class="${l.type === 'warehouse' ? 'text-amber-400' : (l.truckReady ? 'text-blue-400' : 'text-sky-400')} font-bold">●</span>
+            <span class="text-slate-200 truncate">${l.name}</span>
+            ${l.type === 'station' ? (l.truckReady
+              ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">E-Truck</span>'
+              : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 shrink-0">Standard</span>') : ''}
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="editLocation('${l.id}')" class="text-sky-400 p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+            <button onclick="deleteLocation('${l.id}')" class="text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+      `).join('');
+      if (window.lucide) lucide.createIcons();
+    }
+
     function refreshAllUI() {
       const allStations = cloudLocations.filter(l => l.type === 'station');
       const truckCount = allStations.filter(l => l.truckReady === true).length;
       const standardCount = allStations.filter(l => l.truckReady !== true).length;
 
+      document.getElementById('countAllStations').textContent = allStations.length;
       document.getElementById('countTruckStations').textContent = truckCount;
       document.getElementById('countStandardStations').textContent = standardCount;
       document.getElementById('totalPinCount').textContent = cloudLocations.length;
@@ -842,23 +927,7 @@
         </button>
       `).join('');
 
-      const manageList = document.getElementById('allPinsManageList');
-      manageList.innerHTML = cloudLocations.map(l => `
-        <div class="flex items-center justify-between bg-slate-800/80 border border-slate-700/70 rounded-lg px-3 py-2 text-xs">
-          <div class="truncate pr-2 flex items-center gap-1.5">
-            <span class="${l.type === 'warehouse' ? 'text-amber-400' : (l.truckReady ? 'text-blue-400' : 'text-sky-400')} font-bold">●</span>
-            <span class="text-slate-200 truncate">${l.name}</span>
-            ${l.type === 'station' ? (l.truckReady
-              ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">E-Truck</span>'
-              : '<span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 shrink-0">Standard</span>') : ''}
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <button onclick="editLocation('${l.id}')" class="text-sky-400 p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-            <button onclick="deleteLocation('${l.id}')" class="text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-          </div>
-        </div>
-      `).join('');
-
+      renderAdminManageList();
       if (window.lucide) lucide.createIcons();
       renderMarkers();
       updateWarehouseDistances();
@@ -874,21 +943,18 @@
 
       if (!wh || stations.length === 0) {
         container.innerHTML = `<div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 text-center text-xs text-slate-400">
-          ${vehicleMode === 'standard' ? 'No Standard EV-only stations added yet. Switch to E-Truck mode or add stations in Admin Edit.' : 'No stations available in this mode.'}
+          No stations available in this mode.
         </div>`;
         return;
       }
 
-      container.innerHTML = `<p class="text-xs text-blue-300 animate-pulse py-2">Calculating road distances to ${stations.length} stations...</p>`;
+      // Sort by straight-line distance first so 63 stations render fast without overloading OSRM API
+      const withHaversine = stations.map(st => ({
+        station: st,
+        approxKm: getHaversineKm(wh.lat, wh.lng, st.lat, st.lng) * 1.25
+      })).sort((a, b) => a.approxKm - b.approxKm);
 
-      const results = await Promise.all(stations.map(async st => {
-        const route = await fetchRoadRoute([wh, st]);
-        return { station: st, route };
-      }));
-
-      results.sort((a, b) => a.route.km - b.route.km);
-
-      container.innerHTML = results.map((item, idx) => `
+      container.innerHTML = withHaversine.map((item, idx) => `
         <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-slate-800/80 active:bg-slate-700 border border-slate-700 rounded-xl p-3 transition">
           <div class="flex justify-between items-center gap-2">
             <div class="min-w-0">
@@ -904,12 +970,22 @@
               </div>
             </div>
             <div class="text-right shrink-0 pl-2">
-              <div class="text-base font-bold text-sky-400">${item.route.km.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span></div>
-              <div class="text-[11px] text-slate-400">~${item.route.min} min</div>
+              <div class="text-base font-bold text-sky-400" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span></div>
+              <div class="text-[11px] text-slate-400" id="dist-min-${item.station.id}">~${Math.round((item.approxKm / 45) * 60)} min</div>
             </div>
           </div>
         </div>
       `).join('');
+
+      // Fetch exact road distances for the top 15 nearest stations
+      const topNearest = withHaversine.slice(0, 15);
+      await Promise.all(topNearest.map(async item => {
+        const route = await fetchRoadRoute([wh, item.station]);
+        const kmEl = document.getElementById(`dist-km-${item.station.id}`);
+        const minEl = document.getElementById(`dist-min-${item.station.id}`);
+        if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span>`;
+        if (minEl) minEl.textContent = `~${route.min} min`;
+      }));
     }
 
     async function focusRouteFromWarehouse(stationId) {
@@ -919,6 +995,10 @@
       const st = activeLocs.find(l => l.id === stationId);
       if (!wh || !st) return;
       const route = await fetchRoadRoute([wh, st]);
+      const kmEl = document.getElementById(`dist-km-${st.id}`);
+      const minEl = document.getElementById(`dist-min-${st.id}`);
+      if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span>`;
+      if (minEl) minEl.textContent = `~${route.min} min`;
       drawRouteOnMap(route.geometry, '#2563eb');
     }
 
@@ -1107,7 +1187,6 @@
       locationsRef.child(id).set(locData)
         .then(() => {
           cancelEdit();
-          setVehicleMode(isTruck ? 'truck' : 'standard');
           map.setView([locData.lat, locData.lng], 14);
         })
         .catch(err => alert("Database write failed: " + err.message));
@@ -1124,7 +1203,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'bluedot-ev-live-backup.json';
+      a.download = 'bluedot-ev-63stations-backup.json';
       a.click();
     }
 
