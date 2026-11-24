@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blue Dot EV Charger — Vientiane Capital Network & Route Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans Thai', sans-serif; }
+    #map { height: 100%; width: 100%; z-index: 1; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e3a8a; border-radius: 3px; }
+    .leaflet-popup-content-wrapper {
+      background-color: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #1d4ed8;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .leaflet-popup-tip { background-color: #0f172a; }
+    .station-label {
+      background-color: rgba(15, 23, 42, 0.92);
+      color: #f8fafc;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Noto Sans Thai', sans-serif;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+      white-space: nowrap;
+    }
+    .station-label::before {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden">
+
+  <!-- Top Navbar -->
+  <header class="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 border-b border-blue-800/60 px-4 py-3 flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue-500/20 border border-blue-400/50 p-2 rounded-xl text-blue-400 shadow-inner">
+        <i data-lucide="zap" class="w-6 h-6 fill-blue-400/30"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-base md:text-lg text-white leading-tight tracking-wide">BLUE DOT EV CHARGER</h1>
+          <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">Vientiane (21 Stations)</span>
+        </div>
+        <p class="text-xs text-blue-200/70">เครือข่ายสถานีชาร์จ Blue Dot & ระบบคำนวณระยะทางคลังสินค้า (นครหลวงเวียงจันทน์)</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btnToggleLabels" onclick="toggleLabels()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-500/40 transition">
+        <i data-lucide="tag" class="w-3.5 h-3.5 text-blue-400"></i>
+        <span id="labelToggleText">ชื่อสถานี: แสดง</span>
+      </button>
+
+      <button id="btnMapStyle" onclick="toggleMapLayer()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 transition">
+        <i data-lucide="layers" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span id="mapStyleLabel">แผนที่: ถนน</span>
+      </button>
+
+      <button id="btnModeToggle" onclick="toggleAdminMode()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition">
+        <i data-lucide="map-pin-plus" class="w-3.5 h-3.5"></i>
+        <span id="modeLabel">โหมดปักหมุดเอง: ปิด</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    
+    <!-- Left Sidebar -->
+    <aside class="w-full md:w-[420px] bg-slate-900 border-r border-slate-800 flex flex-col h-1/2 md:h-full z-10 shrink-0">
+      
+      <!-- Navigation Tabs -->
+      <div class="grid grid-cols-4 border-b border-slate-800 bg-slate-950/70 text-xs font-medium">
+        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-3 px-2 border-b-2 border-blue-500 text-blue-400 flex flex-col items-center gap-1">
+          <i data-lucide="warehouse" class="w-4 h-4"></i>
+          <span>จากคลังลูกค้า</span>
+        </button>
+        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-3 px-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex flex-col items-center gap-1">
+          <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+          <span>สถานี-สถานี</span>
+        </button>
+        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-3 px-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex flex-col items-center gap-1">
+          <i data-lucide="route" class="w-4 h-4"></i>
+          <span>จัดเส้นทางเอง</span>
+        </button>
+        <button onclick="switchTab('pins')" id="tab-pins" class="tab-btn py-3 px-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex flex-col items-center gap-1">
+          <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <span>ปักหมุด/แก้ไข</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Container -->
+      <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
+
+        <!-- TAB 1: Warehouse to Blue Dot Stations -->
+        <div id="panel-warehouse" class="space-y-4">
+          <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3">
+            <label class="text-xs text-slate-400 block mb-1.5">จุดเริ่มต้น: คลังสินค้าของลูกค้า (Warehouse)</label>
+            <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"></select>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">ระยะทางไปสถานี Blue Dot EV (21 แห่ง)</h3>
+            <span class="text-[11px] text-blue-400 font-medium">เรียงจากใกล้ที่สุด</span>
+          </div>
+
+          <div id="warehouseStationList" class="space-y-2.5"></div>
+        </div>
+
+        <!-- TAB 2: Station to Station -->
+        <div id="panel-p2p" class="hidden space-y-4">
+          <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3.5 space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">จุดเริ่มต้น (Origin)</label>
+              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"></select>
+            </div>
+            <div class="flex justify-center">
+              <button onclick="swapP2P()" class="p-1.5 rounded-full bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/30 transition" title="สลับจุด">
+                <i data-lucide="arrow-up-down" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">จุดปลายทาง (Destination)</label>
+              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"></select>
+            </div>
+          </div>
+
+          <div id="p2pResultCard" class="bg-gradient-to-br from-blue-950 to-slate-900 border border-blue-500/40 rounded-xl p-4 text-center space-y-1 shadow-lg">
+            <p class="text-xs text-blue-300">ระยะทางตามเส้นทางถนนจริง</p>
+            <div class="text-3xl font-bold text-white"><span id="p2pKm">--</span> <span class="text-base font-normal text-slate-400">km</span></div>
+            <p class="text-xs text-slate-400">เวลาเดินทางโดยประมาณ: <span id="p2pTime" class="text-slate-200 font-medium">-- นาที</span></p>
+          </div>
+        </div>
+
+        <!-- TAB 3: Custom Multi-Stop Trip Planner -->
+        <div id="panel-trip" class="hidden space-y-4">
+          <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-slate-200">เลือกจุดแวะชาร์จตามลำดับ</span>
+              <button onclick="clearTrip()" class="text-xs text-rose-400 hover:underline">ล้างทั้งหมด</button>
+            </div>
+            <p class="text-[11px] text-slate-400">คลิกเลือกคลังสินค้าและสถานี Blue Dot เพื่อคำนวณระยะทางรวม 1 รอบวิ่ง</p>
+            <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-36 overflow-y-auto custom-scrollbar"></div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-xs font-semibold text-slate-400">ลำดับเส้นทางที่ลูกค้าเลือก (<span id="tripCount">0</span> จุด)</h4>
+            <div id="tripStopsList" class="space-y-2"></div>
+          </div>
+
+          <div id="tripSummaryBox" class="hidden bg-blue-950/60 border border-blue-500/40 rounded-xl p-3.5 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-blue-200">ระยะทางรวมทั้งทริป:</span>
+              <span class="text-xl font-bold text-sky-400"><span id="tripTotalKm">0</span> km</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">เวลารวมโดยประมาณ:</span>
+              <span class="text-slate-200 font-medium"><span id="tripTotalMin">0</span> นาที</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Pin Management -->
+        <div id="panel-pins" class="hidden space-y-4">
+          <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-xs text-blue-200 space-y-1">
+            <p class="font-semibold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-blue-400"></i> เพิ่มคลังสินค้าลูกค้า / แก้ไขพิกัด</p>
+            <p class="text-blue-200/80">• กดเปิด <b>"โหมดปักหมุดเอง"</b> ด้านบนขวา แล้วคลิกจุดบน Google Maps เพื่อปักตำแหน่งคลังสินค้าของลูกค้าเพิ่มเติมได้ทันที</p>
+          </div>
+
+          <form onsubmit="saveLocationForm(event)" class="bg-slate-800/70 border border-slate-700 rounded-xl p-3.5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 id="formTitle" class="text-xs font-bold text-white uppercase">เพิ่มพิกัดคลังสินค้า / สถานีชาร์จ</h4>
+              <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-amber-400 hover:underline">ยกเลิกการแก้ไข</button>
+            </div>
+            <input type="hidden" id="editId" value="" />
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">ประเภทจุด</label>
+              <select id="pinType" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white">
+                <option value="warehouse">คลังสินค้าลูกค้า (Warehouse)</option>
+                <option value="station">สถานีชาร์จ Blue Dot EV (Charging Station)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">ชื่อสถานที่</label>
+              <input id="pinName" type="text" required placeholder="เช่น คลังสินค้า Linfox ท่านาแล้ง" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Latitude</label>
+                <input id="pinLat" type="number" step="any" required placeholder="17.9045" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Longitude</label>
+                <input id="pinLng" type="number" step="any" required placeholder="102.7112" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">กำลังไฟ (kW)</label>
+                <input id="pinPower" type="text" placeholder="เช่น 180 kW" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">ประเภทหัวชาร์จ</label>
+                <input id="pinConnector" type="text" placeholder="เช่น GB/T + CCS2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">รายละเอียดเพิ่มเติม</label>
+              <input id="pinNote" type="text" placeholder="เช่น 4 Charging Guns" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+            </div>
+            <button type="submit" id="btnSubmitPin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 rounded-lg text-sm transition shadow">
+              บันทึกหมุดลงแผนที่
+            </button>
+          </form>
+
+          <!-- Manage Existing Pins -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-semibold text-slate-400">รายการหมุดทั้งหมด (<span id="totalPinCount">0</span>)</h4>
+              <button onclick="resetDefaultData()" class="text-[11px] text-slate-400 hover:text-white underline">รีเซ็ตค่าเริ่มต้น</button>
+            </div>
+            <div id="allPinsManageList" class="space-y-1.5"></div>
+          </div>
+
+          <!-- Export / Import JSON -->
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+            <button onclick="exportData()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-blue-400"></i> Export ไฟล์พิกัด
+            </button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer">
+              <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-400"></i> Import ไฟล์พิกัด
+              <input type="file" accept=".json" onchange="importData(event)" class="hidden" />
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Map Container -->
+    <main class="flex-1 relative h-1/2 md:h-full">
+      <div id="map"></div>
+
+      <!-- Floating Admin Banner -->
+      <div id="adminBanner" class="hidden absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-amber-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+        <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i>
+        <span>คลิกบน Google Maps ตรงจุดที่ต้องการ เพื่อดึงพิกัด Lat/Lng อัตโนมัติ</span>
+      </div>
+
+      <!-- Floating Legend -->
+      <div class="absolute bottom-5 right-4 z-[1000] bg-slate-950/90 backdrop-blur border border-blue-900/60 rounded-xl p-3 text-xs space-y-1.5 shadow-xl">
+        <div class="font-semibold text-blue-300 mb-1">สัญลักษณ์บนแผนที่</div>
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-amber-500 inline-block ring-2 ring-amber-500/40"></span>
+          <span class="text-slate-200">คลังสินค้าลูกค้า (Warehouse)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-blue-500 inline-block ring-2 ring-blue-500/40"></span>
+          <span class="text-slate-200">สถานีชาร์จ Blue Dot EV</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-1 bg-sky-400 inline-block rounded"></span>
+          <span class="text-slate-200">เส้นทางคำนวณระยะทาง</span>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    const BLUEDOT_LOGO_URL = '';
+
+    // ข้อมูลพิกัดจริงทั้ง 21 สถานีของ Blue Dot EV ในนครหลวงเวียงจันทน์ + คลังสินค้าเริ่มต้น
+    const defaultLocations = [
+      {
+        id: "wh-customer-main",
+        type: "warehouse",
+        name: "คลังสินค้าลูกค้า (แก้ไขตำแหน่งคลังสินค้าจริงได้ในแท็บปักหมุด)",
+        lat: 17.9045,
+        lng: 102.7112,
+        power: "-",
+        connector: "-",
+        note: "จุดอ้างอิงคลังสินค้าของลูกค้า"
+      },
+      {
+        id: "loc-1795421391963",
+        type: "station",
+        name: "KM7 Hub",
+        lat: 18.009939,
+        lng: 102.647811,
+        power: "400 kW",
+        connector: "GB/T + CCS2",
+        note: "8 Charging Guns"
+      },
+      {
+        id: "loc-1795421586747",
+        type: "station",
+        name: "PTT Donnoun",
+        lat: 18.061477,
+        lng: 102.667622,
+        power: "180 kW DC",
+        connector: "GB/T & CCS2",
+        note: ""
+      },
+      {
+        id: "loc-1795421900766",
+        type: "station",
+        name: "Cafe Amazon DongDok",
+        lat: 18.033393,
+        lng: 102.636484,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "loc-1795422161216",
+        type: "station",
+        name: "PTT Nongteng",
+        lat: 18.022178,
+        lng: 102.547236,
+        power: "40 / 180 kW",
+        connector: "GB/T + CCS2",
+        note: "8 Charging Guns"
+      },
+      {
+        id: "loc-1795422384108",
+        type: "station",
+        name: "PTT DonKoy",
+        lat: 17.922054,
+        lng: 102.651047,
+        power: "180 kW",
+        connector: "GB/T + CCS2",
+        note: "2 Charging Guns"
+      },
+      {
+        id: "loc-1795422738469",
+        type: "station",
+        name: "PTT Dongchong",
+        lat: 17.992525,
+        lng: 102.663695,
+        power: "180 kW",
+        connector: "GB/T + CCS2",
+        note: "2 Charging Guns"
+      },
+      {
+        id: "loc-1795423542725",
+        type: "station",
+        name: "Blue Dot EV - Toyota Phonthan",
+        lat: 17.967326,
+        lng: 102.6419,
+        power: "120 kW",
+        connector: "GB/T + CCS2",
+        note: "2 Charging Guns"
+      },
+      {
+        id: "loc-1795423810926",
+        type: "station",
+        name: "PTT SomHong",
+        lat: 17.878762,
+        lng: 102.611889,
+        power: "120 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "loc-1795423998173",
+        type: "station",
+        name: "Kaiyi-BlueDot EV, Dongnaxok",
+        lat: 17.979667,
+        lng: 102.586137,
+        power: "120 kW",
+        connector: "GB/T + GB/T",
+        note: "2 Charging Guns"
+      },
+      {
+        id: "loc-1795424182047",
+        type: "station",
+        name: "BlueDot - Holly Mall, Hatkiang",
+        lat: 18.183859,
+        lng: 102.663021,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "loc-1795424268723",
+        type: "station",
+        name: "BlueDot - Dong Hua Khua Market, Naxaithong",
+        lat: 18.098326,
+        lng: 102.510092,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "loc-1795424978669",
+        type: "station",
+        name: "River Moon Camping, Huayhom",
+        lat: 17.991277,
+        lng: 102.42355,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "loc-1795425042958",
+        type: "station",
+        name: "Kasemrad, Donnokkhoum",
+        lat: 17.939179,
+        lng: 102.642224,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "loc-1795425249623",
+        type: "station",
+        name: "Thongpong Oil Station",
+        lat: 17.994494,
+        lng: 102.533756,
+        power: "40 kW",
+        connector: "GB/T / CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "loc-1795425420046",
+        type: "station",
+        name: "LTC Saiy Lom",
+        lat: 17.969346,
+        lng: 102.61248,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "loc-1795426111349",
+        type: "station",
+        name: "Neko Sushi Restaurant, Tanmixay",
+        lat: 18.037034,
+        lng: 102.621591,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "bd-1795485589147",
+        type: "station",
+        name: "Sokxay Dondaeng",
+        lat: 18.003702,
+        lng: 102.609158,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "bd-1795485788779",
+        type: "station",
+        name: "Shithi Samket",
+        lat: 18.032959,
+        lng: 102.590505,
+        power: "120 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      },
+      {
+        id: "bd-1795485913231",
+        type: "station",
+        name: "ST Bank",
+        lat: 17.971428,
+        lng: 102.566732,
+        power: "180 kW",
+        connector: "GB/T + CCS2",
+        note: "2 Charging Guns"
+      },
+      {
+        id: "bd-1795486085326",
+        type: "station",
+        name: "Daofa Vientiane, Khamsavath",
+        lat: 17.96124,
+        lng: 102.680471,
+        power: "40 kW",
+        connector: "GB/T + CCS2",
+        note: "6 Charging Guns"
+      },
+      {
+        id: "bd-ptt-phontong",
+        type: "station",
+        name: "PTT Phontong",
+        lat: 17.993463,
+        lng: 102.62472,
+        power: "180 kW",
+        connector: "GB/T + CCS2",
+        note: "4 Charging Guns"
+      }
+    ];
+
+    let locations = [...defaultLocations];
+    let adminMode = false;
+    let isHybrid = false;
+    let showLabels = true;
+    let tripStops = [];
+    let markersLayer = L.layerGroup();
+    let routeLayer = L.layerGroup();
+
+    const map = L.map('map').setView([17.995, 102.615], 11);
+
+    const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      attribution: '&copy; Google Maps'
+    });
+
+    const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      attribution: '&copy; Google Maps'
+    });
+
+    googleStreets.addTo(map);
+    markersLayer.addTo(map);
+    routeLayer.addTo(map);
+
+    function toggleMapLayer() {
+      isHybrid = !isHybrid;
+      if (isHybrid) {
+        map.removeLayer(googleStreets);
+        googleHybrid.addTo(map);
+        document.getElementById('mapStyleLabel').textContent = 'แผนที่: ดาวเทียม';
+      } else {
+        map.removeLayer(googleHybrid);
+        googleStreets.addTo(map);
+        document.getElementById('mapStyleLabel').textContent = 'แผนที่: ถนน';
+      }
+    }
+
+    function toggleLabels() {
+      showLabels = !showLabels;
+      document.getElementById('labelToggleText').textContent = showLabels ? 'ชื่อสถานี: แสดง' : 'ชื่อสถานี: ซ่อน';
+      renderMarkers();
+    }
+
+    function fallbackToBolt(imgEl) {
+      const parent = imgEl.parentElement;
+      if (parent) {
+        parent.style.background = '#2563eb';
+        parent.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+      }
+    }
+
+    function createMarkerIcon(type) {
+      const isWh = type === 'warehouse';
+      const hasLogo = !isWh && BLUEDOT_LOGO_URL && BLUEDOT_LOGO_URL.trim() !== '';
+      const bg = isWh ? '#f59e0b' : (hasLogo ? '#ffffff' : '#2563eb');
+      const border = isWh ? '#ffffff' : (hasLogo ? '#2563eb' : '#ffffff');
+      const ring = isWh ? 'rgba(245, 158, 11, 0.35)' : 'rgba(37, 99, 235, 0.4)';
+
+      let innerHtml = '';
+      if (isWh) {
+        innerHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/></svg>';
+      } else if (hasLogo) {
+        innerHtml = `<img src="${BLUEDOT_LOGO_URL}" alt="Blue Dot" style="width:26px; height:26px; object-fit:contain; border-radius:50%;" onerror="fallbackToBolt(this)" />`;
+      } else {
+        innerHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+      }
+
+      return L.divIcon({
+        className: 'custom-pin',
+        html: `<div style="background:${bg}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid ${border}; box-shadow:0 0 0 5px ${ring}, 0 4px 12px rgba(0,0,0,0.45); overflow:hidden;">${innerHtml}</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18]
+      });
+    }
+
+    function renderMarkers() {
+      markersLayer.clearLayers();
+      locations.forEach(loc => {
+        const marker = L.marker([loc.lat, loc.lng], { icon: createMarkerIcon(loc.type) });
+
+        if (showLabels) {
+          const shortName = loc.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim();
+          marker.bindTooltip(shortName, {
+            permanent: true,
+            direction: 'bottom',
+            offset: [0, 14],
+            className: 'station-label'
+          });
+        }
+
+        const badge = loc.type === 'warehouse'
+          ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">คลังสินค้าลูกค้า</span>`
+          : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">BLUE DOT EV CHARGER</span>`;
+
+        const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+        const actionBtn = loc.type === 'station'
+          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium py-1.5 px-3 rounded-lg transition">ดูเส้นทาง & ระยะทางจากคลัง</button>`
+          : '';
+
+        marker.bindPopup(`
+          <div class="min-w-[235px] space-y-1.5 p-1">
+            ${badge}
+            <h3 class="font-bold text-sm text-white leading-snug pt-0.5">${loc.name}</h3>
+            ${loc.type === 'station' ? `
+              <div class="flex justify-between text-xs pt-1 border-t border-slate-800">
+                <span class="text-sky-400 font-semibold">${loc.power}</span>
+                <span class="text-emerald-400 font-medium">${loc.connector}</span>
+              </div>
+            ` : ''}
+            <p class="text-[11px] text-slate-400">พิกัด: ${Number(loc.lat).toFixed(6)}, ${Number(loc.lng).toFixed(6)}</p>
+            ${loc.note ? `<p class="text-xs text-slate-300">${loc.note}</p>` : ''}
+            ${actionBtn}
+            <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-slate-800 hover:bg-slate-700 text-sky-300 text-[11px] font-medium py-1.5 px-3 rounded-lg border border-slate-700 transition">
+              เปิดนำทางในแอป Google Maps ↗
+            </a>
+          </div>
+        `);
+        markersLayer.addLayer(marker);
+      });
+    }
+
+    function getHaversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    async function fetchRoadRoute(coordsArray) {
+      const coordString = coordsArray.map(c => `${c.lng},${c.lat}`).join(';');
+      try {
+        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
+        if (!res.ok) throw new Error('OSRM failed');
+        const data = await res.json();
+        if (data.routes && data.routes.length > 0) {
+          const r = data.routes[0];
+          return {
+            km: (r.distance / 1000),
+            min: Math.round(r.duration / 60),
+            geometry: r.geometry
+          };
+        }
+      } catch (e) {
+        let totalKm = 0;
+        for (let i = 0; i < coordsArray.length - 1; i++) {
+          totalKm += getHaversineKm(coordsArray[i].lat, coordsArray[i].lng, coordsArray[i+1].lat, coordsArray[i+1].lng) * 1.25;
+        }
+        return {
+          km: totalKm,
+          min: Math.round((totalKm / 40) * 60),
+          geometry: {
+            type: 'LineString',
+            coordinates: coordsArray.map(c => [c.lng, c.lat])
+          }
+        };
+      }
+    }
+
+    function drawRouteOnMap(geometry, color = '#2563eb') {
+      routeLayer.clearLayers();
+      const geoLayer = L.geoJSON(geometry, {
+        style: { color: color, weight: 5, opacity: 0.9 }
+      });
+      routeLayer.addLayer(geoLayer);
+      map.fitBounds(geoLayer.getBounds(), { padding: [55, 55] });
+    }
+
+    function refreshAllUI() {
+      renderMarkers();
+
+      const warehouses = locations.filter(l => l.type === 'warehouse');
+      const stations = locations.filter(l => l.type === 'station');
+      document.getElementById('totalPinCount').textContent = locations.length;
+
+      const whSelect = document.getElementById('selectWarehouse');
+      whSelect.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+
+      const allOptions = locations.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'คลัง' : 'Blue Dot'}] ${l.name}</option>`).join('');
+      const p2pOrigin = document.getElementById('p2pOrigin');
+      const p2pDest = document.getElementById('p2pDest');
+      const prevO = p2pOrigin.value;
+      const prevD = p2pDest.value;
+      p2pOrigin.innerHTML = allOptions;
+      p2pDest.innerHTML = allOptions;
+      if (prevO && locations.some(l => l.id === prevO)) p2pOrigin.value = prevO;
+      else if (stations.length > 0) p2pOrigin.value = stations[0].id;
+      if (prevD && locations.some(l => l.id === prevD)) p2pDest.value = prevD;
+      else if (stations.length > 1) p2pDest.value = stations[1].id;
+
+      const tripBtns = document.getElementById('tripAvailableButtons');
+      tripBtns.innerHTML = locations.map(l => `
+        <button onclick="addTripStop('${l.id}')" class="text-xs px-2.5 py-1 rounded-lg border ${l.type === 'warehouse' ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20' : 'bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20'} transition">
+          + ${l.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim()}
+        </button>
+      `).join('');
+
+      const manageList = document.getElementById('allPinsManageList');
+      manageList.innerHTML = locations.map(l => `
+        <div class="flex items-center justify-between bg-slate-800/80 border border-slate-700/70 rounded-lg px-3 py-2 text-xs">
+          <div class="truncate pr-2">
+            <span class="${l.type === 'warehouse' ? 'text-amber-400' : 'text-blue-400'} font-bold mr-1">●</span>
+            <span class="text-slate-200">${l.name}</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="editLocation('${l.id}')" class="text-sky-400 hover:text-sky-300 p-1" title="แก้ไขพิกัด/ชื่อ">
+              <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="deleteLocation('${l.id}')" class="text-rose-400 hover:text-rose-300 p-1" title="ลบหมุด">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) lucide.createIcons();
+      updateWarehouseDistances();
+      calculateP2P();
+    }
+
+    async function updateWarehouseDistances() {
+      const whId = document.getElementById('selectWarehouse').value;
+      const wh = locations.find(l => l.id === whId);
+      const stations = locations.filter(l => l.type === 'station');
+      const container = document.getElementById('warehouseStationList');
+
+      if (!wh || stations.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">กรุณาเพิ่มคลังสินค้าและสถานี Blue Dot อย่างน้อยอย่างละ 1 จุด</p>`;
+        return;
+      }
+
+      container.innerHTML = `<p class="text-xs text-blue-300 animate-pulse">กำลังคำนวณระยะทางตามถนนทั้ง 21 สถานี...</p>`;
+
+      const results = await Promise.all(stations.map(async st => {
+        const route = await fetchRoadRoute([wh, st]);
+        return { station: st, route };
+      }));
+
+      results.sort((a, b) => a.route.km - b.route.km);
+
+      container.innerHTML = results.map((item, idx) => `
+        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-slate-800/70 hover:bg-slate-800 border border-slate-700 hover:border-blue-500/60 rounded-xl p-3 transition group">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold bg-blue-600/30 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded">#${idx + 1}</span>
+                <h4 class="font-semibold text-sm text-white group-hover:text-blue-400 transition">${item.station.name}</h4>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">${item.station.power} • ${item.station.connector} ${item.station.note ? `(${item.station.note})` : ''}</p>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-lg font-bold text-sky-400">${item.route.km.toFixed(1)} <span class="text-xs font-normal text-slate-400">km</span></div>
+              <div class="text-[11px] text-slate-400">~${item.route.min} นาที</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function focusRouteFromWarehouse(stationId) {
+      const whId = document.getElementById('selectWarehouse').value;
+      const wh = locations.find(l => l.id === whId);
+      const st = locations.find(l => l.id === stationId);
+      if (!wh || !st) return;
+      const route = await fetchRoadRoute([wh, st]);
+      drawRouteOnMap(route.geometry, '#2563eb');
+    }
+
+    async function calculateP2P() {
+      const oId = document.getElementById('p2pOrigin').value;
+      const dId = document.getElementById('p2pDest').value;
+      const origin = locations.find(l => l.id === oId);
+      const dest = locations.find(l => l.id === dId);
+      if (!origin || !dest) return;
+
+      if (origin.id === dest.id) {
+        document.getElementById('p2pKm').textContent = '0.0';
+        document.getElementById('p2pTime').textContent = '0 นาที';
+        routeLayer.clearLayers();
+        return;
+      }
+
+      const route = await fetchRoadRoute([origin, dest]);
+      document.getElementById('p2pKm').textContent = route.km.toFixed(1);
+      document.getElementById('p2pTime').textContent = `${route.min} นาที`;
+      if (!document.getElementById('panel-p2p').classList.contains('hidden')) {
+        drawRouteOnMap(route.geometry, '#0284c7');
+      }
+    }
+
+    function swapP2P() {
+      const o = document.getElementById('p2pOrigin');
+      const d = document.getElementById('p2pDest');
+      const temp = o.value;
+      o.value = d.value;
+      d.value = temp;
+      calculateP2P();
+    }
+
+    function addTripStop(locId) {
+      const loc = locations.find(l => l.id === locId);
+      if (loc) {
+        tripStops.push(loc);
+        renderTripStops();
+      }
+    }
+
+    function removeTripStop(index) {
+      tripStops.splice(index, 1);
+      renderTripStops();
+    }
+
+    function clearTrip() {
+      tripStops = [];
+      routeLayer.clearLayers();
+      renderTripStops();
+    }
+
+    async function renderTripStops() {
+      document.getElementById('tripCount').textContent = tripStops.length;
+      const list = document.getElementById('tripStopsList');
+      const summaryBox = document.getElementById('tripSummaryBox');
+
+      if (tripStops.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 italic">ยังไม่ได้เลือกจุดแวะในเส้นทาง</p>`;
+        summaryBox.classList.add('hidden');
+        return;
+      }
+
+      list.innerHTML = tripStops.map((stop, i) => `
+        <div class="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+          <div class="flex items-center gap-2 truncate">
+            <span class="w-5 h-5 rounded-full bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center shrink-0">${i + 1}</span>
+            <span class="truncate text-slate-200">${stop.name}</span>
+          </div>
+          <button onclick="removeTripStop(${i})" class="text-slate-400 hover:text-rose-400 ml-2">✕</button>
+        </div>
+      `).join('');
+
+      if (tripStops.length >= 2) {
+        const route = await fetchRoadRoute(tripStops);
+        document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
+        document.getElementById('tripTotalMin').textContent = route.min;
+        summaryBox.classList.remove('hidden');
+        drawRouteOnMap(route.geometry, '#2563eb');
+      } else {
+        summaryBox.classList.add('hidden');
+      }
+    }
+
+    function switchTab(tabName) {
+      ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
+        document.getElementById(`panel-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        btn.classList.remove('border-blue-500', 'text-blue-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.add('border-blue-500', 'text-blue-400');
+      activeBtn.classList.remove('border-transparent', 'text-slate-400');
+
+      if (tabName === 'p2p') calculateP2P();
+      if (tabName === 'trip' && tripStops.length >= 2) renderTripStops();
+    }
+
+    function toggleAdminMode() {
+      adminMode = !adminMode;
+      const banner = document.getElementById('adminBanner');
+      const label = document.getElementById('modeLabel');
+      if (adminMode) {
+        banner.classList.remove('hidden');
+        label.textContent = 'โหมดปักหมุดเอง: เปิด';
+        switchTab('pins');
+      } else {
+        banner.classList.add('hidden');
+        label.textContent = 'โหมดปักหมุดเอง: ปิด';
+      }
+    }
+
+    map.on('click', function(e) {
+      if (!adminMode) return;
+      document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('pinLng').value = e.latlng.lng.toFixed(6);
+      document.getElementById('pinName').focus();
+    });
+
+    function editLocation(id) {
+      const loc = locations.find(l => l.id === id);
+      if (!loc) return;
+      document.getElementById('editId').value = loc.id;
+      document.getElementById('pinType').value = loc.type;
+      document.getElementById('pinName').value = loc.name;
+      document.getElementById('pinLat').value = loc.lat;
+      document.getElementById('pinLng').value = loc.lng;
+      document.getElementById('pinPower').value = loc.power === '-' ? '' : loc.power;
+      document.getElementById('pinConnector').value = loc.connector === '-' ? '' : loc.connector;
+      document.getElementById('pinNote').value = loc.note || '';
+
+      document.getElementById('formTitle').textContent = 'แก้ไขข้อมูลพิกัดสถานที่';
+      document.getElementById('btnSubmitPin').textContent = 'อัปเดตข้อมูลหมุด';
+      document.getElementById('btnCancelEdit').classList.remove('hidden');
+      map.setView([loc.lat, loc.lng], 15);
+    }
+
+    function cancelEdit() {
+      document.getElementById('editId').value = '';
+      document.getElementById('pinName').value = '';
+      document.getElementById('pinLat').value = '';
+      document.getElementById('pinLng').value = '';
+      document.getElementById('pinPower').value = '';
+      document.getElementById('pinConnector').value = '';
+      document.getElementById('pinNote').value = '';
+      document.getElementById('formTitle').textContent = 'เพิ่มพิกัดคลังสินค้า / สถานีชาร์จ';
+      document.getElementById('btnSubmitPin').textContent = 'บันทึกหมุดลงแผนที่';
+      document.getElementById('btnCancelEdit').classList.add('hidden');
+    }
+
+    function saveLocationForm(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editId').value;
+      const locData = {
+        id: editId || ('bd-' + Date.now()),
+        type: document.getElementById('pinType').value,
+        name: document.getElementById('pinName').value.trim(),
+        lat: parseFloat(document.getElementById('pinLat').value),
+        lng: parseFloat(document.getElementById('pinLng').value),
+        power: document.getElementById('pinPower').value.trim() || '120 kW',
+        connector: document.getElementById('pinConnector').value.trim() || 'GB/T + CCS2',
+        note: document.getElementById('pinNote').value.trim()
+      };
+
+      if (editId) {
+        const idx = locations.findIndex(l => l.id === editId);
+        if (idx !== -1) locations[idx] = locData;
+      } else {
+        locations.push(locData);
+      }
+
+      cancelEdit();
+      refreshAllUI();
+      map.setView([locData.lat, locData.lng], 14);
+    }
+
+    function deleteLocation(id) {
+      if (!confirm('ต้องการลบหมุดนี้ใช่หรือไม่?')) return;
+      locations = locations.filter(l => l.id !== id);
+      refreshAllUI();
+    }
+
+    function resetDefaultData() {
+      if (!confirm('รีเซ็ตข้อมูลกลับเป็น 21 สถานีหลักของ Blue Dot EV ใช่หรือไม่?')) return;
+      locations = [...defaultLocations];
+      cancelEdit();
+      refreshAllUI();
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(locations, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bluedot-ev-vientiane.json';
+      a.click();
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            locations = imported;
+            refreshAllUI();
+            alert('นำเข้าข้อมูลสถานี Blue Dot สำเร็จ!');
+          }
+        } catch (err) {
+          alert('ไฟล์ JSON ไม่ถูกต้อง');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    refreshAllUI();
+  </script>
+</body>
+</html>
