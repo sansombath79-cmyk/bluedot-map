@@ -70,6 +70,41 @@
     </div>
   </header>
 
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-blue-800/70 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-white">Admin Authentication</h3>
+            <p class="text-[11px] text-slate-400">Sign in to manage live station pins</p>
+          </div>
+        </div>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="submitAdminLogin(event)" class="space-y-3">
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Admin Email</label>
+          <input id="adminEmailInput" type="email" required placeholder="admin@bluedotev.la" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Password</label>
+          <input id="adminPasswordInput" type="password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <p id="adminLoginError" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2"></p>
+        <button type="submit" id="btnLoginSubmit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow">
+          Sign In as Admin
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Main Workspace -->
   <div class="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
     
@@ -203,7 +238,7 @@
         <!-- TAB 4: Admin Real-Time Cloud Management -->
         <div id="panel-pins" class="hidden space-y-3 pb-6">
           <div class="bg-amber-500/15 border border-amber-500/40 rounded-xl p-2.5 text-xs text-amber-200 flex items-center justify-between">
-            <span><b>Admin Mode:</b> Syncs live to all users.</span>
+            <span><b>Admin Authenticated:</b> Live sync active.</span>
             <button onclick="toggleMapClickPin()" id="btnMapPick" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold text-[11px]">
               Pick on Map: OFF
             </button>
@@ -301,23 +336,27 @@
 
   </div>
 
-  <!-- Firebase Compat SDKs for Live Real-Time Sync -->
+  <!-- Firebase Compat SDKs (App, Auth, Realtime Database) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
     // ==========================================
-    // ADMIN SETTINGS & FIREBASE CONFIGURATION
+    // FIREBASE CONFIGURATION (bluedot-ev-map)
     // ==========================================
-    const ADMIN_PIN = "1234";
-    const BLUEDOT_LOGO_URL = "";
-
     const firebaseConfig = {
+      apiKey: "AIzaSyCD8TEJWTKRGt09UsulkHVbO-RDP3or5ro",
+      authDomain: "bluedot-ev-map.firebaseapp.com",
+      databaseURL: "https://bluedot-ev-map-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "bluedot-ev-map",
-      databaseURL: "https://bluedot-ev-map-default-rtdb.asia-southeast1.firebasedatabase.app"
+      storageBucket: "bluedot-ev-map.firebasestorage.app",
+      messagingSenderId: "895654718793",
+      appId: "1:895654718793:web:0a38c6ec8c1e5f180f7e98"
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
     const locationsRef = db.ref("locations");
 
@@ -376,33 +415,63 @@
     markersLayer.addTo(map);
     routeLayer.addTo(map);
 
+    // Firebase Auth State Observer
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        isAdmin = true;
+        document.getElementById('tab-pins').classList.remove('hidden');
+        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-slate-800 bg-slate-950/70 text-xs font-medium shrink-0";
+        document.getElementById('adminAuthLabel').textContent = "Admin ON";
+        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 border border-amber-400 transition";
+        
+        // Auto-seed database on first admin login if empty
+        locationsRef.once("value").then((snap) => {
+          if (!snap.exists()) {
+            seedInitialDatabase(false);
+          }
+        });
+      } else {
+        isAdmin = false;
+        mapPickMode = false;
+        document.getElementById('adminBanner').classList.add('hidden');
+        document.getElementById('tab-pins').classList.add('hidden');
+        document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-slate-800 bg-slate-950/70 text-xs font-medium shrink-0";
+        document.getElementById('adminAuthLabel').textContent = "Admin";
+        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 border border-slate-600 transition";
+        if (currentTab === 'pins') switchTab('warehouse');
+      }
+      if (window.lucide) lucide.createIcons();
+    });
+
     // Real-Time Firebase Listener
     locationsRef.on("value", (snapshot) => {
       const data = snapshot.val();
-      if (!data) {
-        seedInitialDatabase(false);
-      } else {
+      if (data) {
         cloudLocations = Object.keys(data).map(key => ({
           id: key,
           ...data[key]
         }));
-        refreshAllUI();
+      } else {
+        cloudLocations = [...defaultLocations];
       }
+      refreshAllUI();
     }, (error) => {
-      console.warn("Firebase sync fallback to local:", error);
+      console.warn("Firebase read fallback:", error);
       refreshAllUI();
     });
 
     function seedInitialDatabase(askConfirm = true) {
+      if (!isAdmin) return;
       if (askConfirm && !confirm("Overwrite cloud database with the 21 default E-Truck stations?")) return;
       const updates = {};
       defaultLocations.forEach(loc => {
         updates[loc.id] = loc;
       });
-      locationsRef.set(updates);
+      locationsRef.set(updates)
+        .then(() => { if (askConfirm) alert("Default 21 E-Truck stations published live!"); })
+        .catch(err => alert("Database write error: " + err.message));
     }
 
-    // Exclusive filtering: shows ONLY E-Truck stations OR ONLY Standard EV stations
     function getActiveLocations() {
       const combined = [...localCustomWarehouses, ...cloudLocations];
       return combined.filter(l => {
@@ -434,7 +503,6 @@
         legendText.textContent = "Standard EV Station";
       }
 
-      // Clear active route & trip stops when switching modes so incompatible stations don't stay selected
       tripStops = [];
       routeLayer.clearLayers();
       refreshAllUI();
@@ -442,30 +510,45 @@
 
     function handleAdminAuth() {
       if (isAdmin) {
-        if (confirm("Log out from Admin Mode?")) {
-          isAdmin = false;
-          mapPickMode = false;
-          document.getElementById('adminBanner').classList.add('hidden');
-          document.getElementById('tab-pins').classList.add('hidden');
-          document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-slate-800 bg-slate-950/70 text-xs font-medium shrink-0";
-          document.getElementById('adminAuthLabel').textContent = "Admin";
-          document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 border border-slate-600 transition";
-          if (currentTab === 'pins') switchTab('warehouse');
+        if (confirm("Sign out from Admin Mode?")) {
+          auth.signOut();
         }
         return;
       }
+      document.getElementById('adminLoginError').classList.add('hidden');
+      document.getElementById('adminLoginModal').classList.remove('hidden');
+      document.getElementById('adminEmailInput').focus();
+    }
 
-      const entered = prompt("Enter Admin PIN to edit live stations:");
-      if (entered === ADMIN_PIN) {
-        isAdmin = true;
-        document.getElementById('tab-pins').classList.remove('hidden');
-        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-slate-800 bg-slate-950/70 text-xs font-medium shrink-0";
-        document.getElementById('adminAuthLabel').textContent = "Admin ON";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 border border-amber-400 transition";
-        switchTab('pins');
-      } else if (entered !== null) {
-        alert("Incorrect Admin PIN.");
-      }
+    function closeAdminModal() {
+      document.getElementById('adminLoginModal').classList.add('hidden');
+    }
+
+    function submitAdminLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('adminEmailInput').value.trim();
+      const password = document.getElementById('adminPasswordInput').value;
+      const errBox = document.getElementById('adminLoginError');
+      const btn = document.getElementById('btnLoginSubmit');
+
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
+      errBox.classList.add('hidden');
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          btn.disabled = false;
+          btn.textContent = "Sign In as Admin";
+          document.getElementById('adminPasswordInput').value = "";
+          closeAdminModal();
+          switchTab('pins');
+        })
+        .catch((err) => {
+          btn.disabled = false;
+          btn.textContent = "Sign In as Admin";
+          errBox.textContent = "Login failed: " + err.message;
+          errBox.classList.remove('hidden');
+        });
     }
 
     function toggleMapClickPin() {
