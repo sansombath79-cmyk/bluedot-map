@@ -9,11 +9,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; }
+    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
     #map { height: 100%; width: 100%; z-index: 1; }
-    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f0f9ff; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #7dd3fc; border-radius: 3px; }
     .leaflet-popup-content-wrapper {
@@ -21,7 +21,7 @@
       color: #0c4a6e;
       border: 1.5px solid #38bdf8;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.16);
+      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.18);
     }
     .leaflet-popup-tip { background-color: #ffffff; }
     .station-label {
@@ -29,11 +29,11 @@
       color: #0369a1;
       border: 1px solid #38bdf8;
       border-radius: 8px;
-      padding: 2px 7px;
+      padding: 2px 6px;
       font-size: 10px;
       font-weight: 600;
       font-family: 'Inter', sans-serif;
-      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.14);
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.15);
       white-space: nowrap;
     }
     .station-label::before { display: none; }
@@ -42,13 +42,13 @@
 <body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden">
 
   <!-- Ocean Sky Blue & White Header -->
-  <header class="bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-3.5 py-2.5 flex items-center justify-between z-30 shrink-0 shadow-sm">
-    <div class="flex items-center gap-2.5 min-w-0">
-      <img src="blue.png" alt="Blue Dot EV" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
+  <header class="bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-3 py-2 flex items-center justify-between z-30 shrink-0 shadow-sm">
+    <div class="flex items-center gap-2 min-w-0">
+      <img src="blue.png" alt="Blue Dot EV" class="w-8 h-8 md:w-9 md:h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
       <div class="min-w-0">
         <div class="flex items-center gap-1.5">
-          <h1 class="font-bold text-base md:text-lg text-white tracking-wide truncate">BLUE DOT EV</h1>
-          <span id="liveBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/25 text-white border border-white/40 flex items-center gap-1 shrink-0">
+          <h1 class="font-bold text-sm md:text-lg text-white tracking-wide truncate">BLUE DOT EV</h1>
+          <span id="liveBadge" class="text-[9px] md:text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/25 text-white border border-white/40 flex items-center gap-1 shrink-0">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-ping"></span> LIVE
           </span>
         </div>
@@ -57,12 +57,12 @@
     </div>
 
     <div class="flex items-center gap-1.5 shrink-0">
-      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/40 transition" title="Use Current GPS Location">
-        <i data-lucide="locate-fixed" class="w-4 h-4"></i>
-        <span>My GPS</span>
+      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/40 transition" title="Use Current GPS Location">
+        <i data-lucide="locate-fixed" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+        <span>GPS</span>
       </button>
 
-      <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
+      <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
         <i id="adminLockIcon" data-lucide="lock" class="w-3.5 h-3.5 text-[#0284c7]"></i>
         <span id="adminAuthLabel">Admin</span>
       </button>
@@ -70,7 +70,7 @@
   </header>
 
   <!-- Admin Login Modal -->
-  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-sky-950/35 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-sky-950/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white border border-sky-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
@@ -107,125 +107,129 @@
   <!-- Main Workspace -->
   <div class="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
     
-    <!-- Bottom Sheet / Left Sidebar (Clean White & Sky Blue) -->
-    <aside id="controlPanel" class="w-full md:w-[430px] bg-white border-t md:border-t-0 md:border-r border-sky-100 flex flex-col h-[56%] md:h-full z-20 shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-8px_25px_rgba(14,165,233,0.12)] md:shadow-none">
+    <!-- Bottom Sheet / Left Sidebar (Mobile-Optimized) -->
+    <aside id="controlPanel" class="w-full md:w-[430px] bg-white border-t md:border-t-0 md:border-r border-sky-100 flex flex-col h-[52%] md:h-full z-20 shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-8px_25px_rgba(14,165,233,0.14)] md:shadow-none">
       
-      <!-- Mobile Sheet Drag / Expand Toggle Bar -->
-      <div class="md:hidden flex items-center justify-between px-4 py-2 border-b border-sky-100 bg-white rounded-t-3xl">
-        <span class="text-[11px] text-slate-500 font-medium">Distance Calculator & Stations</span>
-        <button onclick="toggleSheetHeight()" class="flex items-center gap-1 text-xs font-semibold text-[#0284c7] py-1 px-2.5 rounded-lg bg-sky-50 border border-sky-200">
-          <i id="sheetToggleIcon" data-lucide="chevrons-down" class="w-3.5 h-3.5"></i>
-          <span id="sheetToggleText">Minimize / Expand Map</span>
-        </button>
+      <!-- Mobile 3-Level View Switcher (Map Full / Split / List Full) -->
+      <div class="md:hidden flex items-center justify-between px-3 py-2 border-b border-sky-100 bg-white rounded-t-3xl shrink-0">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#0ea5e9]"></span>
+          <span class="text-xs font-bold text-slate-700">View Size</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1 bg-sky-50 p-0.5 rounded-xl border border-sky-200/80">
+          <button id="btnViewMap" onclick="setMobileSheetMode('map')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1">
+            <i data-lucide="map" class="w-3 h-3"></i> Map
+          </button>
+          <button id="btnViewSplit" onclick="setMobileSheetMode('split')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0ea5e9] text-white shadow-sm transition flex items-center gap-1">
+            <i data-lucide="columns-2" class="w-3 h-3 rotate-90"></i> Split
+          </button>
+          <button id="btnViewList" onclick="setMobileSheetMode('list')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1">
+            <i data-lucide="list" class="w-3 h-3"></i> List
+          </button>
+        </div>
       </div>
 
       <!-- 3-Option Vehicle Mode Selector (All Stations / E-Truck / Standard EV) -->
-      <div class="px-3.5 py-2.5 bg-white border-b border-sky-100 shrink-0">
+      <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0">
         <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
-          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
+          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
             <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">All (<span id="countAllStations">0</span>)</span>
           </button>
-          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
+          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">E-Truck (<span id="countTruckStations">0</span>)</span>
+            <span class="truncate">Truck (<span id="countTruckStations">0</span>)</span>
           </button>
-          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
+          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">Standard (<span id="countStandardStations">0</span>)</span>
+            <span class="truncate">EV (<span id="countStandardStations">0</span>)</span>
           </button>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
       <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0">
-        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2.5 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex flex-col items-center justify-center gap-1 min-h-[50px]">
+        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex items-center justify-center gap-1.5 min-h-[42px]">
           <i data-lucide="warehouse" class="w-4 h-4"></i>
-          <span>Warehouse</span>
+          <span>Nearest</span>
         </button>
-        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2.5 px-1 border-b-2 border-transparent text-slate-500 flex flex-col items-center justify-center gap-1 min-h-[50px]">
+        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[42px]">
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>Point-to-Point</span>
+          <span>Route</span>
         </button>
-        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2.5 px-1 border-b-2 border-transparent text-slate-500 flex flex-col items-center justify-center gap-1 min-h-[50px]">
+        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[42px]">
           <i data-lucide="route" class="w-4 h-4"></i>
-          <span>Trip Planner</span>
+          <span>Multi-Stop</span>
         </button>
-        <button onclick="switchTab('pins')" id="tab-pins" class="hidden tab-btn py-2.5 px-1 border-b-2 border-transparent text-amber-600 flex flex-col items-center justify-center gap-1 min-h-[50px]">
+        <button onclick="switchTab('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[42px]">
           <i data-lucide="settings-2" class="w-4 h-4"></i>
-          <span>Admin Edit</span>
+          <span>Admin</span>
         </button>
       </div>
 
       <!-- Tab Content Container -->
-      <div class="flex-1 overflow-y-auto p-3.5 custom-scrollbar space-y-3 bg-[#f7fcff]">
+      <div class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5 bg-[#f7fcff]">
 
-        <!-- TAB 1: Warehouse to Blue Dot Stations -->
-        <div id="panel-warehouse" class="space-y-3">
-          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
-            <div>
-              <label class="text-[11px] font-medium text-slate-500 block mb-1">Starting Point (Warehouse / Current Location)</label>
-              <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
+        <!-- TAB 1: Warehouse / Starting Point to Blue Dot Stations -->
+        <div id="panel-warehouse" class="space-y-2.5">
+          <div class="bg-white border border-sky-200/80 rounded-2xl p-2.5 space-y-2 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <label class="text-[11px] font-semibold text-slate-500">From:</label>
+              <button onclick="promptCustomWarehouse()" class="text-[11px] font-semibold text-[#0284c7] flex items-center gap-1 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200">
+                <i data-lucide="map-pin" class="w-3 h-3"></i> Custom Lat/Lng
+              </button>
             </div>
-            <button onclick="promptCustomWarehouse()" class="w-full py-2 px-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-[#0284c7] text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Set Custom Warehouse Coordinates
-            </button>
+            <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-sky-50/60 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
           </div>
 
           <div class="flex items-center justify-between px-1">
-            <h3 class="text-xs font-bold text-slate-700">Stations (<span id="listModeLabel">All Stations</span> • Nearest First)</h3>
-            <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap to view route</span>
+            <h3 class="text-xs font-bold text-slate-700"><span id="listModeLabel">All Stations</span> (Nearest First)</h3>
+            <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap card for map route</span>
           </div>
 
-          <div id="warehouseStationList" class="space-y-2.5 pb-4"></div>
+          <div id="warehouseStationList" class="space-y-2 pb-6"></div>
         </div>
 
         <!-- TAB 2: Station to Station (With up to 4 Waypoints / Stops) -->
-        <div id="panel-p2p" class="hidden space-y-3 pb-4">
-          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-[#0369a1]">
-            The map displays Origin, up to 4 Waypoint Stops, and Destination pins along the route.
-          </div>
+        <div id="panel-p2p" class="hidden space-y-2.5 pb-6">
           <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div>
-              <label class="text-[11px] font-semibold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
-              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
+              <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
+              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
             </div>
 
             <!-- Dynamic Waypoint Stops Container (Max 4 Stops) -->
             <div id="p2pWaypointsContainer" class="space-y-2"></div>
 
-            <div class="flex items-center justify-center gap-2 pt-0.5">
-              <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="px-3.5 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center gap-1 transition">
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+              <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="py-2 px-2.5 rounded-xl bg-sky-50 active:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
                 <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Add Stop (<span id="p2pWaypointCount">0</span>/4)
               </button>
-              <button type="button" onclick="swapP2P()" class="px-3.5 py-1.5 rounded-full bg-white hover:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center gap-1 transition">
+              <button type="button" onclick="swapP2P()" class="py-2 px-2.5 rounded-xl bg-white active:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
                 <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Swap Ends
               </button>
             </div>
 
             <div>
-              <label class="text-[11px] font-semibold text-[#0284c7] block mb-1">Destination (จุดหมายปลายทาง)</label>
-              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-sky-50/40 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]"></select>
+              <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Destination (จุดหมายปลายทาง)</label>
+              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
             </div>
           </div>
 
           <!-- White & Ocean Sky Blue Result Card -->
-          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-4 text-center space-y-1 shadow-sm">
-            <p class="text-xs font-semibold text-[#0369a1]">Total Driving Distance (<span id="p2pLegCount">Direct Route</span>)</p>
+          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 text-center space-y-0.5 shadow-sm">
+            <p class="text-[11px] font-semibold text-[#0369a1]">Total Distance (<span id="p2pLegCount">Direct Route</span>)</p>
             <div class="text-3xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-base font-medium text-sky-600">km</span></div>
-            <p class="text-xs text-slate-600">Estimated Travel Time: <span id="p2pTime" class="text-slate-900 font-bold">-- min</span></p>
+            <p class="text-xs text-slate-600">Est. Time: <span id="p2pTime" class="text-slate-900 font-bold">-- min</span></p>
           </div>
         </div>
 
         <!-- TAB 3: Custom Multi-Stop Trip Planner -->
-        <div id="panel-trip" class="hidden space-y-3 pb-4">
-          <div class="bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-[11px] text-[#0369a1]">
-            The map displays only the stops added to your custom route below.
-          </div>
+        <div id="panel-trip" class="hidden space-y-2.5 pb-6">
           <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-700">Tap to add stops in sequence</span>
-              <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200">Clear All</button>
+              <span class="text-xs font-bold text-slate-700">Tap stations to add stops</span>
+              <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200">Clear</button>
             </div>
             <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
           </div>
@@ -235,13 +239,13 @@
             <div id="tripStopsList" class="space-y-1.5"></div>
           </div>
 
-          <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-1.5 shadow-sm">
+          <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-1 shadow-sm">
             <div class="flex justify-between items-center">
               <span class="text-xs font-semibold text-[#0369a1]">Total Trip Distance:</span>
               <span class="text-xl font-bold text-[#0284c7]"><span id="tripTotalKm">0</span> km</span>
             </div>
             <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-600">Estimated Total Time:</span>
+              <span class="text-slate-600">Est. Total Time:</span>
               <span class="text-slate-900 font-bold"><span id="tripTotalMin">0</span> min</span>
             </div>
           </div>
@@ -250,7 +254,7 @@
         <!-- TAB 4: Admin Real-Time Cloud Management -->
         <div id="panel-pins" class="hidden space-y-3 pb-6">
           <div class="bg-sky-50 border border-sky-200 rounded-2xl p-2.5 text-xs text-slate-700 flex items-center justify-between">
-            <span><b>Admin Authenticated:</b> Live sync active.</span>
+            <span><b>Admin Mode:</b> Live sync active.</span>
             <button onclick="toggleMapClickPin()" id="btnMapPick" class="px-2.5 py-1 rounded-lg bg-[#0ea5e9] text-white font-semibold text-[11px] shadow-sm">
               Pick on Map: OFF
             </button>
@@ -291,11 +295,11 @@
 
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <h4 class="text-xs font-bold text-slate-700">Live Database Locations (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All Stations (Keep Warehouse)</button>
+              <h4 class="text-xs font-bold text-slate-700">Live Database (<span id="totalPinCount">0</span>)</h4>
+              <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All Stations</button>
             </div>
             <div class="pt-1">
-              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name to edit..." class="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
+              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name..." class="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
             </div>
             <div id="allPinsManageList" class="space-y-1.5"></div>
           </div>
@@ -305,7 +309,7 @@
               <i data-lucide="download" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Backup JSON
             </button>
             <label class="bg-white text-slate-700 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm cursor-pointer">
-              <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> Import JSON to Cloud
+              <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> Import JSON
               <input type="file" accept=".json" onchange="importDataToCloud(event)" class="hidden" />
             </label>
           </div>
@@ -315,40 +319,40 @@
     </aside>
 
     <!-- Map Container -->
-    <main id="mapWrapper" class="flex-1 relative h-[44%] md:h-full transition-all duration-300">
+    <main id="mapWrapper" class="flex-1 relative h-[48%] md:h-full transition-all duration-300">
       <div id="map"></div>
 
-      <!-- Floating Map Controls (Clean White Pill Style) -->
-      <div class="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
-        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+      <!-- Thumb-Friendly Map Controls (Bottom Right on Mobile, Top Right on Desktop) -->
+      <div class="absolute bottom-3 md:bottom-auto md:top-3 right-3 z-[1000] flex flex-col gap-1.5">
+        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
           <i data-lucide="tag" class="w-3.5 h-3.5 text-[#0ea5e9]"></i>
           <span id="labelToggleText">Labels: On</span>
         </button>
-        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-[#0284c7]"></i>
-          <span id="mapStyleLabel">Map: Street</span>
+          <span id="mapStyleLabel">Street</span>
         </button>
       </div>
 
       <!-- Floating Admin Banner -->
-      <div id="adminBanner" class="hidden absolute top-3 left-3 right-32 z-[1000] bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
+      <div id="adminBanner" class="hidden absolute top-3 left-3 right-3 z-[1000] bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
         <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i>
-        <span>Tap on map to pick Lat/Lng</span>
+        <span>Tap anywhere on the map to pick Lat/Lng</span>
       </div>
 
       <!-- Compact Legend -->
-      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-3 py-2 text-[11px] font-medium flex items-center gap-3 shadow-md">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-          <span class="text-slate-700">Warehouse</span>
+      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-2.5 py-1.5 text-[10px] md:text-[11px] font-medium flex items-center gap-2.5 shadow-md">
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
+          <span class="text-slate-700">Hub</span>
         </div>
-        <div id="legendTruckItem" class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#0284c7] inline-block"></span>
-          <span class="text-slate-700">E-Truck</span>
+        <div id="legendTruckItem" class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-[#0284c7] inline-block"></span>
+          <span class="text-slate-700">Truck</span>
         </div>
-        <div id="legendStdItem" class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8] inline-block"></span>
-          <span class="text-slate-700">Standard EV</span>
+        <div id="legendStdItem" class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-[#38bdf8] inline-block"></span>
+          <span class="text-slate-700">EV</span>
         </div>
       </div>
     </main>
@@ -392,7 +396,7 @@
     let mapPickMode = false;
     let isHybrid = false;
     let showLabels = true;
-    let isSheetCollapsed = false;
+    let mobileSheetMode = 'split'; // 'map' | 'split' | 'list'
     let tripStops = [];
     let p2pWaypoints = [];
     let markersLayer = L.layerGroup();
@@ -414,6 +418,36 @@
     markersLayer.addTo(map);
     routeLayer.addTo(map);
 
+    // Mobile 3-Level Sheet Mode Controller
+    function setMobileSheetMode(mode) {
+      if (window.innerWidth >= 768) return; // Desktop uses side-by-side layout
+      mobileSheetMode = mode;
+      const panel = document.getElementById('controlPanel');
+      const mapWrap = document.getElementById('mapWrapper');
+      const btnMap = document.getElementById('btnViewMap');
+      const btnSplit = document.getElementById('btnViewSplit');
+      const btnList = document.getElementById('btnViewList');
+
+      const activeCls = "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0ea5e9] text-white shadow-sm transition flex items-center gap-1";
+      const inactiveCls = "px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1";
+
+      btnMap.className = mode === 'map' ? activeCls : inactiveCls;
+      btnSplit.className = mode === 'split' ? activeCls : inactiveCls;
+      btnList.className = mode === 'list' ? activeCls : inactiveCls;
+
+      if (mode === 'map') {
+        panel.style.height = '136px';
+        mapWrap.style.height = 'calc(100% - 136px)';
+      } else if (mode === 'list') {
+        panel.style.height = '82%';
+        mapWrap.style.height = '18%';
+      } else {
+        panel.style.height = '52%';
+        mapWrap.style.height = '48%';
+      }
+      setTimeout(() => map.invalidateSize(), 310);
+    }
+
     // Firebase Auth State Observer
     auth.onAuthStateChanged((user) => {
       if (user) {
@@ -421,7 +455,7 @@
         document.getElementById('tab-pins').classList.remove('hidden');
         document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
         document.getElementById('adminAuthLabel').textContent = "Admin ON";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 shadow-sm transition";
+        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 shadow-sm transition";
         
         locationsRef.once("value").then((snap) => {
           if (!snap.exists()) {
@@ -435,7 +469,7 @@
         document.getElementById('tab-pins').classList.add('hidden');
         document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
         document.getElementById('adminAuthLabel').textContent = "Admin";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition";
+        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition";
         if (currentTab === 'pins') switchTab('warehouse');
       }
       if (window.lucide) lucide.createIcons();
@@ -487,8 +521,8 @@
       const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
 
-      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
-      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition";
+      const activeBlue = "flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
+      const inactive = "flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition";
 
       btnAll.className = mode === 'all' ? activeBlue : inactive;
       btnTruck.className = mode === 'truck' ? activeBlue : inactive;
@@ -554,36 +588,15 @@
       if (mapPickMode) {
         btn.textContent = "Pick on Map: ON";
         banner.classList.remove('hidden');
+        setMobileSheetMode('map');
       } else {
         btn.textContent = "Pick on Map: OFF";
         banner.classList.add('hidden');
       }
     }
 
-    function toggleSheetHeight(forceExpand = false) {
-      const panel = document.getElementById('controlPanel');
-      const mapWrap = document.getElementById('mapWrapper');
-      const text = document.getElementById('sheetToggleText');
-      if (forceExpand) {
-        isSheetCollapsed = false;
-      } else {
-        isSheetCollapsed = !isSheetCollapsed;
-      }
-
-      if (isSheetCollapsed) {
-        panel.style.height = '96px';
-        mapWrap.style.height = 'calc(100% - 96px)';
-        text.textContent = 'Expand Station List';
-      } else {
-        panel.style.height = '';
-        mapWrap.style.height = '';
-        text.textContent = 'Minimize / Expand Map';
-      }
-      setTimeout(() => map.invalidateSize(), 320);
-    }
-
     function promptCustomWarehouse() {
-      const input = prompt("Enter custom warehouse coordinates (Lat, Lng) e.g. 17.9045, 102.7112:");
+      const input = prompt("Enter custom coordinates (Lat, Lng) e.g. 17.9045, 102.7112:");
       if (!input) return;
       const parts = input.split(',').map(s => parseFloat(s.trim()));
       if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
@@ -595,7 +608,7 @@
         id: customId,
         type: 'warehouse',
         truckReady: true,
-        name: `Custom Warehouse (${parts[0].toFixed(4)}, ${parts[1].toFixed(4)})`,
+        name: `Custom Point (${parts[0].toFixed(4)}, ${parts[1].toFixed(4)})`,
         lat: parts[0],
         lng: parts[1],
         power: '-',
@@ -652,11 +665,11 @@
       if (isHybrid) {
         map.removeLayer(googleStreets);
         googleHybrid.addTo(map);
-        document.getElementById('mapStyleLabel').textContent = 'Map: Satellite';
+        document.getElementById('mapStyleLabel').textContent = 'Satellite';
       } else {
         map.removeLayer(googleHybrid);
         googleStreets.addTo(map);
-        document.getElementById('mapStyleLabel').textContent = 'Map: Street';
+        document.getElementById('mapStyleLabel').textContent = 'Street';
       }
     }
 
@@ -729,15 +742,15 @@
 
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
         const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
-          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route from Warehouse</button>`
+          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route on Map</button>`
           : '';
 
         const editQuickBtn = isAdmin
-          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit This Pin (Admin)</button>`
+          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
           : '';
 
         marker.bindPopup(`
-          <div class="min-w-[230px] space-y-1.5 p-1">
+          <div class="min-w-[220px] space-y-1.5 p-1">
             ${badge}
             <h3 class="font-bold text-sm text-slate-900 leading-snug pt-0.5">${loc.name}</h3>
             ${loc.type === 'station' ? `
@@ -804,7 +817,7 @@
         style: { color: color, weight: 5, opacity: 0.9 }
       });
       routeLayer.addLayer(geoLayer);
-      map.fitBounds(geoLayer.getBounds(), { padding: [45, 45] });
+      map.fitBounds(geoLayer.getBounds(), { padding: [40, 40] });
     }
 
     function renderAdminManageList() {
@@ -818,9 +831,6 @@
           <div class="truncate pr-2 flex items-center gap-1.5">
             <span class="${l.type === 'warehouse' ? 'text-amber-500' : (l.truckReady ? 'text-[#0284c7]' : 'text-[#38bdf8]')} font-bold">●</span>
             <span class="text-slate-800 font-medium truncate">${l.name}</span>
-            ${l.type === 'station' ? (l.truckReady
-              ? '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">E-Truck</span>'
-              : '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200 shrink-0">Standard</span>') : ''}
           </div>
           <div class="flex items-center gap-1 shrink-0">
             <button onclick="editLocation('${l.id}')" class="text-[#0284c7] p-1.5"><i data-lucide="pencil" class="w-4 h-4"></i></button>
@@ -848,15 +858,15 @@
         }
       }
 
-      const optionsHtml = activeLocs.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : (l.truckReady ? 'E-Truck' : 'Standard EV')}] ${l.name}</option>`).join('');
+      const optionsHtml = activeLocs.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
 
       container.innerHTML = p2pWaypoints.map((wpId, idx) => `
-        <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-2 space-y-1">
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-2 space-y-1">
           <div class="flex items-center justify-between">
-            <label class="text-[11px] font-semibold text-[#0369a1]">Stop #${idx + 1} (จุดแวะพักที่ ${idx + 1})</label>
-            <button type="button" onclick="removeP2PWaypoint(${idx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold px-1.5">✕ Remove</button>
+            <label class="text-[11px] font-bold text-[#0369a1]">Stop #${idx + 1}</label>
+            <button type="button" onclick="removeP2PWaypoint(${idx})" class="text-rose-500 text-xs font-bold px-1.5">✕ Remove</button>
           </div>
-          <select onchange="updateP2PWaypoint(${idx}, this.value)" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:border-[#0ea5e9]">
+          <select onchange="updateP2PWaypoint(${idx}, this.value)" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]">
             ${optionsHtml}
           </select>
         </div>
@@ -914,7 +924,7 @@
       whSelect.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
       if (prevWh && warehouses.some(w => w.id === prevWh)) whSelect.value = prevWh;
 
-      const allOptions = activeLocs.map(l => `<option value="${l.id}">[${l.type === 'warehouse' ? 'Warehouse' : (l.truckReady ? 'E-Truck' : 'Standard EV')}] ${l.name}</option>`).join('');
+      const allOptions = activeLocs.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
       const p2pOrigin = document.getElementById('p2pOrigin');
       const p2pDest = document.getElementById('p2pDest');
       const prevO = p2pOrigin.value;
@@ -930,7 +940,7 @@
 
       const tripBtns = document.getElementById('tripAvailableButtons');
       tripBtns.innerHTML = activeLocs.map(l => `
-        <button onclick="addTripStop('${l.id}')" class="text-xs font-medium px-3 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#0284c7]'}">
+        <button onclick="addTripStop('${l.id}')" class="text-xs font-medium px-2.5 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#0284c7]'}">
           + ${l.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim()}
         </button>
       `).join('');
@@ -962,23 +972,23 @@
       })).sort((a, b) => a.approxKm - b.approxKm);
 
       container.innerHTML = withHaversine.map((item, idx) => `
-        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-white hover:bg-sky-50/80 active:bg-sky-100/70 border border-sky-200/80 rounded-2xl p-3 transition shadow-sm">
-          <div class="flex justify-between items-center gap-2">
-            <div class="min-w-0">
+        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-white active:bg-sky-50 border border-sky-200/80 rounded-2xl p-3 transition shadow-sm">
+          <div class="flex justify-between items-center gap-2.5">
+            <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-bold bg-sky-100 text-[#0284c7] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
+                <span class="text-[11px] font-bold bg-sky-100 text-[#0284c7] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
                 <h4 class="font-bold text-sm text-slate-800 truncate">${item.station.name}</h4>
               </div>
-              <div class="flex items-center gap-1.5 mt-1">
+              <div class="flex items-center gap-1.5 mt-1.5">
                 ${item.station.truckReady
-                  ? '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">E-TRUCK</span>'
-                  : '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV</span>'}
-                <p class="text-xs text-slate-500 truncate">${item.station.power} • ${item.station.connector} ${item.station.note ? `(${item.station.note})` : ''}</p>
+                  ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">E-TRUCK</span>'
+                  : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200 shrink-0">STANDARD</span>'}
+                <span class="text-xs font-medium text-slate-500 truncate">${item.station.power} • ${item.station.connector}</span>
               </div>
             </div>
-            <div class="text-right shrink-0 pl-2">
-              <div class="text-base font-bold text-[#0284c7]" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span></div>
-              <div class="text-[11px] text-slate-500" id="dist-min-${item.station.id}">~${Math.round((item.approxKm / 45) * 60)} min</div>
+            <div class="text-right shrink-0 pl-2 border-l border-sky-100">
+              <div class="text-base font-bold text-[#0284c7]" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span></div>
+              <div class="text-[11px] font-medium text-slate-500" id="dist-min-${item.station.id}">~${Math.round((item.approxKm / 45) * 60)} min</div>
             </div>
           </div>
         </div>
@@ -989,7 +999,7 @@
         const route = await fetchRoadRoute([wh, item.station]);
         const kmEl = document.getElementById(`dist-km-${item.station.id}`);
         const minEl = document.getElementById(`dist-min-${item.station.id}`);
-        if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span>`;
+        if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span>`;
         if (minEl) minEl.textContent = `~${route.min} min`;
       }));
     }
@@ -1003,8 +1013,9 @@
       const route = await fetchRoadRoute([wh, st]);
       const kmEl = document.getElementById(`dist-km-${st.id}`);
       const minEl = document.getElementById(`dist-min-${st.id}`);
-      if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-xs font-normal text-slate-500">km</span>`;
+      if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span>`;
       if (minEl) minEl.textContent = `~${route.min} min`;
+      if (mobileSheetMode === 'list') setMobileSheetMode('split');
       drawRouteOnMap(route.geometry, '#0284c7');
     }
 
@@ -1090,7 +1101,7 @@
       const summaryBox = document.getElementById('tripSummaryBox');
 
       if (tripStops.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-400 italic">No stops added yet (map displays only selected stops).</p>`;
+        list.innerHTML = `<p class="text-xs text-slate-400 italic">No stops added yet.</p>`;
         summaryBox.classList.add('hidden');
         routeLayer.clearLayers();
         return;
@@ -1121,7 +1132,7 @@
 
     function switchTab(tabName) {
       currentTab = tabName;
-      if (isSheetCollapsed) toggleSheetHeight(true);
+      if (mobileSheetMode === 'map') setMobileSheetMode('split');
       ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
         document.getElementById(`panel-${t}`).classList.add('hidden');
         const btn = document.getElementById(`tab-${t}`);
