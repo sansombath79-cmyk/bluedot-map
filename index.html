@@ -59,7 +59,7 @@
     <div class="flex items-center gap-1.5 shrink-0">
       <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/40 transition" title="Use Current GPS Location">
         <i data-lucide="locate-fixed" class="w-4 h-4"></i>
-        <span>My Location</span>
+        <span>My GPS</span>
       </button>
 
       <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
@@ -124,15 +124,15 @@
         <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
           <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
             <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">All (<span id="countAllStations">63</span>)</span>
+            <span class="truncate">All (<span id="countAllStations">0</span>)</span>
           </button>
           <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">E-Truck (<span id="countTruckStations">21</span>)</span>
+            <span class="truncate">E-Truck (<span id="countTruckStations">0</span>)</span>
           </button>
           <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">Standard (<span id="countStandardStations">42</span>)</span>
+            <span class="truncate">Standard (<span id="countStandardStations">0</span>)</span>
           </button>
         </div>
       </div>
@@ -292,7 +292,7 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-bold text-slate-700">Live Database Locations (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="seedInitialDatabase(true)" class="text-[11px] font-semibold text-[#0284c7] underline">Load 63 Nationwide Template</button>
+              <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All Stations (Keep Warehouse)</button>
             </div>
             <div class="pt-1">
               <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="Search station name to edit..." class="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
@@ -379,74 +379,9 @@
     const db = firebase.database();
     const locationsRef = db.ref("locations");
 
-    // 63 Nationwide Stations Template (21 E-Truck + 42 Standard EV Editable Slots) + 1 Warehouse
+    // Clean Base: Contains ONLY the main Warehouse so you can import your exact station list cleanly
     const defaultLocations = [
-      { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" },
-      // 21 E-Truck Stations
-      { id: "loc-1795421391963", type: "station", truckReady: true, name: "KM7 Hub", lat: 18.009939, lng: 102.647811, power: "400 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
-      { id: "loc-1795421586747", type: "station", truckReady: true, name: "PTT Donnoun", lat: 18.061477, lng: 102.667622, power: "180 kW DC", connector: "GB/T & CCS2", note: "" },
-      { id: "loc-1795421900766", type: "station", truckReady: true, name: "Cafe Amazon DongDok", lat: 18.033393, lng: 102.636484, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795422161216", type: "station", truckReady: true, name: "PTT Nongteng", lat: 18.022178, lng: 102.547236, power: "40 / 180 kW", connector: "GB/T + CCS2", note: "8 Charging Guns" },
-      { id: "loc-1795422384108", type: "station", truckReady: true, name: "PTT DonKoy", lat: 17.922054, lng: 102.651047, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795422738469", type: "station", truckReady: true, name: "PTT Dongchong", lat: 17.992525, lng: 102.663695, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795423542725", type: "station", truckReady: true, name: "Blue Dot EV - Toyota Phonthan", lat: 17.967326, lng: 102.6419, power: "120 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "loc-1795423810926", type: "station", truckReady: true, name: "PTT SomHong", lat: 17.878762, lng: 102.611889, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795423998173", type: "station", truckReady: true, name: "Kaiyi-BlueDot EV, Dongnaxok", lat: 17.979667, lng: 102.586137, power: "120 kW", connector: "GB/T + GB/T", note: "2 Charging Guns" },
-      { id: "loc-1795424182047", type: "station", truckReady: true, name: "BlueDot - Holly Mall, Hatkiang", lat: 18.183859, lng: 102.663021, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795424268723", type: "station", truckReady: true, name: "BlueDot - Dong Hua Khua Market, Naxaithong", lat: 18.098326, lng: 102.510092, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795424978669", type: "station", truckReady: true, name: "River Moon Camping, Huayhom", lat: 17.991277, lng: 102.42355, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425042958", type: "station", truckReady: true, name: "Kasemrad, Donnokkhoum", lat: 17.939179, lng: 102.642224, power: "40 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425249623", type: "station", truckReady: true, name: "Thongpong Oil Station", lat: 17.994494, lng: 102.533756, power: "40 kW", connector: "GB/T / CCS2", note: "4 Charging Guns" },
-      { id: "loc-1795425420046", type: "station", truckReady: true, name: "LTC Saiy Lom", lat: 17.969346, lng: 102.61248, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "loc-1795426111349", type: "station", truckReady: true, name: "Neko Sushi Restaurant, Tanmixay", lat: 18.037034, lng: 102.621591, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-1795485589147", type: "station", truckReady: true, name: "Sokxay Dondaeng", lat: 18.003702, lng: 102.609158, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-1795485788779", type: "station", truckReady: true, name: "Shithi Samket", lat: 18.032959, lng: 102.590505, power: "120 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      { id: "bd-1795485913231", type: "station", truckReady: true, name: "ST Bank", lat: 17.971428, lng: 102.566732, power: "180 kW", connector: "GB/T + CCS2", note: "2 Charging Guns" },
-      { id: "bd-1795486085326", type: "station", truckReady: true, name: "Daofa Vientiane, Khamsavath", lat: 17.96124, lng: 102.680471, power: "40 kW", connector: "GB/T + CCS2", note: "6 Charging Guns" },
-      { id: "bd-ptt-phontong", type: "station", truckReady: true, name: "PTT Phontong", lat: 17.993463, lng: 102.62472, power: "180 kW", connector: "GB/T + CCS2", note: "4 Charging Guns" },
-      // 42 Standard EV Nationwide Stations
-      { id: "std-station-22", type: "station", truckReady: false, name: "BlueDot Station #22 (Vientiane)", lat: 17.9652, lng: 102.6135, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-23", type: "station", truckReady: false, name: "BlueDot Station #23 (Vientiane)", lat: 17.9741, lng: 102.6289, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-24", type: "station", truckReady: false, name: "BlueDot Station #24 (Vientiane)", lat: 17.9825, lng: 102.6012, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-25", type: "station", truckReady: false, name: "BlueDot Station #25 (Vientiane)", lat: 17.9518, lng: 102.6311, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-26", type: "station", truckReady: false, name: "BlueDot Station #26 (Vientiane)", lat: 18.0155, lng: 102.6321, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-27", type: "station", truckReady: false, name: "BlueDot Station #27 (Vientiane)", lat: 18.0452, lng: 102.6488, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-28", type: "station", truckReady: false, name: "BlueDot Station #28 (Vientiane)", lat: 17.9312, lng: 102.6715, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-29", type: "station", truckReady: false, name: "BlueDot Station #29 (Phonhong)", lat: 18.4945, lng: 102.4152, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-30", type: "station", truckReady: false, name: "BlueDot Station #30 (Hinheup)", lat: 18.6412, lng: 102.3489, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-31", type: "station", truckReady: false, name: "BlueDot Station #31 (Vang Vieng 1)", lat: 18.9235, lng: 102.4478, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-32", type: "station", truckReady: false, name: "BlueDot Station #32 (Vang Vieng 2)", lat: 18.9388, lng: 102.4461, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-33", type: "station", truckReady: false, name: "BlueDot Station #33 (Kasi)", lat: 19.2285, lng: 102.2531, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-34", type: "station", truckReady: false, name: "BlueDot Station #34 (Phou Khoun)", lat: 19.4442, lng: 102.4215, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-35", type: "station", truckReady: false, name: "BlueDot Station #35 (Xieng Ngeun)", lat: 19.7541, lng: 102.1852, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-36", type: "station", truckReady: false, name: "BlueDot Station #36 (Luang Prabang 1)", lat: 19.8845, lng: 102.1348, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-37", type: "station", truckReady: false, name: "BlueDot Station #37 (Luang Prabang 2)", lat: 19.8952, lng: 102.1489, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-38", type: "station", truckReady: false, name: "BlueDot Station #38 (Pak Mong)", lat: 20.5731, lng: 102.4285, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-39", type: "station", truckReady: false, name: "BlueDot Station #39 (Oudomxay 1)", lat: 20.6925, lng: 101.9831, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-40", type: "station", truckReady: false, name: "BlueDot Station #40 (Oudomxay 2)", lat: 20.6812, lng: 101.9945, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-41", type: "station", truckReady: false, name: "BlueDot Station #41 (Luang Namtha)", lat: 20.9512, lng: 101.4048, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-42", type: "station", truckReady: false, name: "BlueDot Station #42 (Boten)", lat: 21.1815, lng: 101.6621, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-43", type: "station", truckReady: false, name: "BlueDot Station #43 (Bokeo / Huayxai)", lat: 20.2735, lng: 100.4128, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-44", type: "station", truckReady: false, name: "BlueDot Station #44 (Xayaboury)", lat: 19.2578, lng: 101.7125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-45", type: "station", truckReady: false, name: "BlueDot Station #45 (Phonsavan)", lat: 19.4512, lng: 103.2145, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-46", type: "station", truckReady: false, name: "BlueDot Station #46 (Thabok)", lat: 18.3742, lng: 103.2315, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-47", type: "station", truckReady: false, name: "BlueDot Station #47 (Paksan 1)", lat: 18.3885, lng: 103.6589, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-48", type: "station", truckReady: false, name: "BlueDot Station #48 (Paksan 2)", lat: 18.3752, lng: 103.6712, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-49", type: "station", truckReady: false, name: "BlueDot Station #49 (Pakkading)", lat: 18.3245, lng: 104.0012, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-50", type: "station", truckReady: false, name: "BlueDot Station #50 (Viengkham)", lat: 18.1812, lng: 104.4125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-51", type: "station", truckReady: false, name: "BlueDot Station #51 (Hinboun)", lat: 17.7512, lng: 104.5812, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-52", type: "station", truckReady: false, name: "BlueDot Station #52 (Thakhaek 1)", lat: 17.4085, lng: 104.8312, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-53", type: "station", truckReady: false, name: "BlueDot Station #53 (Thakhaek 2)", lat: 17.3945, lng: 104.8452, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-54", type: "station", truckReady: false, name: "BlueDot Station #54 (Seno)", lat: 16.6712, lng: 105.0125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-55", type: "station", truckReady: false, name: "BlueDot Station #55 (Savannakhet 1)", lat: 16.5685, lng: 104.7542, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-56", type: "station", truckReady: false, name: "BlueDot Station #56 (Savannakhet 2)", lat: 16.5512, lng: 104.7689, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-57", type: "station", truckReady: false, name: "BlueDot Station #57 (Songkhone)", lat: 16.1745, lng: 105.3125, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-58", type: "station", truckReady: false, name: "BlueDot Station #58 (Salavan)", lat: 15.7145, lng: 106.4189, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-59", type: "station", truckReady: false, name: "BlueDot Station #59 (Pakse 1)", lat: 15.1205, lng: 105.7985, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-60", type: "station", truckReady: false, name: "BlueDot Station #60 (Pakse 2)", lat: 15.1112, lng: 105.8142, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-61", type: "station", truckReady: false, name: "BlueDot Station #61 (Paksong)", lat: 15.1785, lng: 106.2312, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-62", type: "station", truckReady: false, name: "BlueDot Station #62 (Champasak)", lat: 14.8912, lng: 105.8785, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" },
-      { id: "std-station-63", type: "station", truckReady: false, name: "BlueDot Station #63 (Khong / 4000 Islands)", lat: 14.1185, lng: 105.8542, power: "120 kW", connector: "GB/T + CCS2", note: "Standard EV Station (Edit in Admin)" }
+      { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" }
     ];
 
     let cloudLocations = [...defaultLocations];
@@ -459,7 +394,7 @@
     let showLabels = true;
     let isSheetCollapsed = false;
     let tripStops = [];
-    let p2pWaypoints = []; // Up to 4 intermediate stops in Point-to-Point
+    let p2pWaypoints = [];
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
@@ -490,7 +425,7 @@
         
         locationsRef.once("value").then((snap) => {
           if (!snap.exists()) {
-            seedInitialDatabase(false);
+            resetToCleanDatabase(false);
           }
         });
       } else {
@@ -523,15 +458,15 @@
       refreshAllUI();
     });
 
-    function seedInitialDatabase(askConfirm = true) {
+    function resetToCleanDatabase(askConfirm = true) {
       if (!isAdmin) return;
-      if (askConfirm && !confirm("Load all 63 Nationwide stations (21 E-Truck + 42 Standard EV) into the live database?")) return;
+      if (askConfirm && !confirm("Clear ALL existing stations in the database and keep only the Warehouse so you can re-import your clean JSON?")) return;
       const updates = {};
       defaultLocations.forEach(loc => {
         updates[loc.id] = loc;
       });
       locationsRef.set(updates)
-        .then(() => { if (askConfirm) alert("All 63 stations loaded into live database!"); })
+        .then(() => { if (askConfirm) alert("Database cleared! Ready for your clean JSON import."); })
         .catch(err => alert("Database write error: " + err.message));
     }
 
@@ -896,9 +831,6 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // ==========================================
-    // POINT-TO-POINT WITH UP TO 4 WAYPOINT STOPS
-    // ==========================================
     function renderP2PWaypoints() {
       const activeLocs = getActiveLocations();
       const container = document.getElementById('p2pWaypointsContainer');
@@ -930,7 +862,6 @@
         </div>
       `).join('');
 
-      // Set selected values for each waypoint dropdown
       const selects = container.querySelectorAll('select');
       selects.forEach((sel, idx) => {
         if (p2pWaypoints[idx] && activeLocs.some(l => l.id === p2pWaypoints[idx])) {
@@ -1020,7 +951,7 @@
 
       if (!wh || stations.length === 0) {
         container.innerHTML = `<div class="bg-white border border-sky-200 rounded-2xl p-4 text-center text-xs text-slate-500 shadow-sm">
-          No stations available in this mode.
+          No stations in database yet. Sign in as Admin to import your JSON file.
         </div>`;
         return;
       }
@@ -1092,7 +1023,6 @@
         return;
       }
 
-      // Build full ordered sequence: Origin -> Stop 1..N -> Destination
       const routePoints = [origin];
       p2pWaypoints.forEach(wpId => {
         const wpObj = activeLocs.find(l => l.id === wpId);
@@ -1106,7 +1036,6 @@
           : 'Direct Route';
       }
 
-      // Remove consecutive duplicate points before querying OSRM
       const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
 
       if (uniqueSeq.length < 2) {
@@ -1299,7 +1228,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'bluedot-ev-63stations-backup.json';
+      a.download = 'bluedot-ev-backup.json';
       a.click();
     }
 
