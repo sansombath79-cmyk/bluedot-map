@@ -141,39 +141,54 @@
         </div>
       </div>
 
-      <!-- 3-Option Vehicle Mode Selector -->
-      <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0">
+      <!-- 3-Option Vehicle Mode Selector + Route Region Mode -->
+      <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0 space-y-1.5">
         <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
-          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
+          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
             <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">All (<span id="countAllStations">0</span>)</span>
           </button>
-          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">Truck (<span id="countTruckStations">0</span>)</span>
           </button>
-          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
             <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
             <span class="truncate">EV (<span id="countStandardStations">0</span>)</span>
           </button>
+        </div>
+
+        <!-- Country / Corridor Routing Toggle (Laos Only vs Cross-Border TH-LA) -->
+        <div class="flex items-center justify-between bg-sky-50/60 border border-sky-200/80 rounded-xl px-2.5 py-1">
+          <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-[#0284c7]"></i> Route Region:
+          </span>
+          <div class="grid grid-cols-2 gap-1 bg-white p-0.5 rounded-lg border border-sky-200/80 text-[10px] font-bold">
+            <button type="button" id="btnRegionLaos" onclick="setRouteRegion('laos')" class="px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition">
+              🇱🇦 Laos Only
+            </button>
+            <button type="button" id="btnRegionCross" onclick="setRouteRegion('cross')" class="px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition">
+              🇱🇦🇹🇭 Cross-Border
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
       <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0">
-        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex items-center justify-center gap-1.5 min-h-[40px]">
           <i data-lucide="warehouse" class="w-4 h-4"></i>
           <span>Nearest</span>
         </button>
-        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[40px]">
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
           <span>Route</span>
         </button>
-        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[40px]">
           <i data-lucide="route" class="w-4 h-4"></i>
           <span>Multi-Stop</span>
         </button>
-        <button onclick="switchTab('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="switchTab('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[40px]">
           <i data-lucide="settings-2" class="w-4 h-4"></i>
           <span>Admin</span>
         </button>
@@ -486,6 +501,7 @@
     let localCustomWarehouses = [];
     let currentTab = 'warehouse';
     let vehicleMode = 'all';
+    let routeRegion = 'laos'; // 'laos' = Stay inside Laos 100%, 'cross' = Allow TH-LA cross-border
     let adminFilterMode = 'all';
     let isAdmin = false;
     let mapPickMode = false;
@@ -494,7 +510,7 @@
     let mobileSheetMode = 'split';
     let tripStops = [];
     let p2pWaypoints = [];
-    let p2pAlongStations = []; // Auto-detected stations passed along the P2P route
+    let p2pAlongStations = [];
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
@@ -513,6 +529,74 @@
     googleStreets.addTo(map);
     markersLayer.addTo(map);
     routeLayer.addTo(map);
+
+    // Key Route 13 Corridor Anchors inside Laos (North to South) to prevent cross-border detours into Thailand
+    const laosCorridorAnchors = [
+      { lat: 20.6925, lng: 101.9831 }, // Oudomxay
+      { lat: 19.8845, lng: 102.1348 }, // Luang Prabang
+      { lat: 18.9235, lng: 102.4478 }, // Vang Vieng
+      { lat: 17.9934, lng: 102.6247 }, // Vientiane Capital (Phontong / Route 13)
+      { lat: 18.3885, lng: 103.6589 }, // Paksan (Route 13 South)
+      { lat: 18.1169, lng: 104.2721 }, // Pakkading
+      { lat: 17.4271, lng: 104.8103 }, // Thakhaek
+      { lat: 16.6762, lng: 104.9901 }, // Seno / Savannakhet
+      { lat: 15.6400, lng: 105.8049 }, // Napong / Salavan junction
+      { lat: 15.1205, lng: 105.7985 }  // Pakse
+    ];
+
+    // Check if any point of an OSRM route crosses the Mekong River into Thailand
+    function routeCrossesIntoThailand(geometry) {
+      if (!geometry || !Array.isArray(geometry.coordinates)) return false;
+      for (let i = 0; i < geometry.coordinates.length; i += 3) {
+        const lng = geometry.coordinates[i][0];
+        const lat = geometry.coordinates[i][1];
+        // Vientiane -> Pakkading Mekong bend (South of lat 17.95, West of lng 104.10)
+        if (lat < 17.93 && lat > 14.3 && lng < 104.15) return true;
+        // Thakhaek -> Savannakhet -> Pakse Mekong border (West of Mekong river line)
+        if (lat <= 17.45 && lat > 16.55 && lng < 104.73) return true;
+        if (lat <= 16.55 && lat > 15.15 && lng < 104.95) return true;
+        if (lat <= 15.15 && lat > 14.30 && lng < 105.75) return true;
+      }
+      return false;
+    }
+
+    // Build waypoint sequence staying strictly inside Laos along Route 13
+    function buildLaosDomesticCoords(coordsArray) {
+      const expanded = [];
+      for (let i = 0; i < coordsArray.length - 1; i++) {
+        const a = coordsArray[i];
+        const b = coordsArray[i + 1];
+        expanded.push(a);
+
+        const goingSouth = a.lat > b.lat;
+        const minLat = Math.min(a.lat, b.lat);
+        const maxLat = Math.max(a.lat, b.lat);
+
+        // Select Laos Route 13 anchors lying strictly between latitude of A and B
+        let midAnchors = laosCorridorAnchors.filter(anc => anc.lat < (maxLat - 0.15) && anc.lat > (minLat + 0.15));
+        midAnchors.sort((p1, p2) => goingSouth ? (p2.lat - p1.lat) : (p1.lat - p2.lat));
+
+        midAnchors.forEach(anc => expanded.push(anc));
+      }
+      expanded.push(coordsArray[coordsArray.length - 1]);
+      return expanded;
+    }
+
+    function setRouteRegion(region) {
+      routeRegion = region;
+      const btnLaos = document.getElementById('btnRegionLaos');
+      const btnCross = document.getElementById('btnRegionCross');
+      const active = "px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition";
+      const inactive = "px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition";
+
+      btnLaos.className = region === 'laos' ? active : inactive;
+      btnCross.className = region === 'cross' ? active : inactive;
+
+      // Recalculate active route views immediately
+      if (currentTab === 'p2p') calculateP2P();
+      else if (currentTab === 'trip') renderTripStops();
+      else updateWarehouseDistances();
+    }
 
     function showAdminToast(msg) {
       const toast = document.getElementById('adminToast');
@@ -603,8 +687,8 @@
       btnList.className = mode === 'list' ? activeCls : inactiveCls;
 
       if (mode === 'map') {
-        panel.style.height = '136px';
-        mapWrap.style.height = 'calc(100% - 136px)';
+        panel.style.height = '164px';
+        mapWrap.style.height = 'calc(100% - 164px)';
       } else if (mode === 'list') {
         panel.style.height = '84%';
         mapWrap.style.height = '16%';
@@ -686,8 +770,8 @@
       const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
 
-      const activeBlue = "flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
-      const inactive = "flex items-center justify-center gap-1 py-2 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition";
+      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
+      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition";
 
       btnAll.className = mode === 'all' ? activeBlue : inactive;
       btnTruck.className = mode === 'truck' ? activeBlue : inactive;
@@ -965,15 +1049,14 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // Detect all active stations that lie within ~3.0 km of the driven road geometry
+    // Detect all active stations that lie within ~4.0 km of the driven road geometry
     function findStationsAlongGeometry(geometry, excludedIds) {
       if (!geometry || !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
         return [];
       }
-      const coords = geometry.coordinates; // [lng, lat]
+      const coords = geometry.coordinates;
       const activeStations = getActiveLocations().filter(l => l.type === 'station' && !excludedIds.has(l.id));
 
-      // Pre-compute cumulative km along polyline vertices
       const cumKm = [0];
       for (let i = 1; i < coords.length; i++) {
         const segKm = getHaversineKm(coords[i - 1][1], coords[i - 1][0], coords[i][1], coords[i][0]);
@@ -981,7 +1064,7 @@
       }
 
       const found = [];
-      const maxCorridorKm = 3.0; // Within 3 km of the highway/road
+      const maxCorridorKm = 4.0;
 
       activeStations.forEach(st => {
         let minDistKm = Infinity;
@@ -991,7 +1074,6 @@
           const lat1 = coords[i][1], lng1 = coords[i][0];
           const lat2 = coords[i + 1][1], lng2 = coords[i + 1][0];
 
-          // Project station point onto segment [i, i+1] in local planar approximation
           const cosLat = Math.cos(((lat1 + lat2) / 2) * Math.PI / 180);
           const ax = lng1 * cosLat, ay = lat1;
           const bx = lng2 * cosLat, by = lat2;
@@ -1025,24 +1107,35 @@
         }
       });
 
-      // Sort in order from Origin to Destination
       return found.sort((a, b) => a.kmFromStart - b.kmFromStart);
     }
 
+    async function queryOSRM(points) {
+      const coordString = points.map(c => `${c.lng},${c.lat}`).join(';');
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
+      if (!res.ok) throw new Error('OSRM failed');
+      const data = await res.json();
+      if (data.routes && data.routes.length > 0) {
+        const r = data.routes[0];
+        return {
+          km: (r.distance / 1000),
+          min: Math.round(r.duration / 60),
+          geometry: r.geometry
+        };
+      }
+      throw new Error('No routes');
+    }
+
     async function fetchRoadRoute(coordsArray) {
-      const coordString = coordsArray.map(c => `${c.lng},${c.lat}`).join(';');
       try {
-        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
-        if (!res.ok) throw new Error('OSRM failed');
-        const data = await res.json();
-        if (data.routes && data.routes.length > 0) {
-          const r = data.routes[0];
-          return {
-            km: (r.distance / 1000),
-            min: Math.round(r.duration / 60),
-            geometry: r.geometry
-          };
+        const directRoute = await queryOSRM(coordsArray);
+        // If 'Laos Only' mode is active and OSRM tried to cross into Thailand, re-route via Laos Route 13 anchors
+        if (routeRegion === 'laos' && routeCrossesIntoThailand(directRoute.geometry)) {
+          const domesticCoords = buildLaosDomesticCoords(coordsArray);
+          const laosRoute = await queryOSRM(domesticCoords);
+          return laosRoute;
         }
+        return directRoute;
       } catch (e) {
         let totalKm = 0;
         for (let i = 0; i < coordsArray.length - 1; i++) {
@@ -1208,7 +1301,7 @@
               <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
               <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
             </div>
-            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.station.power} • ${item.station.connector} ${item.offRouteKm > 0.3 ? `(${item.offRouteKm.toFixed(1)} km off road)` : '(On highway)'}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.station.power} • ${item.station.connector} ${item.offRouteKm > 0.3 ? `(${item.offRouteKm.toFixed(1)} km off road)` : '(On Route 13)'}</p>
           </div>
           ${p2pWaypoints.length < 4 ? `
             <button type="button" onclick="addSpecificP2PWaypoint('${item.station.id}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
@@ -1353,272 +1446,3 @@
       const routePoints = [origin];
       p2pWaypoints.forEach(wpId => {
         const wpObj = activeLocs.find(l => l.id === wpId);
-        if (wpObj) routePoints.push(wpObj);
-      });
-      routePoints.push(dest);
-
-      if (legLabel) {
-        legLabel.textContent = p2pWaypoints.length > 0
-          ? `Via ${p2pWaypoints.length} Stop${p2pWaypoints.length > 1 ? 's' : ''}`
-          : 'Direct Route';
-      }
-
-      const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
-
-      if (uniqueSeq.length < 2) {
-        p2pAlongStations = [];
-        renderAlongRouteList();
-        if (currentTab === 'p2p') renderMarkers();
-        document.getElementById('p2pKm').textContent = '0.0';
-        document.getElementById('p2pTime').textContent = '0 min';
-        routeLayer.clearLayers();
-        if (currentTab === 'p2p') map.setView([origin.lat, origin.lng], 14);
-        return;
-      }
-
-      const route = await fetchRoadRoute(uniqueSeq);
-      document.getElementById('p2pKm').textContent = route.km.toFixed(1);
-      document.getElementById('p2pTime').textContent = `${route.min} min`;
-
-      // Detect intermediate pass-by stations along the road geometry
-      const excludedIds = new Set([oId, dId, ...p2pWaypoints]);
-      p2pAlongStations = findStationsAlongGeometry(route.geometry, excludedIds);
-      renderAlongRouteList();
-
-      if (currentTab === 'p2p') {
-        renderMarkers();
-        drawRouteOnMap(route.geometry, '#0284c7');
-      }
-    }
-
-    function swapP2P() {
-      const o = document.getElementById('p2pOrigin');
-      const d = document.getElementById('p2pDest');
-      const temp = o.value;
-      o.value = d.value;
-      d.value = temp;
-      p2pWaypoints.reverse();
-      renderP2PWaypoints();
-      calculateP2P();
-    }
-
-    function addTripStop(locId) {
-      const activeLocs = getActiveLocations();
-      const loc = activeLocs.find(l => l.id === locId);
-      if (loc) {
-        tripStops.push(loc);
-        renderTripStops();
-      }
-    }
-
-    function removeTripStop(index) {
-      tripStops.splice(index, 1);
-      renderTripStops();
-    }
-
-    function clearTrip() {
-      tripStops = [];
-      routeLayer.clearLayers();
-      renderTripStops();
-    }
-
-    async function renderTripStops() {
-      if (currentTab === 'trip') renderMarkers();
-      document.getElementById('tripCount').textContent = tripStops.length;
-      const list = document.getElementById('tripStopsList');
-      const summaryBox = document.getElementById('tripSummaryBox');
-
-      if (tripStops.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-400 italic">No stops added yet.</p>`;
-        summaryBox.classList.add('hidden');
-        routeLayer.clearLayers();
-        return;
-      }
-
-      list.innerHTML = tripStops.map((stop, i) => `
-        <div class="flex items-center justify-between bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs shadow-sm">
-          <div class="flex items-center gap-2 truncate">
-            <span class="w-5 h-5 rounded-full bg-sky-100 text-[#0284c7] font-bold flex items-center justify-center shrink-0">${i + 1}</span>
-            <span class="truncate text-slate-800 font-medium">${stop.name}</span>
-          </div>
-          <button onclick="removeTripStop(${i})" class="text-slate-400 hover:text-rose-500 p-1">✕</button>
-        </div>
-      `).join('');
-
-      if (tripStops.length === 1) {
-        summaryBox.classList.add('hidden');
-        routeLayer.clearLayers();
-        if (currentTab === 'trip') map.setView([tripStops[0].lat, tripStops[0].lng], 14);
-      } else if (tripStops.length >= 2) {
-        const route = await fetchRoadRoute(tripStops);
-        document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
-        document.getElementById('tripTotalMin').textContent = route.min;
-        summaryBox.classList.remove('hidden');
-        if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#0284c7');
-      }
-    }
-
-    function switchTab(tabName) {
-      currentTab = tabName;
-      if (mobileSheetMode === 'map') setMobileSheetMode('split');
-      ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
-        document.getElementById(`panel-${t}`).classList.add('hidden');
-        const btn = document.getElementById(`tab-${t}`);
-        btn.classList.remove('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
-        btn.classList.add('border-transparent', 'text-slate-500');
-      });
-
-      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`tab-${tabName}`);
-      activeBtn.classList.add('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
-      activeBtn.classList.remove('border-transparent', 'text-slate-500');
-
-      routeLayer.clearLayers();
-      renderMarkers();
-
-      if (tabName === 'p2p') {
-        calculateP2P();
-      } else if (tabName === 'trip') {
-        renderTripStops();
-      } else {
-        const activeLocs = getActiveLocations();
-        if (activeLocs.length > 0) {
-          const bounds = L.latLngBounds(activeLocs.map(l => [l.lat, l.lng]));
-          map.fitBounds(bounds, { padding: [40, 40] });
-        }
-      }
-    }
-
-    map.on('click', function(e) {
-      if (!isAdmin || !mapPickMode) return;
-      document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
-      document.getElementById('pinLng').value = e.latlng.lng.toFixed(6);
-      switchTab('pins');
-      document.getElementById('pinName').focus();
-    });
-
-    function editLocation(id) {
-      const loc = cloudLocations.find(l => l.id === id);
-      if (!loc) return;
-      document.getElementById('editId').value = loc.id;
-      document.getElementById('pinType').value = loc.type;
-      document.getElementById('pinTruckReady').checked = loc.truckReady === true;
-      document.getElementById('pinName').value = loc.name;
-      document.getElementById('pinLat').value = loc.lat;
-      document.getElementById('pinLng').value = loc.lng;
-      document.getElementById('pinPower').value = loc.power === '-' ? '' : loc.power;
-      document.getElementById('pinConnector').value = loc.connector === '-' ? '' : loc.connector;
-      document.getElementById('pinNote').value = loc.note || '';
-
-      document.getElementById('formTitle').textContent = 'Editing: ' + loc.name;
-      document.getElementById('btnSubmitPin').textContent = 'Update Station Now';
-      document.getElementById('btnCancelEdit').classList.remove('hidden');
-
-      const formBox = document.getElementById('adminPinForm');
-      if (formBox) {
-        formBox.classList.remove('border-sky-200');
-        formBox.classList.add('border-[#0ea5e9]', 'bg-sky-50/30');
-      }
-      const scrollArea = document.getElementById('tabScrollArea');
-      if (scrollArea) scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
-
-      map.setView([loc.lat, loc.lng], 15);
-    }
-
-    function cancelEdit() {
-      document.getElementById('editId').value = '';
-      document.getElementById('pinName').value = '';
-      document.getElementById('pinLat').value = '';
-      document.getElementById('pinLng').value = '';
-      document.getElementById('pinQuickCoords').value = '';
-      document.getElementById('pinPower').value = '';
-      document.getElementById('pinConnector').value = '';
-      document.getElementById('pinNote').value = '';
-      document.getElementById('pinTruckReady').checked = true;
-      document.getElementById('formTitle').textContent = 'Add New Station';
-      document.getElementById('btnSubmitPin').textContent = 'Save & Publish Live';
-      document.getElementById('btnCancelEdit').classList.add('hidden');
-
-      const formBox = document.getElementById('adminPinForm');
-      if (formBox) {
-        formBox.classList.add('border-sky-200');
-        formBox.classList.remove('border-[#0ea5e9]', 'bg-sky-50/30');
-      }
-    }
-
-    function saveLocationForm(e) {
-      e.preventDefault();
-      if (!isAdmin) return;
-      const editId = document.getElementById('editId').value;
-      const id = editId || ('bd-' + Date.now());
-      const isTruck = document.getElementById('pinTruckReady').checked;
-      const locData = {
-        id: id,
-        type: document.getElementById('pinType').value,
-        truckReady: isTruck,
-        name: document.getElementById('pinName').value.trim(),
-        lat: parseFloat(document.getElementById('pinLat').value),
-        lng: parseFloat(document.getElementById('pinLng').value),
-        power: document.getElementById('pinPower').value.trim() || '120 kW',
-        connector: document.getElementById('pinConnector').value.trim() || 'GB/T + CCS2',
-        note: document.getElementById('pinNote').value.trim()
-      };
-
-      locationsRef.child(id).set(locData)
-        .then(() => {
-          showAdminToast(editId ? "Station updated live!" : "New station added live!");
-          cancelEdit();
-          map.setView([locData.lat, locData.lng], 14);
-        })
-        .catch(err => alert("Database write failed: " + err.message));
-    }
-
-    function deleteLocation(id) {
-      if (!isAdmin) return;
-      if (!confirm('Delete this station from the live database?')) return;
-      locationsRef.child(id).remove()
-        .then(() => showAdminToast("Station deleted."));
-    }
-
-    function exportData() {
-      const blob = new Blob([JSON.stringify(cloudLocations, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'bluedot-ev-backup.json';
-      a.click();
-    }
-
-    function importDataToCloud(event) {
-      if (!isAdmin) return;
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            const updates = {};
-            imported.forEach(item => {
-              const id = item.id || ('bd-' + Date.now() + Math.floor(Math.random() * 1000));
-              updates[id] = {
-                truckReady: false,
-                ...item,
-                id: id
-              };
-            });
-            locationsRef.update(updates).then(() => {
-              showAdminToast('Stations imported to live database!');
-            });
-          }
-        } catch (err) {
-          alert('Invalid JSON file.');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    refreshAllUI();
-  </script>
-</body>
-</html>
