@@ -1446,3 +1446,272 @@
       const routePoints = [origin];
       p2pWaypoints.forEach(wpId => {
         const wpObj = activeLocs.find(l => l.id === wpId);
+        if (wpObj) routePoints.push(wpObj);
+      });
+      routePoints.push(dest);
+
+      const regionTag = routeRegion === 'laos' ? '🇱🇦 Laos' : '🇱🇦🇹🇭 Cross-Border';
+      if (legLabel) {
+        legLabel.textContent = p2pWaypoints.length > 0
+          ? `${regionTag} • Via ${p2pWaypoints.length} Stop${p2pWaypoints.length > 1 ? 's' : ''}`
+          : `${regionTag} • Direct Route`;
+      }
+
+      const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
+
+      if (uniqueSeq.length < 2) {
+        p2pAlongStations = [];
+        renderAlongRouteList();
+        if (currentTab === 'p2p') renderMarkers();
+        document.getElementById('p2pKm').textContent = '0.0';
+        document.getElementById('p2pTime').textContent = '0 min';
+        routeLayer.clearLayers();
+        if (currentTab === 'p2p') map.setView([origin.lat, origin.lng], 14);
+        return;
+      }
+
+      const route = await fetchRoadRoute(uniqueSeq);
+      document.getElementById('p2pKm').textContent = route.km.toFixed(1);
+      document.getElementById('p2pTime').textContent = `${route.min} min`;
+
+      const excludedIds = new Set([oId, dId, ...p2pWaypoints]);
+      p2pAlongStations = findStationsAlongGeometry(route.geometry, excludedIds);
+      renderAlongRouteList();
+
+      if (currentTab === 'p2p') {
+        renderMarkers();
+        drawRouteOnMap(route.geometry, '#0284c7');
+      }
+    }
+
+    function swapP2P() {
+      const o = document.getElementById('p2pOrigin');
+      const d = document.getElementById('p2pDest');
+      const temp = o.value;
+      o.value = d.value;
+      d.value = temp;
+      p2pWaypoints.reverse();
+      renderP2PWaypoints();
+      calculateP2P();
+    }
+
+    function addTripStop(locId) {
+      const activeLocs = getActiveLocations();
+      const loc = activeLocs.find(l => l.id === locId);
+      if (loc) {
+        tripStops.push(loc);
+        renderTripStops();
+      }
+    }
+
+    function removeTripStop(index) {
+      tripStops.splice(index, 1);
+      renderTripStops();
+    }
+
+    function clearTrip() {
+      tripStops = [];
+      routeLayer.clearLayers();
+      renderTripStops();
+    }
+
+    async function renderTripStops() {
+      if (currentTab === 'trip') renderMarkers();
+      document.getElementById('tripCount').textContent = tripStops.length;
+      const list = document.getElementById('tripStopsList');
+      const summaryBox = document.getElementById('tripSummaryBox');
+
+      if (tripStops.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-400 italic">No stops added yet.</p>`;
+        summaryBox.classList.add('hidden');
+        routeLayer.clearLayers();
+        return;
+      }
+
+      list.innerHTML = tripStops.map((stop, i) => `
+        <div class="flex items-center justify-between bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs shadow-sm">
+          <div class="flex items-center gap-2 truncate">
+            <span class="w-5 h-5 rounded-full bg-sky-100 text-[#0284c7] font-bold flex items-center justify-center shrink-0">${i + 1}</span>
+            <span class="truncate text-slate-800 font-medium">${stop.name}</span>
+          </div>
+          <button onclick="removeTripStop(${i})" class="text-slate-400 hover:text-rose-500 p-1">✕</button>
+        </div>
+      `).join('');
+
+      if (tripStops.length === 1) {
+        summaryBox.classList.add('hidden');
+        routeLayer.clearLayers();
+        if (currentTab === 'trip') map.setView([tripStops[0].lat, tripStops[0].lng], 14);
+      } else if (tripStops.length >= 2) {
+        const route = await fetchRoadRoute(tripStops);
+        document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
+        document.getElementById('tripTotalMin').textContent = route.min;
+        summaryBox.classList.remove('hidden');
+        if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#0284c7');
+      }
+    }
+
+    function switchTab(tabName) {
+      currentTab = tabName;
+      if (mobileSheetMode === 'map') setMobileSheetMode('split');
+      ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
+        document.getElementById(`panel-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        btn.classList.remove('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      });
+
+      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.add('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
+      activeBtn.classList.remove('border-transparent', 'text-slate-500');
+
+      routeLayer.clearLayers();
+      renderMarkers();
+
+      if (tabName === 'p2p') {
+        calculateP2P();
+      } else if (tabName === 'trip') {
+        renderTripStops();
+      } else {
+        const activeLocs = getActiveLocations();
+        if (activeLocs.length > 0) {
+          const bounds = L.latLngBounds(activeLocs.map(l => [l.lat, l.lng]));
+          map.fitBounds(bounds, { padding: [40, 40] });
+        }
+      }
+    }
+
+    map.on('click', function(e) {
+      if (!isAdmin || !mapPickMode) return;
+      document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('pinLng').value = e.latlng.lng.toFixed(6);
+      switchTab('pins');
+      document.getElementById('pinName').focus();
+    });
+
+    function editLocation(id) {
+      const loc = cloudLocations.find(l => l.id === id);
+      if (!loc) return;
+      document.getElementById('editId').value = loc.id;
+      document.getElementById('pinType').value = loc.type;
+      document.getElementById('pinTruckReady').checked = loc.truckReady === true;
+      document.getElementById('pinName').value = loc.name;
+      document.getElementById('pinLat').value = loc.lat;
+      document.getElementById('pinLng').value = loc.lng;
+      document.getElementById('pinPower').value = loc.power === '-' ? '' : loc.power;
+      document.getElementById('pinConnector').value = loc.connector === '-' ? '' : loc.connector;
+      document.getElementById('pinNote').value = loc.note || '';
+
+      document.getElementById('formTitle').textContent = 'Editing: ' + loc.name;
+      document.getElementById('btnSubmitPin').textContent = 'Update Station Now';
+      document.getElementById('btnCancelEdit').classList.remove('hidden');
+
+      const formBox = document.getElementById('adminPinForm');
+      if (formBox) {
+        formBox.classList.remove('border-sky-200');
+        formBox.classList.add('border-[#0ea5e9]', 'bg-sky-50/30');
+      }
+      const scrollArea = document.getElementById('tabScrollArea');
+      if (scrollArea) scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+
+      map.setView([loc.lat, loc.lng], 15);
+    }
+
+    function cancelEdit() {
+      document.getElementById('editId').value = '';
+      document.getElementById('pinName').value = '';
+      document.getElementById('pinLat').value = '';
+      document.getElementById('pinLng').value = '';
+      document.getElementById('pinQuickCoords').value = '';
+      document.getElementById('pinPower').value = '';
+      document.getElementById('pinConnector').value = '';
+      document.getElementById('pinNote').value = '';
+      document.getElementById('pinTruckReady').checked = true;
+      document.getElementById('formTitle').textContent = 'Add New Station';
+      document.getElementById('btnSubmitPin').textContent = 'Save & Publish Live';
+      document.getElementById('btnCancelEdit').classList.add('hidden');
+
+      const formBox = document.getElementById('adminPinForm');
+      if (formBox) {
+        formBox.classList.add('border-sky-200');
+        formBox.classList.remove('border-[#0ea5e9]', 'bg-sky-50/30');
+      }
+    }
+
+    function saveLocationForm(e) {
+      e.preventDefault();
+      if (!isAdmin) return;
+      const editId = document.getElementById('editId').value;
+      const id = editId || ('bd-' + Date.now());
+      const isTruck = document.getElementById('pinTruckReady').checked;
+      const locData = {
+        id: id,
+        type: document.getElementById('pinType').value,
+        truckReady: isTruck,
+        name: document.getElementById('pinName').value.trim(),
+        lat: parseFloat(document.getElementById('pinLat').value),
+        lng: parseFloat(document.getElementById('pinLng').value),
+        power: document.getElementById('pinPower').value.trim() || '120 kW',
+        connector: document.getElementById('pinConnector').value.trim() || 'GB/T + CCS2',
+        note: document.getElementById('pinNote').value.trim()
+      };
+
+      locationsRef.child(id).set(locData)
+        .then(() => {
+          showAdminToast(editId ? "Station updated live!" : "New station added live!");
+          cancelEdit();
+          map.setView([locData.lat, locData.lng], 14);
+        })
+        .catch(err => alert("Database write failed: " + err.message));
+    }
+
+    function deleteLocation(id) {
+      if (!isAdmin) return;
+      if (!confirm('Delete this station from the live database?')) return;
+      locationsRef.child(id).remove()
+        .then(() => showAdminToast("Station deleted."));
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(cloudLocations, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bluedot-ev-backup.json';
+      a.click();
+    }
+
+    function importDataToCloud(event) {
+      if (!isAdmin) return;
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            const updates = {};
+            imported.forEach(item => {
+              const id = item.id || ('bd-' + Date.now() + Math.floor(Math.random() * 1000));
+              updates[id] = {
+                truckReady: false,
+                ...item,
+                id: id
+              };
+            });
+            locationsRef.update(updates).then(() => {
+              showAdminToast('Stations imported to live database!');
+            });
+          }
+        } catch (err) {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    refreshAllUI();
+  </script>
+</body>
+</html>
