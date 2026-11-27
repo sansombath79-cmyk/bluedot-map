@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Blue Dot EV Charger — Laos Nationwide Network & Route Planner</title>
   <link rel="icon" type="image/png" href="blue.png" />
+  <link rel="apple-touch-icon" href="blue.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -49,40 +52,44 @@
       white-space: nowrap;
     }
     .station-label::before, .station-label-along::before { display: none; }
+    /* Push Leaflet zoom controls slightly lower on mobile so they sit cleanly below the floating search bar */
+    @media (max-width: 767px) {
+      .leaflet-top.leaflet-left { top: 68px; }
+    }
   </style>
 </head>
-<body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden">
+<body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden relative">
 
-  <!-- Ocean Sky Blue & White Header -->
-  <header class="bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-3 py-2 flex items-center justify-between z-30 shrink-0 shadow-sm">
-    <div class="flex items-center gap-2 min-w-0">
-      <img src="blue.png" alt="Blue Dot EV" class="w-8 h-8 md:w-9 md:h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
+  <!-- Desktop Header (Hidden on Mobile for Clean Full-Screen Map) -->
+  <header class="hidden md:flex bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-4 py-2.5 items-center justify-between z-30 shrink-0 shadow-sm">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <img src="blue.png" alt="Blue Dot EV" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
       <div class="min-w-0">
         <div class="flex items-center gap-1.5">
-          <h1 class="font-bold text-sm md:text-lg text-white tracking-wide truncate">BLUE DOT EV</h1>
-          <span id="liveBadge" class="text-[9px] md:text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/25 text-white border border-white/40 flex items-center gap-1 shrink-0">
+          <h1 class="font-bold text-lg text-white tracking-wide truncate">BLUE DOT EV</h1>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/25 text-white border border-white/40 flex items-center gap-1 shrink-0">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-ping"></span> LIVE
           </span>
         </div>
-        <p class="hidden md:block text-xs text-sky-50 truncate">Blue Dot EV Charging Network & Distance Planner (Laos Nationwide)</p>
+        <p class="text-xs text-sky-50 truncate">Blue Dot EV Charging Network & Distance Planner (Laos Nationwide)</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1.5 shrink-0">
-      <button onclick="useMyGPSLocation()" class="flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:bg-white/35 text-white border border-white/40 transition" title="Use Current GPS Location">
-        <i data-lucide="locate-fixed" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
-        <span>GPS</span>
+    <div class="flex items-center gap-2 shrink-0">
+      <button onclick="useMyGPSLocation()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 text-white border border-white/40 transition">
+        <i data-lucide="locate-fixed" class="w-4 h-4"></i>
+        <span>My GPS</span>
       </button>
 
-      <button id="btnAdminAuth" onclick="handleAdminAuth()" class="flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
-        <i id="adminLockIcon" data-lucide="lock" class="w-3.5 h-3.5 text-[#0284c7]"></i>
-        <span id="adminAuthLabel">Admin</span>
+      <button id="btnAdminAuthDesktop" onclick="handleAdminAuth()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
+        <i data-lucide="lock" class="w-3.5 h-3.5 text-[#0284c7]"></i>
+        <span id="adminAuthLabelDesktop">Admin</span>
       </button>
     </div>
   </header>
 
   <!-- Admin Login Modal -->
-  <div id="adminLoginModal" class="hidden fixed inset-0 z-[2000] bg-sky-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="adminLoginModal" class="hidden fixed inset-0 z-[3000] bg-sky-950/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white border border-sky-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
@@ -117,397 +124,36 @@
   </div>
 
   <!-- Main Workspace -->
-  <div class="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
-    
-    <!-- Bottom Sheet / Left Sidebar -->
-    <aside id="controlPanel" class="w-full md:w-[440px] bg-white border-t md:border-t-0 md:border-r border-sky-100 flex flex-col h-[54%] md:h-full z-20 shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-8px_25px_rgba(14,165,233,0.14)] md:shadow-none">
-      
-      <!-- Mobile 3-Level View Switcher -->
-      <div class="md:hidden flex items-center justify-between px-3 py-2 border-b border-sky-100 bg-white rounded-t-3xl shrink-0">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-[#0ea5e9]"></span>
-          <span class="text-xs font-bold text-slate-700">View Size</span>
-        </div>
-        <div class="grid grid-cols-3 gap-1 bg-sky-50 p-0.5 rounded-xl border border-sky-200/80">
-          <button id="btnViewMap" onclick="setMobileSheetMode('map')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1">
-            <i data-lucide="map" class="w-3 h-3"></i> Map
-          </button>
-          <button id="btnViewSplit" onclick="setMobileSheetMode('split')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0ea5e9] text-white shadow-sm transition flex items-center gap-1">
-            <i data-lucide="columns-2" class="w-3 h-3 rotate-90"></i> Split
-          </button>
-          <button id="btnViewList" onclick="setMobileSheetMode('list')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1">
-            <i data-lucide="list" class="w-3 h-3"></i> List
-          </button>
-        </div>
-      </div>
+  <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
 
-      <!-- 3-Option Vehicle Mode Selector + Route Region Mode -->
-      <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0 space-y-1.5">
-        <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
-          <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
-            <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">All (<span id="countAllStations">0</span>)</span>
-          </button>
-          <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
-            <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">Truck (<span id="countTruckStations">0</span>)</span>
-          </button>
-          <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
-            <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
-            <span class="truncate">EV (<span id="countStandardStations">0</span>)</span>
+    <!-- MOBILE FLOATING TOP SEARCH BAR (Clean Map-First Experience) -->
+    <div class="md:hidden fixed top-3 left-3 right-3 z-[1200] space-y-1.5">
+      <div class="bg-white/95 backdrop-blur-md border border-sky-200/90 rounded-2xl shadow-lg px-2.5 py-1.5 flex items-center gap-2">
+        <img src="blue.png" alt="Blue Dot EV" class="w-7 h-7 rounded-full object-contain shrink-0" />
+        <div class="flex-1 relative min-w-0">
+          <input id="mobileTopSearch" type="text" oninput="handleTopSearch(this.value)" onfocus="handleTopSearch(this.value)" placeholder="Search BlueDot station..." class="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none pr-6" />
+          <button id="btnClearTopSearch" onclick="clearTopSearch()" class="hidden absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
           </button>
         </div>
-
-        <!-- Country / Corridor Routing Toggle (Laos Only vs Cross-Border TH-LA) -->
-        <div class="flex items-center justify-between bg-sky-50/60 border border-sky-200/80 rounded-xl px-2.5 py-1">
-          <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
-            <i data-lucide="compass" class="w-3.5 h-3.5 text-[#0284c7]"></i> Route Region:
-          </span>
-          <div class="grid grid-cols-2 gap-1 bg-white p-0.5 rounded-lg border border-sky-200/80 text-[10px] font-bold">
-            <button type="button" id="btnRegionLaos" onclick="setRouteRegion('laos')" class="px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition">
-              🇱🇦 Laos Only
-            </button>
-            <button type="button" id="btnRegionCross" onclick="setRouteRegion('cross')" class="px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition">
-              🇱🇦🇹🇭 Cross-Border
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Navigation Tabs -->
-      <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0">
-        <button onclick="switchTab('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-[#0ea5e9] text-[#0284c7] font-semibold flex items-center justify-center gap-1.5 min-h-[40px]">
-          <i data-lucide="warehouse" class="w-4 h-4"></i>
-          <span>Nearest</span>
+        <button onclick="useMyGPSLocation()" class="p-2 rounded-xl bg-sky-50 active:bg-sky-100 text-[#0284c7] border border-sky-200/80 shrink-0" title="My GPS">
+          <i data-lucide="locate-fixed" class="w-4 h-4"></i>
         </button>
-        <button onclick="switchTab('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[40px]">
-          <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>Route</span>
-        </button>
-        <button onclick="switchTab('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-500 flex items-center justify-center gap-1.5 min-h-[40px]">
-          <i data-lucide="route" class="w-4 h-4"></i>
-          <span>Multi-Stop</span>
-        </button>
-        <button onclick="switchTab('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[40px]">
-          <i data-lucide="settings-2" class="w-4 h-4"></i>
-          <span>Admin</span>
+        <button id="btnAdminAuthMobile" onclick="handleAdminAuth()" class="px-2.5 py-2 rounded-xl bg-[#0ea5e9] text-white text-xs font-bold shrink-0 shadow-xs">
+          <span id="adminAuthLabelMobile">Admin</span>
         </button>
       </div>
 
-      <!-- Tab Content Container -->
-      <div id="tabScrollArea" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5 bg-[#f7fcff]">
+      <!-- Instant Search Dropdown Results -->
+      <div id="mobileSearchResults" class="hidden bg-white/98 backdrop-blur-md border border-sky-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar divide-y divide-sky-100"></div>
+    </div>
 
-        <!-- TAB 1: Warehouse / Starting Point to Blue Dot Stations -->
-        <div id="panel-warehouse" class="space-y-2.5">
-          <div class="bg-white border border-sky-200/80 rounded-2xl p-2.5 space-y-2 shadow-sm">
-            <div class="flex items-center justify-between gap-2">
-              <label class="text-[11px] font-semibold text-slate-500">From:</label>
-              <button onclick="promptCustomWarehouse()" class="text-[11px] font-semibold text-[#0284c7] flex items-center gap-1 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200">
-                <i data-lucide="map-pin" class="w-3 h-3"></i> Custom Lat/Lng
-              </button>
-            </div>
-            <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-sky-50/60 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
-          </div>
-
-          <div class="flex items-center justify-between px-1">
-            <h3 class="text-xs font-bold text-slate-700"><span id="listModeLabel">All Stations</span> (Nearest First)</h3>
-            <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap card for map route</span>
-          </div>
-
-          <div id="warehouseStationList" class="space-y-2 pb-6"></div>
-        </div>
-
-        <!-- TAB 2: Station to Station + EV Battery & Range Simulator -->
-        <div id="panel-p2p" class="hidden space-y-2.5 pb-6">
-          
-          <!-- EV / E-Truck Battery Simulation Card -->
-          <div class="bg-white border border-sky-200 rounded-2xl p-3 space-y-2.5 shadow-sm">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <i data-lucide="battery-charging" class="w-4 h-4 text-[#0ea5e9]"></i>
-                <h4 class="text-xs font-bold text-slate-800">Vehicle & Battery Simulator</h4>
-              </div>
-              <span id="simMotorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Motor: 360 kW</span>
-            </div>
-
-            <!-- Brand & Model Preset Dropdown -->
-            <div>
-              <select id="simVehiclePreset" onchange="applyVehiclePreset()" class="w-full bg-sky-50/70 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-[#0ea5e9]"></select>
-            </div>
-
-            <!-- Battery kWh / Motor kW / Consumption kWh/km Inputs -->
-            <div class="grid grid-cols-3 gap-1.5">
-              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
-                <label class="text-[9px] font-bold text-slate-500 block">Battery (kWh)</label>
-                <input id="simBatteryKwh" type="number" step="0.1" min="10" value="282" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-[#0284c7] focus:outline-none" />
-              </div>
-              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
-                <label class="text-[9px] font-bold text-slate-500 block">Motor (kW)</label>
-                <input id="simMotorKw" type="number" step="1" min="10" value="360" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
-              </div>
-              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
-                <label class="text-[9px] font-bold text-slate-500 block">Rate (kWh/km)</label>
-                <input id="simConsumptionRate" type="number" step="0.01" min="0.05" value="1.15" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
-              </div>
-            </div>
-
-            <!-- Starting Battery % & Load/Terrain Condition -->
-            <div class="grid grid-cols-2 gap-2 pt-0.5">
-              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-slate-600">Start SoC:</span>
-                <div class="flex items-center gap-0.5">
-                  <input id="simStartSoc" type="number" min="5" max="100" value="100" oninput="calculateP2P()" class="w-10 text-right bg-white border border-sky-200 rounded px-1 py-0.5 text-xs font-bold text-[#0284c7]" />
-                  <span class="text-xs font-bold text-slate-600">%</span>
-                </div>
-              </div>
-              <select id="simLoadFactor" onchange="calculateP2P()" class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2 py-1.5 text-[11px] font-semibold text-slate-700 focus:outline-none">
-                <option value="0.90">Eco / Flat (-10%)</option>
-                <option value="1.00" selected>Normal / Half Load</option>
-                <option value="1.25">Mountain / Full Load (+25%)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Origin / Stops / Destination Card -->
-          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
-            <div>
-              <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
-              <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
-            </div>
-
-            <div id="p2pWaypointsContainer" class="space-y-2"></div>
-
-            <div class="grid grid-cols-2 gap-2 pt-0.5">
-              <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="py-2 px-2.5 rounded-xl bg-sky-50 active:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
-                <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Add Stop (<span id="p2pWaypointCount">0</span>/4)
-              </button>
-              <button type="button" onclick="swapP2P()" class="py-2 px-2.5 rounded-xl bg-white active:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
-                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Swap Ends
-              </button>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Destination (จุดหมายปลายทาง)</label>
-              <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
-            </div>
-          </div>
-
-          <!-- Distance + Battery Percentage Simulation Result Card -->
-          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-2.5 shadow-sm">
-            <div class="flex items-center justify-between border-b border-sky-200/70 pb-2">
-              <div>
-                <p class="text-[10px] font-semibold text-[#0369a1]">Distance (<span id="p2pLegCount">Direct</span>)</p>
-                <div class="text-2xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-xs font-medium text-sky-600">km</span></div>
-                <p class="text-[11px] text-slate-600">Time: <span id="p2pTime" class="font-bold text-slate-800">-- min</span></p>
-              </div>
-              <div class="text-right">
-                <p class="text-[10px] font-semibold text-slate-500">Battery Used</p>
-                <div class="text-2xl font-bold text-amber-600"><span id="simUsedPct">--</span><span class="text-sm">%</span></div>
-                <p class="text-[11px] text-slate-600">Energy: <span id="simUsedKwh" class="font-bold text-slate-800">--</span> kWh</p>
-              </div>
-            </div>
-
-            <!-- Remaining SoC Progress Bar -->
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-semibold text-slate-600">Arrival Battery Remaining:</span>
-                <span id="simRemainBadge" class="font-bold text-emerald-700">--%</span>
-              </div>
-              <div class="w-full h-2.5 bg-white rounded-full overflow-hidden border border-sky-200">
-                <div id="simRemainBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 75%"></div>
-              </div>
-              <p id="simWarningText" class="hidden text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 mt-1">
-                ⚠️ Battery insufficient for single-charge trip! Add a charging stop below.
-              </p>
-            </div>
-          </div>
-
-          <!-- Stations Passed Along the Route (Auto-Detected with Arrival % at each station) -->
-          <div id="p2pAlongRouteSection" class="hidden bg-white border border-emerald-200 rounded-2xl p-3 space-y-2 shadow-sm">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <h4 class="text-xs font-bold text-slate-800">Stations Along Route (<span id="p2pAlongCount">0</span>)</h4>
-              </div>
-              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Pass-by SoC</span>
-            </div>
-            <div id="p2pAlongRouteList" class="space-y-1.5"></div>
-          </div>
-        </div>
-
-        <!-- TAB 3: Custom Multi-Stop Trip Planner -->
-        <div id="panel-trip" class="hidden space-y-2.5 pb-6">
-          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-700">Tap stations to add stops</span>
-              <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200">Clear</button>
-            </div>
-            <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
-          </div>
-
-          <div class="space-y-1.5">
-            <h4 class="text-xs font-bold text-slate-700">Selected Route (<span id="tripCount">0</span> stops)</h4>
-            <div id="tripStopsList" class="space-y-1.5"></div>
-          </div>
-
-          <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-1 shadow-sm">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-semibold text-[#0369a1]">Total Trip Distance:</span>
-              <span class="text-xl font-bold text-[#0284c7]"><span id="tripTotalKm">0</span> km</span>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-600">Est. Total Time:</span>
-              <span class="text-slate-900 font-bold"><span id="tripTotalMin">0</span> min</span>
-            </div>
-            <div class="flex justify-between items-center text-xs pt-1 border-t border-sky-200/70">
-              <span class="text-slate-600">Est. Battery Consumption:</span>
-              <span class="text-amber-600 font-bold"><span id="tripTotalBatteryPct">0</span>% (<span id="tripTotalKwh">0</span> kWh)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 4: Easy Admin Management -->
-        <div id="panel-pins" class="hidden space-y-3 pb-8">
-          <div id="adminToast" class="hidden bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-md flex items-center justify-between">
-            <span id="adminToastText">Saved successfully!</span>
-            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-          </div>
-
-          <form id="adminPinForm" onsubmit="saveLocationForm(event)" class="bg-white border-2 border-sky-200 rounded-2xl p-3.5 space-y-3 shadow-sm transition-all">
-            <div class="flex items-center justify-between border-b border-sky-100 pb-2">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
-                <h4 id="formTitle" class="text-xs font-bold text-slate-800">Add New Station</h4>
-              </div>
-              <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
-                ✕ Cancel Edit
-              </button>
-            </div>
-            <input type="hidden" id="editId" value="" />
-
-            <div>
-              <label class="text-[11px] font-bold text-slate-600 block mb-1">Station Name (ชื่อสถานี)</label>
-              <input id="pinName" type="text" required placeholder="e.g., PTT Phontong" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-[#0ea5e9]" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="text-[11px] font-bold text-slate-600 block mb-1">Category</label>
-                <select id="pinType" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-2.5 py-2.5 text-xs text-slate-800 font-semibold">
-                  <option value="station">EV Charging Station</option>
-                  <option value="warehouse">Warehouse / Hub</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[11px] font-bold text-slate-600 block mb-1">Vehicle Support</label>
-                <label class="flex items-center justify-between bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-xs font-bold text-[#0284c7] cursor-pointer">
-                  <span>E-Truck Ready</span>
-                  <input id="pinTruckReady" type="checkbox" checked class="w-4 h-4 accent-[#0ea5e9]" />
-                </label>
-              </div>
-            </div>
-
-            <div class="bg-sky-50/70 border border-sky-200/80 rounded-xl p-2.5 space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="text-[11px] font-bold text-[#0369a1]">Coordinates (พิกัด GPS)</label>
-                <div class="flex items-center gap-1">
-                  <button type="button" onclick="fillAdminFormWithGPS()" class="px-2 py-1 rounded-lg bg-white border border-sky-200 text-[#0284c7] font-semibold text-[10px] flex items-center gap-1 shadow-xs">
-                    <i data-lucide="locate-fixed" class="w-3 h-3"></i> My GPS
-                  </button>
-                  <button type="button" onclick="toggleMapClickPin()" id="btnMapPick" class="px-2 py-1 rounded-lg bg-[#0ea5e9] text-white font-semibold text-[10px] shadow-xs">
-                    Pick Map: OFF
-                  </button>
-                </div>
-              </div>
-              <div class="flex gap-1.5">
-                <input id="pinQuickCoords" type="text" placeholder="Paste Google Maps: 17.9934, 102.6247" class="flex-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
-                <button type="button" onclick="applyQuickCoords()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold shrink-0">Apply</button>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <input id="pinLat" type="number" step="any" required placeholder="Latitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
-                <input id="pinLng" type="number" step="any" required placeholder="Longitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
-              </div>
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-600">Power (กำลังไฟ)</label>
-                <div class="flex gap-1">
-                  <button type="button" onclick="setQuickValue('pinPower', '40 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">40kW</button>
-                  <button type="button" onclick="setQuickValue('pinPower', '120 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">120kW</button>
-                  <button type="button" onclick="setQuickValue('pinPower', '180 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">180kW</button>
-                  <button type="button" onclick="setQuickValue('pinPower', '400 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">400kW</button>
-                </div>
-              </div>
-              <input id="pinPower" type="text" placeholder="e.g., 180 kW" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-600">Connector (หัวชาร์จ)</label>
-                <div class="flex gap-1">
-                  <button type="button" onclick="setQuickValue('pinConnector', 'GB/T + CCS2')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">GB/T + CCS2</button>
-                  <button type="button" onclick="setQuickValue('pinConnector', 'GB/T + GB/T')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">GB/T x2</button>
-                </div>
-              </div>
-              <input id="pinConnector" type="text" placeholder="e.g., GB/T + CCS2" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-600">Guns / Notes (จำนวนหัวชาร์จ)</label>
-                <div class="flex gap-1">
-                  <button type="button" onclick="setQuickValue('pinNote', '2 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">2 Guns</button>
-                  <button type="button" onclick="setQuickValue('pinNote', '4 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">4 Guns</button>
-                  <button type="button" onclick="setQuickValue('pinNote', '6 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">6 Guns</button>
-                  <button type="button" onclick="setQuickValue('pinNote', '8 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">8 Guns</button>
-                </div>
-              </div>
-              <input id="pinNote" type="text" placeholder="e.g., 4 Charging Guns" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
-            </div>
-
-            <button type="submit" id="btnSubmitPin" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] active:opacity-90 text-white font-bold py-3 rounded-xl text-sm shadow-md">
-              Save & Publish Live
-            </button>
-          </form>
-
-          <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-bold text-slate-800">Manage Stations (<span id="totalPinCount">0</span>)</h4>
-              <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All</button>
-            </div>
-
-            <div class="grid grid-cols-3 gap-1 bg-sky-50 p-1 rounded-xl border border-sky-100 text-[11px] font-semibold">
-              <button type="button" id="adminFilterAll" onclick="setAdminFilter('all')" class="py-1 rounded-lg bg-[#0ea5e9] text-white">All</button>
-              <button type="button" id="adminFilterTruck" onclick="setAdminFilter('truck')" class="py-1 rounded-lg text-slate-600">E-Truck</button>
-              <button type="button" id="adminFilterStd" onclick="setAdminFilter('standard')" class="py-1 rounded-lg text-slate-600">Standard</button>
-            </div>
-
-            <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="🔍 Search station name to edit..." class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
-
-            <div id="allPinsManageList" class="space-y-2"></div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="exportData()" class="bg-white text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm">
-              <i data-lucide="download" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Backup JSON
-            </button>
-            <label class="bg-white text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm cursor-pointer">
-              <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> Import JSON
-              <input type="file" accept=".json" onchange="importDataToCloud(event)" class="hidden" />
-            </label>
-          </div>
-        </div>
-
-      </div>
-    </aside>
-
-    <!-- Map Container -->
-    <main id="mapWrapper" class="flex-1 relative h-[46%] md:h-full transition-all duration-300">
+    <!-- Map Container (Full 100% Height on Mobile behind the Floating Bottom Sheet) -->
+    <main id="mapWrapper" class="w-full h-full md:flex-1 relative order-1 md:order-2">
       <div id="map"></div>
 
-      <!-- Thumb-Friendly Map Controls -->
-      <div class="absolute bottom-3 md:bottom-auto md:top-3 right-3 z-[1000] flex flex-col gap-1.5">
+      <!-- Map Layer & Label Buttons (Positioned cleanly below search bar on Mobile) -->
+      <div class="absolute top-[68px] md:top-3 right-3 z-[1000] flex flex-col gap-1.5">
         <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
           <i data-lucide="tag" class="w-3.5 h-3.5 text-[#0ea5e9]"></i>
           <span id="labelToggleText">Labels: On</span>
@@ -518,23 +164,23 @@
         </button>
       </div>
 
-      <!-- Floating Admin Banner -->
-      <div id="adminBanner" class="hidden absolute top-3 left-3 right-3 z-[1000] bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
+      <!-- Floating Admin Map-Pick Banner -->
+      <div id="adminBanner" class="hidden absolute top-[68px] md:top-3 left-3 right-32 z-[1000] bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white font-semibold text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
         <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i>
-        <span>Tap anywhere on the map to pick Lat/Lng</span>
+        <span>Tap on map to pick Lat/Lng</span>
       </div>
 
-      <!-- Compact Legend -->
-      <div class="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-2.5 py-1.5 text-[10px] md:text-[11px] font-medium flex items-center gap-2.5 shadow-md">
+      <!-- Compact Legend (Sits cleanly just above the collapsed bottom bar) -->
+      <div id="mapLegendBox" class="absolute bottom-[96px] md:bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-2.5 py-1.5 text-[10px] md:text-[11px] font-medium flex items-center gap-2.5 shadow-md transition-all duration-300">
         <div class="flex items-center gap-1">
           <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
           <span class="text-slate-700">Hub</span>
         </div>
-        <div id="legendTruckItem" class="flex items-center gap-1">
+        <div class="flex items-center gap-1">
           <span class="w-2 h-2 rounded-full bg-[#0284c7] inline-block"></span>
           <span class="text-slate-700">Truck</span>
         </div>
-        <div id="legendStdItem" class="flex items-center gap-1">
+        <div class="flex items-center gap-1">
           <span class="w-2 h-2 rounded-full bg-[#38bdf8] inline-block"></span>
           <span class="text-slate-700">EV</span>
         </div>
@@ -544,6 +190,382 @@
         </div>
       </div>
     </main>
+
+    <!-- Slide-Up Bottom Sheet (Mobile) / Left Sidebar (Desktop) -->
+    <aside id="controlPanel" class="fixed md:static bottom-0 left-0 right-0 md:w-[440px] bg-white border-t md:border-t-0 md:border-r border-sky-200/80 flex flex-col h-[84px] md:h-full z-[1150] shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(14,165,233,0.18)] md:shadow-none order-2 md:order-1">
+      
+      <!-- Swipeable Drag Handle Bar (Mobile Only) -->
+      <div id="sheetDragZone" class="md:hidden pt-2 pb-1 px-4 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none shrink-0 bg-white rounded-t-3xl">
+        <div class="w-11 h-1.5 rounded-full bg-sky-200 mb-1"></div>
+        <div class="w-full flex items-center justify-between text-[10px] text-slate-400 font-semibold">
+          <span id="sheetHintText">Swipe up or tap a function below</span>
+          <button type="button" id="btnToggleDrawer" onclick="toggleMobileDrawer()" class="text-[#0284c7] font-bold flex items-center gap-0.5">
+            <span id="drawerToggleLabel">Expand</span>
+            <i id="drawerToggleIcon" data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary Function Tabs (Always Visible at Bottom on Mobile so user taps to slide up!) -->
+      <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0 px-1">
+        <button onclick="onMobileFunctionTap('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+          <i data-lucide="warehouse" class="w-4 h-4 text-[#0ea5e9]"></i>
+          <span>Nearest</span>
+        </button>
+        <button onclick="onMobileFunctionTap('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+          <i data-lucide="arrow-left-right" class="w-4 h-4 text-[#0ea5e9]"></i>
+          <span>Route</span>
+        </button>
+        <button onclick="onMobileFunctionTap('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+          <i data-lucide="route" class="w-4 h-4 text-[#0ea5e9]"></i>
+          <span>Multi-Stop</span>
+        </button>
+        <button onclick="onMobileFunctionTap('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+          <i data-lucide="settings-2" class="w-4 h-4"></i>
+          <span>Admin</span>
+        </button>
+      </div>
+
+      <!-- Expandable Drawer Body (Revealed when swiped up or when a function tab is tapped) -->
+      <div id="drawerBodyWrapper" class="flex-1 flex flex-col overflow-hidden">
+        
+        <!-- Vehicle Filter & Route Region Bar -->
+        <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0 space-y-1.5">
+          <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
+            <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
+              <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
+              <span class="truncate">All (<span id="countAllStations">0</span>)</span>
+            </button>
+            <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+              <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
+              <span class="truncate">Truck (<span id="countTruckStations">0</span>)</span>
+            </button>
+            <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+              <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
+              <span class="truncate">EV (<span id="countStandardStations">0</span>)</span>
+            </button>
+          </div>
+
+          <!-- Country / Corridor Routing Toggle -->
+          <div class="flex items-center justify-between bg-sky-50/60 border border-sky-200/80 rounded-xl px-2.5 py-1">
+            <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-[#0284c7]"></i> Route Region:
+            </span>
+            <div class="grid grid-cols-2 gap-1 bg-white p-0.5 rounded-lg border border-sky-200/80 text-[10px] font-bold">
+              <button type="button" id="btnRegionLaos" onclick="setRouteRegion('laos')" class="px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition">
+                🇱🇦 Laos Only
+              </button>
+              <button type="button" id="btnRegionCross" onclick="setRouteRegion('cross')" class="px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition">
+                🇱🇦🇹🇭 Cross-Border
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Tab Panels -->
+        <div id="tabScrollArea" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5 bg-[#f7fcff]">
+
+          <!-- TAB 1: Nearest Stations from Starting Point -->
+          <div id="panel-warehouse" class="space-y-2.5">
+            <div class="bg-white border border-sky-200/80 rounded-2xl p-2.5 space-y-2 shadow-sm">
+              <div class="flex items-center justify-between gap-2">
+                <label class="text-[11px] font-semibold text-slate-500">From:</label>
+                <button onclick="promptCustomWarehouse()" class="text-[11px] font-semibold text-[#0284c7] flex items-center gap-1 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200">
+                  <i data-lucide="map-pin" class="w-3 h-3"></i> Custom Lat/Lng
+                </button>
+              </div>
+              <select id="selectWarehouse" onchange="updateWarehouseDistances()" class="w-full bg-sky-50/60 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
+            </div>
+
+            <div class="flex items-center justify-between px-1">
+              <h3 class="text-xs font-bold text-slate-700"><span id="listModeLabel">All Stations</span> (Nearest First)</h3>
+              <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap card for map route</span>
+            </div>
+
+            <div id="warehouseStationList" class="space-y-2 pb-8"></div>
+          </div>
+
+          <!-- TAB 2: Route + EV Battery & Range Simulator -->
+          <div id="panel-p2p" class="hidden space-y-2.5 pb-8">
+            
+            <!-- EV / E-Truck Battery Simulation Card -->
+            <div class="bg-white border border-sky-200 rounded-2xl p-3 space-y-2.5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="battery-charging" class="w-4 h-4 text-[#0ea5e9]"></i>
+                  <h4 class="text-xs font-bold text-slate-800">Vehicle & Battery Simulator</h4>
+                </div>
+                <span id="simMotorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Motor: 360 kW</span>
+              </div>
+
+              <div>
+                <select id="simVehiclePreset" onchange="applyVehiclePreset()" class="w-full bg-sky-50/70 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-[#0ea5e9]"></select>
+              </div>
+
+              <div class="grid grid-cols-3 gap-1.5">
+                <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                  <label class="text-[9px] font-bold text-slate-500 block">Battery (kWh)</label>
+                  <input id="simBatteryKwh" type="number" step="0.1" min="10" value="282" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-[#0284c7] focus:outline-none" />
+                </div>
+                <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                  <label class="text-[9px] font-bold text-slate-500 block">Motor (kW)</label>
+                  <input id="simMotorKw" type="number" step="1" min="10" value="360" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+                </div>
+                <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                  <label class="text-[9px] font-bold text-slate-500 block">Rate (kWh/km)</label>
+                  <input id="simConsumptionRate" type="number" step="0.01" min="0.05" value="1.15" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-0.5">
+                <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-slate-600">Start SoC:</span>
+                  <div class="flex items-center gap-0.5">
+                    <input id="simStartSoc" type="number" min="5" max="100" value="100" oninput="calculateP2P()" class="w-10 text-right bg-white border border-sky-200 rounded px-1 py-0.5 text-xs font-bold text-[#0284c7]" />
+                    <span class="text-xs font-bold text-slate-600">%</span>
+                  </div>
+                </div>
+                <select id="simLoadFactor" onchange="calculateP2P()" class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2 py-1.5 text-[11px] font-semibold text-slate-700 focus:outline-none">
+                  <option value="0.90">Eco / Flat (-10%)</option>
+                  <option value="1.00" selected>Normal / Half Load</option>
+                  <option value="1.25">Mountain / Full Load (+25%)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Origin / Stops / Destination Card -->
+            <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
+              <div>
+                <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
+                <select id="p2pOrigin" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
+              </div>
+
+              <div id="p2pWaypointsContainer" class="space-y-2"></div>
+
+              <div class="grid grid-cols-2 gap-2 pt-0.5">
+                <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="py-2 px-2.5 rounded-xl bg-sky-50 active:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
+                  <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Add Stop (<span id="p2pWaypointCount">0</span>/4)
+                </button>
+                <button type="button" onclick="swapP2P()" class="py-2 px-2.5 rounded-xl bg-white active:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
+                  <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Swap Ends
+                </button>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Destination (จุดหมายปลายทาง)</label>
+                <select id="p2pDest" onchange="calculateP2P()" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 font-semibold focus:outline-none focus:border-[#0ea5e9]"></select>
+              </div>
+            </div>
+
+            <!-- Distance + Battery Percentage Simulation Result Card -->
+            <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-2.5 shadow-sm">
+              <div class="flex items-center justify-between border-b border-sky-200/70 pb-2">
+                <div>
+                  <p class="text-[10px] font-semibold text-[#0369a1]">Distance (<span id="p2pLegCount">Direct</span>)</p>
+                  <div class="text-2xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-xs font-medium text-sky-600">km</span></div>
+                  <p class="text-[11px] text-slate-600">Time: <span id="p2pTime" class="font-bold text-slate-800">-- min</span></p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] font-semibold text-slate-500">Battery Used</p>
+                  <div class="text-2xl font-bold text-amber-600"><span id="simUsedPct">--</span><span class="text-sm">%</span></div>
+                  <p class="text-[11px] text-slate-600">Energy: <span id="simUsedKwh" class="font-bold text-slate-800">--</span> kWh</p>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-semibold text-slate-600">Arrival Battery Remaining:</span>
+                  <span id="simRemainBadge" class="font-bold text-emerald-700">--%</span>
+                </div>
+                <div class="w-full h-2.5 bg-white rounded-full overflow-hidden border border-sky-200">
+                  <div id="simRemainBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 75%"></div>
+                </div>
+                <p id="simWarningText" class="hidden text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 mt-1">
+                  ⚠️ Battery insufficient for single-charge trip! Add a charging stop below.
+                </p>
+              </div>
+            </div>
+
+            <!-- Stations Passed Along the Route -->
+            <div id="p2pAlongRouteSection" class="hidden bg-white border border-emerald-200 rounded-2xl p-3 space-y-2 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <h4 class="text-xs font-bold text-slate-800">Stations Along Route (<span id="p2pAlongCount">0</span>)</h4>
+                </div>
+                <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Pass-by SoC</span>
+              </div>
+              <div id="p2pAlongRouteList" class="space-y-1.5"></div>
+            </div>
+          </div>
+
+          <!-- TAB 3: Custom Multi-Stop Trip Planner -->
+          <div id="panel-trip" class="hidden space-y-2.5 pb-8">
+            <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Tap stations to add stops</span>
+                <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200">Clear</button>
+              </div>
+              <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
+            </div>
+
+            <div class="space-y-1.5">
+              <h4 class="text-xs font-bold text-slate-700">Selected Route (<span id="tripCount">0</span> stops)</h4>
+              <div id="tripStopsList" class="space-y-1.5"></div>
+            </div>
+
+            <div id="tripSummaryBox" class="hidden bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-1 shadow-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-semibold text-[#0369a1]">Total Trip Distance:</span>
+                <span class="text-xl font-bold text-[#0284c7]"><span id="tripTotalKm">0</span> km</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-600">Est. Total Time:</span>
+                <span class="text-slate-900 font-bold"><span id="tripTotalMin">0</span> min</span>
+              </div>
+              <div class="flex justify-between items-center text-xs pt-1 border-t border-sky-200/70">
+                <span class="text-slate-600">Est. Battery Consumption:</span>
+                <span class="text-amber-600 font-bold"><span id="tripTotalBatteryPct">0</span>% (<span id="tripTotalKwh">0</span> kWh)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: Easy Admin Management -->
+          <div id="panel-pins" class="hidden space-y-3 pb-10">
+            <div id="adminToast" class="hidden bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-md flex items-center justify-between">
+              <span id="adminToastText">Saved successfully!</span>
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            </div>
+
+            <form id="adminPinForm" onsubmit="saveLocationForm(event)" class="bg-white border-2 border-sky-200 rounded-2xl p-3.5 space-y-3 shadow-sm transition-all">
+              <div class="flex items-center justify-between border-b border-sky-100 pb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
+                  <h4 id="formTitle" class="text-xs font-bold text-slate-800">Add New Station</h4>
+                </div>
+                <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                  ✕ Cancel Edit
+                </button>
+              </div>
+              <input type="hidden" id="editId" value="" />
+
+              <div>
+                <label class="text-[11px] font-bold text-slate-600 block mb-1">Station Name (ชื่อสถานี)</label>
+                <input id="pinName" type="text" required placeholder="e.g., PTT Phontong" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-[#0ea5e9]" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-600 block mb-1">Category</label>
+                  <select id="pinType" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-2.5 py-2.5 text-xs text-slate-800 font-semibold">
+                    <option value="station">EV Charging Station</option>
+                    <option value="warehouse">Warehouse / Hub</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-600 block mb-1">Vehicle Support</label>
+                  <label class="flex items-center justify-between bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-xs font-bold text-[#0284c7] cursor-pointer">
+                    <span>E-Truck Ready</span>
+                    <input id="pinTruckReady" type="checkbox" checked class="w-4 h-4 accent-[#0ea5e9]" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="bg-sky-50/70 border border-sky-200/80 rounded-xl p-2.5 space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-bold text-[#0369a1]">Coordinates (พิกัด GPS)</label>
+                  <div class="flex items-center gap-1">
+                    <button type="button" onclick="fillAdminFormWithGPS()" class="px-2 py-1 rounded-lg bg-white border border-sky-200 text-[#0284c7] font-semibold text-[10px] flex items-center gap-1 shadow-xs">
+                      <i data-lucide="locate-fixed" class="w-3 h-3"></i> My GPS
+                    </button>
+                    <button type="button" onclick="toggleMapClickPin()" id="btnMapPick" class="px-2 py-1 rounded-lg bg-[#0ea5e9] text-white font-semibold text-[10px] shadow-xs">
+                      Pick Map: OFF
+                    </button>
+                  </div>
+                </div>
+                <div class="flex gap-1.5">
+                  <input id="pinQuickCoords" type="text" placeholder="Paste Google Maps: 17.9934, 102.6247" class="flex-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
+                  <button type="button" onclick="applyQuickCoords()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold shrink-0">Apply</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="pinLat" type="number" step="any" required placeholder="Latitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
+                  <input id="pinLng" type="number" step="any" required placeholder="Longitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-[11px] font-bold text-slate-600">Power (กำลังไฟ)</label>
+                  <div class="flex gap-1">
+                    <button type="button" onclick="setQuickValue('pinPower', '40 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">40kW</button>
+                    <button type="button" onclick="setQuickValue('pinPower', '120 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">120kW</button>
+                    <button type="button" onclick="setQuickValue('pinPower', '180 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">180kW</button>
+                    <button type="button" onclick="setQuickValue('pinPower', '400 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">400kW</button>
+                  </div>
+                </div>
+                <input id="pinPower" type="text" placeholder="e.g., 180 kW" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-[11px] font-bold text-slate-600">Connector (หัวชาร์จ)</label>
+                  <div class="flex gap-1">
+                    <button type="button" onclick="setQuickValue('pinConnector', 'GB/T + CCS2')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">GB/T + CCS2</button>
+                    <button type="button" onclick="setQuickValue('pinConnector', 'GB/T + GB/T')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">GB/T x2</button>
+                  </div>
+                </div>
+                <input id="pinConnector" type="text" placeholder="e.g., GB/T + CCS2" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-[11px] font-bold text-slate-600">Guns / Notes (จำนวนหัวชาร์จ)</label>
+                  <div class="flex gap-1">
+                    <button type="button" onclick="setQuickValue('pinNote', '2 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">2 Guns</button>
+                    <button type="button" onclick="setQuickValue('pinNote', '4 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">4 Guns</button>
+                    <button type="button" onclick="setQuickValue('pinNote', '6 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">6 Guns</button>
+                    <button type="button" onclick="setQuickValue('pinNote', '8 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">8 Guns</button>
+                  </div>
+                </div>
+                <input id="pinNote" type="text" placeholder="e.g., 4 Charging Guns" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+              </div>
+
+              <button type="submit" id="btnSubmitPin" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] active:opacity-90 text-white font-bold py-3 rounded-xl text-sm shadow-md">
+                Save & Publish Live
+              </button>
+            </form>
+
+            <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-slate-800">Manage Stations (<span id="totalPinCount">0</span>)</h4>
+                <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All</button>
+              </div>
+
+              <div class="grid grid-cols-3 gap-1 bg-sky-50 p-1 rounded-xl border border-sky-100 text-[11px] font-semibold">
+                <button type="button" id="adminFilterAll" onclick="setAdminFilter('all')" class="py-1 rounded-lg bg-[#0ea5e9] text-white">All</button>
+                <button type="button" id="adminFilterTruck" onclick="setAdminFilter('truck')" class="py-1 rounded-lg text-slate-600">E-Truck</button>
+                <button type="button" id="adminFilterStd" onclick="setAdminFilter('standard')" class="py-1 rounded-lg text-slate-600">Standard</button>
+              </div>
+
+              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="🔍 Search station name to edit..." class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
+
+              <div id="allPinsManageList" class="space-y-2"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="exportData()" class="bg-white text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm">
+                <i data-lucide="download" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Backup JSON
+              </button>
+              <label class="bg-white text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm cursor-pointer">
+                <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> Import JSON
+                <input type="file" accept=".json" onchange="importDataToCloud(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </aside>
 
   </div>
 
@@ -575,12 +597,10 @@
     // REAL-WORLD VEHICLE DATABASE (E-TRUCKS & EVs)
     // ==========================================
     const vehiclePresets = [
-      // E-Trucks
       { id: "truck-jac-q7", category: "E-Truck", name: "🚛 JAC Q7 E-Truck (282 kWh • 360 kW)", batteryKwh: 282, motorKw: 360, rateKwhPerKm: 1.15 },
       { id: "truck-deepway", category: "E-Truck", name: "🚛 Deepway 49T E-Truck (466 kWh • 492 kW)", batteryKwh: 466, motorKw: 492, rateKwhPerKm: 1.35 },
       { id: "truck-sany", category: "E-Truck", name: "🚛 SANY E-Truck 423 (423 kWh • 405 kW)", batteryKwh: 423, motorKw: 405, rateKwhPerKm: 1.30 },
       { id: "truck-skywell", category: "E-Truck", name: "🚛 SKY WELL E-Truck (350 kWh • 350 kW)", batteryKwh: 350, motorKw: 350, rateKwhPerKm: 1.20 },
-      // Passenger EVs
       { id: "ev-zeekr-001", category: "EV", name: "🚗 Zeekr 001 (100 kWh • 400 kW)", batteryKwh: 100, motorKw: 400, rateKwhPerKm: 0.18 },
       { id: "ev-leapmotor-c11", category: "EV", name: "🚗 Leapmotor C11 (78.5 kWh • 200 kW)", batteryKwh: 78.5, motorKw: 200, rateKwhPerKm: 0.17 },
       { id: "ev-byd-atto3", category: "EV", name: "🚗 BYD Atto 3 Extended (60.5 kWh • 150 kW)", batteryKwh: 60.5, motorKw: 150, rateKwhPerKm: 0.16 },
@@ -605,13 +625,14 @@
     let mapPickMode = false;
     let isHybrid = false;
     let showLabels = true;
-    let mobileSheetMode = 'split';
+    let mobileDrawerState = 'collapsed'; // 'collapsed' (map-first) | 'half' | 'full'
     let tripStops = [];
     let p2pWaypoints = [];
     let p2pAlongStations = [];
     let lastP2PDistanceKm = 0;
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
+    let markerObjectsMap = new Map();
 
     const map = L.map('map', { zoomControl: true }).setView([18.2, 103.5], 6);
 
@@ -628,6 +649,161 @@
     googleStreets.addTo(map);
     markersLayer.addTo(map);
     routeLayer.addTo(map);
+
+    // ==========================================
+    // MOBILE BOTTOM DRAWER & SWIPE GESTURES
+    // ==========================================
+    function setMobileDrawerState(state) {
+      if (window.innerWidth >= 768) return;
+      mobileDrawerState = state;
+      const panel = document.getElementById('controlPanel');
+      const legend = document.getElementById('mapLegendBox');
+      const label = document.getElementById('drawerToggleLabel');
+      const hint = document.getElementById('sheetHintText');
+
+      if (state === 'collapsed') {
+        panel.style.height = '84px';
+        if (legend) legend.style.bottom = '96px';
+        if (label) label.textContent = 'Expand';
+        if (hint) hint.textContent = 'Swipe up or tap a function below';
+      } else if (state === 'half') {
+        panel.style.height = '54dvh';
+        if (legend) legend.style.bottom = 'calc(54dvh + 10px)';
+        if (label) label.textContent = 'Full';
+        if (hint) hint.textContent = 'Swipe up for full list or down for map';
+      } else {
+        panel.style.height = '82dvh';
+        if (legend) legend.style.bottom = 'calc(82dvh + 10px)';
+        if (label) label.textContent = 'Map';
+        if (hint) hint.textContent = 'Swipe down to view full map';
+      }
+    }
+
+    function toggleMobileDrawer() {
+      if (mobileDrawerState === 'collapsed') setMobileDrawerState('half');
+      else if (mobileDrawerState === 'half') setMobileDrawerState('full');
+      else setMobileDrawerState('collapsed');
+    }
+
+    function onMobileFunctionTap(tabName) {
+      const wasSameTab = (currentTab === tabName);
+      switchTab(tabName);
+      if (window.innerWidth < 768) {
+        if (mobileDrawerState === 'collapsed') {
+          setMobileDrawerState('half');
+        } else if (wasSameTab && mobileDrawerState !== 'collapsed') {
+          setMobileDrawerState('collapsed');
+        }
+      }
+    }
+
+    // Touch swipe up / down detection on the drag handle bar
+    (function initDrawerSwipe() {
+      const dragZone = document.getElementById('sheetDragZone');
+      if (!dragZone) return;
+      let startY = 0;
+      dragZone.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+
+      dragZone.addEventListener('touchend', (e) => {
+        const endY = e.changedTouches[0].clientY;
+        const deltaY = startY - endY; // positive = swipe UP, negative = swipe DOWN
+        if (Math.abs(deltaY) < 25) return;
+        if (deltaY > 0) {
+          // Swiped UP
+          if (mobileDrawerState === 'collapsed') setMobileDrawerState('half');
+          else if (mobileDrawerState === 'half') setMobileDrawerState('full');
+        } else {
+          // Swiped DOWN
+          if (mobileDrawerState === 'full') setMobileDrawerState('half');
+          else if (mobileDrawerState === 'half') setMobileDrawerState('collapsed');
+        }
+      }, { passive: true });
+    })();
+
+    // Collapse drawer automatically when user taps directly on the map
+    map.on('click', function(e) {
+      if (isAdmin && mapPickMode) {
+        document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
+        document.getElementById('pinLng').value = e.latlng.lng.toFixed(6);
+        switchTab('pins');
+        setMobileDrawerState('half');
+        document.getElementById('pinName').focus();
+        return;
+      }
+      if (window.innerWidth < 768 && mobileDrawerState !== 'collapsed') {
+        setMobileDrawerState('collapsed');
+      }
+      document.getElementById('mobileSearchResults').classList.add('hidden');
+    });
+
+    // ==========================================
+    // FLOATING TOP SEARCH BAR (MOBILE)
+    // ==========================================
+    function handleTopSearch(rawQuery) {
+      const resultsBox = document.getElementById('mobileSearchResults');
+      const clearBtn = document.getElementById('btnClearTopSearch');
+      const q = (rawQuery || '').toLowerCase().trim();
+
+      if (q.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+
+      if (!q) {
+        resultsBox.classList.add('hidden');
+        return;
+      }
+
+      const matches = cloudLocations.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        (l.note && l.note.toLowerCase().includes(q)) ||
+        (l.power && l.power.toLowerCase().includes(q))
+      ).slice(0, 8);
+
+      if (matches.length === 0) {
+        resultsBox.innerHTML = `<div class="px-3.5 py-3 text-xs text-slate-500 text-center">No matching BlueDot stations found</div>`;
+        resultsBox.classList.remove('hidden');
+        return;
+      }
+
+      resultsBox.innerHTML = matches.map(loc => `
+        <button type="button" onclick="selectTopSearchStation('${loc.id}')" class="w-full text-left px-3.5 py-2.5 hover:bg-sky-50 active:bg-sky-100 flex items-center justify-between gap-2 transition">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${loc.type === 'warehouse' ? 'bg-amber-500' : (loc.truckReady ? 'bg-[#0284c7]' : 'bg-[#38bdf8]')} shrink-0"></span>
+              <span class="text-xs font-bold text-slate-800 truncate">${loc.name}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 truncate pl-3.5">${loc.power} • ${loc.connector}</p>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">View</span>
+        </button>
+      `).join('');
+      resultsBox.classList.remove('hidden');
+    }
+
+    function clearTopSearch() {
+      const inp = document.getElementById('mobileTopSearch');
+      if (inp) inp.value = '';
+      document.getElementById('btnClearTopSearch').classList.add('hidden');
+      document.getElementById('mobileSearchResults').classList.add('hidden');
+    }
+
+    function selectTopSearchStation(locId) {
+      const loc = cloudLocations.find(l => l.id === locId);
+      if (!loc) return;
+      document.getElementById('mobileSearchResults').classList.add('hidden');
+      document.getElementById('mobileTopSearch').value = loc.name;
+      setMobileDrawerState('collapsed');
+
+      if (currentTab !== 'warehouse') {
+        switchTab('warehouse');
+      }
+      map.setView([loc.lat, loc.lng], 15);
+      const markerObj = markerObjectsMap.get(loc.id);
+      if (markerObj) {
+        setTimeout(() => markerObj.openPopup(), 250);
+      }
+    }
 
     // Populate Vehicle Presets Dropdown
     function initVehiclePresets() {
@@ -707,18 +883,17 @@
       }
     }
 
-    // Key Route 13 Corridor Anchors inside Laos (North to South)
     const laosCorridorAnchors = [
-      { lat: 20.6925, lng: 101.9831 }, // Oudomxay
-      { lat: 19.8845, lng: 102.1348 }, // Luang Prabang
-      { lat: 18.9235, lng: 102.4478 }, // Vang Vieng
-      { lat: 17.9934, lng: 102.6247 }, // Vientiane Capital
-      { lat: 18.3885, lng: 103.6589 }, // Paksan
-      { lat: 18.1169, lng: 104.2721 }, // Pakkading
-      { lat: 17.4271, lng: 104.8103 }, // Thakhaek
-      { lat: 16.6762, lng: 104.9901 }, // Seno / Savannakhet
-      { lat: 15.6400, lng: 105.8049 }, // Napong
-      { lat: 15.1205, lng: 105.7985 }  // Pakse
+      { lat: 20.6925, lng: 101.9831 },
+      { lat: 19.8845, lng: 102.1348 },
+      { lat: 18.9235, lng: 102.4478 },
+      { lat: 17.9934, lng: 102.6247 },
+      { lat: 18.3885, lng: 103.6589 },
+      { lat: 18.1169, lng: 104.2721 },
+      { lat: 17.4271, lng: 104.8103 },
+      { lat: 16.6762, lng: 104.9901 },
+      { lat: 15.6400, lng: 105.8049 },
+      { lat: 15.1205, lng: 105.7985 }
     ];
 
     function routeCrossesIntoThailand(geometry) {
@@ -841,42 +1016,15 @@
       renderAdminManageList();
     }
 
-    function setMobileSheetMode(mode) {
-      if (window.innerWidth >= 768) return;
-      mobileSheetMode = mode;
-      const panel = document.getElementById('controlPanel');
-      const mapWrap = document.getElementById('mapWrapper');
-      const btnMap = document.getElementById('btnViewMap');
-      const btnSplit = document.getElementById('btnViewSplit');
-      const btnList = document.getElementById('btnViewList');
-
-      const activeCls = "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0ea5e9] text-white shadow-sm transition flex items-center gap-1";
-      const inactiveCls = "px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-600 transition flex items-center gap-1";
-
-      btnMap.className = mode === 'map' ? activeCls : inactiveCls;
-      btnSplit.className = mode === 'split' ? activeCls : inactiveCls;
-      btnList.className = mode === 'list' ? activeCls : inactiveCls;
-
-      if (mode === 'map') {
-        panel.style.height = '164px';
-        mapWrap.style.height = 'calc(100% - 164px)';
-      } else if (mode === 'list') {
-        panel.style.height = '84%';
-        mapWrap.style.height = '16%';
-      } else {
-        panel.style.height = '54%';
-        mapWrap.style.height = '46%';
-      }
-      setTimeout(() => map.invalidateSize(), 310);
-    }
-
     auth.onAuthStateChanged((user) => {
       if (user) {
         isAdmin = true;
         document.getElementById('tab-pins').classList.remove('hidden');
-        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
-        document.getElementById('adminAuthLabel').textContent = "Admin ON";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 shadow-sm transition";
+        document.getElementById('tabGrid').className = "grid grid-cols-4 border-b border-sky-100 bg-white text-xs font-medium shrink-0 px-1";
+        document.getElementById('adminAuthLabelDesktop').textContent = "Admin ON";
+        document.getElementById('adminAuthLabelMobile').textContent = "ON";
+        document.getElementById('btnAdminAuthDesktop').className = "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 shadow-sm transition";
+        document.getElementById('btnAdminAuthMobile').className = "px-2.5 py-2 rounded-xl bg-amber-400 text-slate-950 text-xs font-bold shrink-0 shadow-xs";
         
         locationsRef.once("value").then((snap) => {
           if (!snap.exists()) {
@@ -888,9 +1036,11 @@
         mapPickMode = false;
         document.getElementById('adminBanner').classList.add('hidden');
         document.getElementById('tab-pins').classList.add('hidden');
-        document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0";
-        document.getElementById('adminAuthLabel').textContent = "Admin";
-        document.getElementById('btnAdminAuth').className = "flex items-center gap-1 px-2.5 py-1.5 md:py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition";
+        document.getElementById('tabGrid').className = "grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0 px-1";
+        document.getElementById('adminAuthLabelDesktop').textContent = "Admin";
+        document.getElementById('adminAuthLabelMobile').textContent = "Admin";
+        document.getElementById('btnAdminAuthDesktop').className = "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition";
+        document.getElementById('btnAdminAuthMobile').className = "px-2.5 py-2 rounded-xl bg-[#0ea5e9] text-white text-xs font-bold shrink-0 shadow-xs";
         if (currentTab === 'pins') switchTab('warehouse');
       }
       if (window.lucide) lucide.createIcons();
@@ -952,7 +1102,6 @@
       else if (mode === 'truck') modeLbl.textContent = "E-Truck Only";
       else modeLbl.textContent = "Standard EV Only";
 
-      // Auto-select matching default vehicle preset when switching Truck / EV mode
       const presetSel = document.getElementById('simVehiclePreset');
       if (presetSel) {
         if (mode === 'truck') {
@@ -1005,6 +1154,7 @@
           document.getElementById('adminPasswordInput').value = "";
           closeAdminModal();
           switchTab('pins');
+          setMobileDrawerState('half');
         })
         .catch((err) => {
           btn.disabled = false;
@@ -1021,7 +1171,7 @@
       if (mapPickMode) {
         btn.textContent = "Pick Map: ON";
         banner.classList.remove('hidden');
-        setMobileSheetMode('map');
+        setMobileDrawerState('collapsed');
       } else {
         btn.textContent = "Pick Map: OFF";
         banner.classList.add('hidden');
@@ -1084,10 +1234,10 @@
           refreshAllUI();
           document.getElementById('selectWarehouse').value = gpsId;
           updateWarehouseDistances();
-          map.setView([lat, lng], 13);
+          map.setView([lat, lng], 14);
         },
         () => {
-          alert('Unable to retrieve GPS location. Please allow Location permissions in your browser.');
+          alert('Unable to retrieve GPS location. Please allow Location permissions.');
         },
         { enableHighAccuracy: true, timeout: 8000 }
       );
@@ -1153,6 +1303,7 @@
 
     function renderMarkers() {
       markersLayer.clearLayers();
+      markerObjectsMap.clear();
       const visibleLocations = getVisibleLocations();
       const alongMap = new Map(p2pAlongStations.map(a => [a.station.id, a]));
 
@@ -1197,7 +1348,7 @@
               : '');
 
         const editQuickBtn = isAdmin
-          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
+          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins'); setMobileDrawerState('half');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
           : '';
 
         marker.bindPopup(`
@@ -1219,6 +1370,7 @@
           </div>
         `);
         markersLayer.addLayer(marker);
+        markerObjectsMap.set(loc.id, marker);
       });
     }
 
@@ -1339,7 +1491,7 @@
         style: { color: color, weight: 5, opacity: 0.9 }
       });
       routeLayer.addLayer(geoLayer);
-      map.fitBounds(geoLayer.getBounds(), { padding: [40, 40] });
+      map.fitBounds(geoLayer.getBounds(), { padding: [55, 55] });
     }
 
     function renderAdminManageList() {
@@ -1480,7 +1632,7 @@
         const socColor = passMetrics.remainSoc < 15 ? 'text-rose-600' : (passMetrics.remainSoc < 30 ? 'text-amber-600' : 'text-emerald-700');
         return `
           <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/80 rounded-xl px-2.5 py-2 text-xs gap-2">
-            <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13)">
+            <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13); setMobileDrawerState('collapsed');">
               <div class="flex items-center gap-1.5">
                 <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
                 <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
@@ -1609,7 +1761,7 @@
       const minEl = document.getElementById(`dist-min-${st.id}`);
       if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span>`;
       if (minEl) minEl.textContent = `~${route.min} min`;
-      if (mobileSheetMode === 'list') setMobileSheetMode('split');
+      setMobileDrawerState('collapsed');
       drawRouteOnMap(route.geometry, '#0284c7');
     }
 
@@ -1746,18 +1898,17 @@
 
     function switchTab(tabName) {
       currentTab = tabName;
-      if (mobileSheetMode === 'map') setMobileSheetMode('split');
       ['warehouse', 'p2p', 'trip', 'pins'].forEach(t => {
         document.getElementById(`panel-${t}`).classList.add('hidden');
         const btn = document.getElementById(`tab-${t}`);
         btn.classList.remove('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
-        btn.classList.add('border-transparent', 'text-slate-500');
+        btn.classList.add('border-transparent', 'text-slate-600');
       });
 
       document.getElementById(`panel-${tabName}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`tab-${tabName}`);
       activeBtn.classList.add('border-[#0ea5e9]', 'text-[#0284c7]', 'font-semibold');
-      activeBtn.classList.remove('border-transparent', 'text-slate-500');
+      activeBtn.classList.remove('border-transparent', 'text-slate-600');
 
       routeLayer.clearLayers();
       renderMarkers();
@@ -1770,18 +1921,10 @@
         const activeLocs = getActiveLocations();
         if (activeLocs.length > 0) {
           const bounds = L.latLngBounds(activeLocs.map(l => [l.lat, l.lng]));
-          map.fitBounds(bounds, { padding: [40, 40] });
+          map.fitBounds(bounds, { padding: [45, 45] });
         }
       }
     }
-
-    map.on('click', function(e) {
-      if (!isAdmin || !mapPickMode) return;
-      document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
-      document.getElementById('pinLng').value = e.latlng.lng.toFixed(6);
-      switchTab('pins');
-      document.getElementById('pinName').focus();
-    });
 
     function editLocation(id) {
       const loc = cloudLocations.find(l => l.id === id);
@@ -1906,6 +2049,9 @@
 
     initVehiclePresets();
     refreshAllUI();
+    if (window.innerWidth < 768) {
+      setMobileDrawerState('collapsed');
+    }
   </script>
 </body>
 </html>
