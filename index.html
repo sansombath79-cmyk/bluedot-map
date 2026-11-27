@@ -217,8 +217,58 @@
           <div id="warehouseStationList" class="space-y-2 pb-6"></div>
         </div>
 
-        <!-- TAB 2: Station to Station (With Auto Stations Along Route + up to 4 Waypoints) -->
+        <!-- TAB 2: Station to Station + EV Battery & Range Simulator -->
         <div id="panel-p2p" class="hidden space-y-2.5 pb-6">
+          
+          <!-- EV / E-Truck Battery Simulation Card -->
+          <div class="bg-white border border-sky-200 rounded-2xl p-3 space-y-2.5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="battery-charging" class="w-4 h-4 text-[#0ea5e9]"></i>
+                <h4 class="text-xs font-bold text-slate-800">Vehicle & Battery Simulator</h4>
+              </div>
+              <span id="simMotorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Motor: 360 kW</span>
+            </div>
+
+            <!-- Brand & Model Preset Dropdown -->
+            <div>
+              <select id="simVehiclePreset" onchange="applyVehiclePreset()" class="w-full bg-sky-50/70 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-[#0ea5e9]"></select>
+            </div>
+
+            <!-- Battery kWh / Motor kW / Consumption kWh/km Inputs -->
+            <div class="grid grid-cols-3 gap-1.5">
+              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                <label class="text-[9px] font-bold text-slate-500 block">Battery (kWh)</label>
+                <input id="simBatteryKwh" type="number" step="0.1" min="10" value="282" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-[#0284c7] focus:outline-none" />
+              </div>
+              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                <label class="text-[9px] font-bold text-slate-500 block">Motor (kW)</label>
+                <input id="simMotorKw" type="number" step="1" min="10" value="360" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+              </div>
+              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
+                <label class="text-[9px] font-bold text-slate-500 block">Rate (kWh/km)</label>
+                <input id="simConsumptionRate" type="number" step="0.01" min="0.05" value="1.15" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+              </div>
+            </div>
+
+            <!-- Starting Battery % & Load/Terrain Condition -->
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+              <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
+                <span class="text-[10px] font-bold text-slate-600">Start SoC:</span>
+                <div class="flex items-center gap-0.5">
+                  <input id="simStartSoc" type="number" min="5" max="100" value="100" oninput="calculateP2P()" class="w-10 text-right bg-white border border-sky-200 rounded px-1 py-0.5 text-xs font-bold text-[#0284c7]" />
+                  <span class="text-xs font-bold text-slate-600">%</span>
+                </div>
+              </div>
+              <select id="simLoadFactor" onchange="calculateP2P()" class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2 py-1.5 text-[11px] font-semibold text-slate-700 focus:outline-none">
+                <option value="0.90">Eco / Flat (-10%)</option>
+                <option value="1.00" selected>Normal / Half Load</option>
+                <option value="1.25">Mountain / Full Load (+25%)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Origin / Stops / Destination Card -->
           <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div>
               <label class="text-[11px] font-bold text-[#0284c7] block mb-1">Origin (จุดเริ่มต้น)</label>
@@ -242,20 +292,44 @@
             </div>
           </div>
 
-          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 text-center space-y-0.5 shadow-sm">
-            <p class="text-[11px] font-semibold text-[#0369a1]">Total Distance (<span id="p2pLegCount">Direct Route</span>)</p>
-            <div class="text-3xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-base font-medium text-sky-600">km</span></div>
-            <p class="text-xs text-slate-600">Est. Time: <span id="p2pTime" class="text-slate-900 font-bold">-- min</span></p>
+          <!-- Distance + Battery Percentage Simulation Result Card -->
+          <div id="p2pResultCard" class="bg-gradient-to-br from-white via-sky-50 to-[#e0f2fe] border border-sky-300 rounded-2xl p-3.5 space-y-2.5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-sky-200/70 pb-2">
+              <div>
+                <p class="text-[10px] font-semibold text-[#0369a1]">Distance (<span id="p2pLegCount">Direct</span>)</p>
+                <div class="text-2xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-xs font-medium text-sky-600">km</span></div>
+                <p class="text-[11px] text-slate-600">Time: <span id="p2pTime" class="font-bold text-slate-800">-- min</span></p>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] font-semibold text-slate-500">Battery Used</p>
+                <div class="text-2xl font-bold text-amber-600"><span id="simUsedPct">--</span><span class="text-sm">%</span></div>
+                <p class="text-[11px] text-slate-600">Energy: <span id="simUsedKwh" class="font-bold text-slate-800">--</span> kWh</p>
+              </div>
+            </div>
+
+            <!-- Remaining SoC Progress Bar -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-slate-600">Arrival Battery Remaining:</span>
+                <span id="simRemainBadge" class="font-bold text-emerald-700">--%</span>
+              </div>
+              <div class="w-full h-2.5 bg-white rounded-full overflow-hidden border border-sky-200">
+                <div id="simRemainBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 75%"></div>
+              </div>
+              <p id="simWarningText" class="hidden text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 mt-1">
+                ⚠️ Battery insufficient for single-charge trip! Add a charging stop below.
+              </p>
+            </div>
           </div>
 
-          <!-- Stations Passed Along the Route (Auto-Detected) -->
+          <!-- Stations Passed Along the Route (Auto-Detected with Arrival % at each station) -->
           <div id="p2pAlongRouteSection" class="hidden bg-white border border-emerald-200 rounded-2xl p-3 space-y-2 shadow-sm">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <h4 class="text-xs font-bold text-slate-800">Stations Along Route (<span id="p2pAlongCount">0</span>)</h4>
               </div>
-              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">On Your Way</span>
+              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Pass-by SoC</span>
             </div>
             <div id="p2pAlongRouteList" class="space-y-1.5"></div>
           </div>
@@ -284,6 +358,10 @@
             <div class="flex justify-between items-center text-xs">
               <span class="text-slate-600">Est. Total Time:</span>
               <span class="text-slate-900 font-bold"><span id="tripTotalMin">0</span> min</span>
+            </div>
+            <div class="flex justify-between items-center text-xs pt-1 border-t border-sky-200/70">
+              <span class="text-slate-600">Est. Battery Consumption:</span>
+              <span class="text-amber-600 font-bold"><span id="tripTotalBatteryPct">0</span>% (<span id="tripTotalKwh">0</span> kWh)</span>
             </div>
           </div>
         </div>
@@ -493,6 +571,26 @@
     const db = firebase.database();
     const locationsRef = db.ref("locations");
 
+    // ==========================================
+    // REAL-WORLD VEHICLE DATABASE (E-TRUCKS & EVs)
+    // ==========================================
+    const vehiclePresets = [
+      // E-Trucks
+      { id: "truck-jac-q7", category: "E-Truck", name: "🚛 JAC Q7 E-Truck (282 kWh • 360 kW)", batteryKwh: 282, motorKw: 360, rateKwhPerKm: 1.15 },
+      { id: "truck-deepway", category: "E-Truck", name: "🚛 Deepway 49T E-Truck (466 kWh • 492 kW)", batteryKwh: 466, motorKw: 492, rateKwhPerKm: 1.35 },
+      { id: "truck-sany", category: "E-Truck", name: "🚛 SANY E-Truck 423 (423 kWh • 405 kW)", batteryKwh: 423, motorKw: 405, rateKwhPerKm: 1.30 },
+      { id: "truck-skywell", category: "E-Truck", name: "🚛 SKY WELL E-Truck (350 kWh • 350 kW)", batteryKwh: 350, motorKw: 350, rateKwhPerKm: 1.20 },
+      // Passenger EVs
+      { id: "ev-zeekr-001", category: "EV", name: "🚗 Zeekr 001 (100 kWh • 400 kW)", batteryKwh: 100, motorKw: 400, rateKwhPerKm: 0.18 },
+      { id: "ev-leapmotor-c11", category: "EV", name: "🚗 Leapmotor C11 (78.5 kWh • 200 kW)", batteryKwh: 78.5, motorKw: 200, rateKwhPerKm: 0.17 },
+      { id: "ev-byd-atto3", category: "EV", name: "🚗 BYD Atto 3 Extended (60.5 kWh • 150 kW)", batteryKwh: 60.5, motorKw: 150, rateKwhPerKm: 0.16 },
+      { id: "ev-byd-dolphin", category: "EV", name: "🚗 BYD Dolphin Standard (44.9 kWh • 70 kW)", batteryKwh: 44.9, motorKw: 70, rateKwhPerKm: 0.14 },
+      { id: "ev-deepal-s07", category: "EV", name: "🚗 Deepal S07 (66.8 kWh • 190 kW)", batteryKwh: 66.8, motorKw: 190, rateKwhPerKm: 0.17 },
+      { id: "ev-mg4", category: "EV", name: "🚗 MG4 EV Long Range (64 kWh • 150 kW)", batteryKwh: 64, motorKw: 150, rateKwhPerKm: 0.16 },
+      { id: "ev-tesla-my", category: "EV", name: "🚗 Tesla Model Y LR (75 kWh • 331 kW)", batteryKwh: 75, motorKw: 331, rateKwhPerKm: 0.165 },
+      { id: "custom", category: "Custom", name: "⚙️ Custom Vehicle Specs (กำหนดค่าเอง)", batteryKwh: 100, motorKw: 150, rateKwhPerKm: 0.18 }
+    ];
+
     const defaultLocations = [
       { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" }
     ];
@@ -501,7 +599,7 @@
     let localCustomWarehouses = [];
     let currentTab = 'warehouse';
     let vehicleMode = 'all';
-    let routeRegion = 'laos'; // 'laos' = Stay inside Laos 100%, 'cross' = Allow TH-LA cross-border
+    let routeRegion = 'laos';
     let adminFilterMode = 'all';
     let isAdmin = false;
     let mapPickMode = false;
@@ -511,6 +609,7 @@
     let tripStops = [];
     let p2pWaypoints = [];
     let p2pAlongStations = [];
+    let lastP2PDistanceKm = 0;
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
@@ -530,29 +629,104 @@
     markersLayer.addTo(map);
     routeLayer.addTo(map);
 
-    // Key Route 13 Corridor Anchors inside Laos (North to South) to prevent cross-border detours into Thailand
+    // Populate Vehicle Presets Dropdown
+    function initVehiclePresets() {
+      const sel = document.getElementById('simVehiclePreset');
+      if (!sel) return;
+      sel.innerHTML = vehiclePresets.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      applyVehiclePreset();
+    }
+
+    function applyVehiclePreset() {
+      const sel = document.getElementById('simVehiclePreset');
+      if (!sel) return;
+      const chosen = vehiclePresets.find(v => v.id === sel.value);
+      if (!chosen) return;
+      if (chosen.id !== 'custom') {
+        document.getElementById('simBatteryKwh').value = chosen.batteryKwh;
+        document.getElementById('simMotorKw').value = chosen.motorKw;
+        document.getElementById('simConsumptionRate').value = chosen.rateKwhPerKm;
+      }
+      document.getElementById('simMotorBadge').textContent = `Motor: ${document.getElementById('simMotorKw').value} kW`;
+      updateBatterySimulationUI(lastP2PDistanceKm);
+      renderAlongRouteList();
+    }
+
+    function onCustomVehicleSpecChange() {
+      const sel = document.getElementById('simVehiclePreset');
+      if (sel) sel.value = 'custom';
+      const motorVal = parseFloat(document.getElementById('simMotorKw').value) || 0;
+      document.getElementById('simMotorBadge').textContent = `Motor: ${motorVal} kW`;
+      updateBatterySimulationUI(lastP2PDistanceKm);
+      renderAlongRouteList();
+    }
+
+    function computeBatteryMetrics(distanceKm) {
+      const batteryKwh = Math.max(1, parseFloat(document.getElementById('simBatteryKwh').value) || 100);
+      const baseRate = Math.max(0.01, parseFloat(document.getElementById('simConsumptionRate').value) || 0.18);
+      const factor = parseFloat(document.getElementById('simLoadFactor').value) || 1.0;
+      const startSoc = Math.min(100, Math.max(1, parseFloat(document.getElementById('simStartSoc').value) || 100));
+
+      const effectiveRate = baseRate * factor;
+      const usedKwh = distanceKm * effectiveRate;
+      const usedPct = (usedKwh / batteryKwh) * 100;
+      const remainSoc = startSoc - usedPct;
+
+      return { batteryKwh, effectiveRate, usedKwh, usedPct, startSoc, remainSoc };
+    }
+
+    function updateBatterySimulationUI(distanceKm) {
+      lastP2PDistanceKm = distanceKm;
+      const m = computeBatteryMetrics(distanceKm);
+
+      document.getElementById('simUsedKwh').textContent = m.usedKwh.toFixed(1);
+      document.getElementById('simUsedPct').textContent = m.usedPct.toFixed(1);
+
+      const remainBadge = document.getElementById('simRemainBadge');
+      const remainBar = document.getElementById('simRemainBar');
+      const warnText = document.getElementById('simWarningText');
+
+      const clampedBar = Math.max(0, Math.min(100, m.remainSoc));
+      remainBar.style.width = `${clampedBar}%`;
+
+      if (m.remainSoc < 10) {
+        remainBadge.textContent = `${m.remainSoc.toFixed(1)}% (Recharge Required)`;
+        remainBadge.className = "font-bold text-rose-600";
+        remainBar.className = "h-full bg-rose-500 transition-all duration-300";
+        warnText.classList.remove('hidden');
+      } else if (m.remainSoc < 25) {
+        remainBadge.textContent = `${m.remainSoc.toFixed(1)}% (Low Reserve)`;
+        remainBadge.className = "font-bold text-amber-600";
+        remainBar.className = "h-full bg-amber-500 transition-all duration-300";
+        warnText.classList.add('hidden');
+      } else {
+        remainBadge.textContent = `${m.remainSoc.toFixed(1)}%`;
+        remainBadge.className = "font-bold text-emerald-700";
+        remainBar.className = "h-full bg-emerald-500 transition-all duration-300";
+        warnText.classList.add('hidden');
+      }
+    }
+
+    // Key Route 13 Corridor Anchors inside Laos (North to South)
     const laosCorridorAnchors = [
       { lat: 20.6925, lng: 101.9831 }, // Oudomxay
       { lat: 19.8845, lng: 102.1348 }, // Luang Prabang
       { lat: 18.9235, lng: 102.4478 }, // Vang Vieng
-      { lat: 17.9934, lng: 102.6247 }, // Vientiane Capital (Phontong / Route 13)
-      { lat: 18.3885, lng: 103.6589 }, // Paksan (Route 13 South)
+      { lat: 17.9934, lng: 102.6247 }, // Vientiane Capital
+      { lat: 18.3885, lng: 103.6589 }, // Paksan
       { lat: 18.1169, lng: 104.2721 }, // Pakkading
       { lat: 17.4271, lng: 104.8103 }, // Thakhaek
       { lat: 16.6762, lng: 104.9901 }, // Seno / Savannakhet
-      { lat: 15.6400, lng: 105.8049 }, // Napong / Salavan junction
+      { lat: 15.6400, lng: 105.8049 }, // Napong
       { lat: 15.1205, lng: 105.7985 }  // Pakse
     ];
 
-    // Check if any point of an OSRM route crosses the Mekong River into Thailand
     function routeCrossesIntoThailand(geometry) {
       if (!geometry || !Array.isArray(geometry.coordinates)) return false;
       for (let i = 0; i < geometry.coordinates.length; i += 3) {
         const lng = geometry.coordinates[i][0];
         const lat = geometry.coordinates[i][1];
-        // Vientiane -> Pakkading Mekong bend (South of lat 17.95, West of lng 104.10)
         if (lat < 17.93 && lat > 14.3 && lng < 104.15) return true;
-        // Thakhaek -> Savannakhet -> Pakse Mekong border (West of Mekong river line)
         if (lat <= 17.45 && lat > 16.55 && lng < 104.73) return true;
         if (lat <= 16.55 && lat > 15.15 && lng < 104.95) return true;
         if (lat <= 15.15 && lat > 14.30 && lng < 105.75) return true;
@@ -560,7 +734,6 @@
       return false;
     }
 
-    // Build waypoint sequence staying strictly inside Laos along Route 13
     function buildLaosDomesticCoords(coordsArray) {
       const expanded = [];
       for (let i = 0; i < coordsArray.length - 1; i++) {
@@ -572,7 +745,6 @@
         const minLat = Math.min(a.lat, b.lat);
         const maxLat = Math.max(a.lat, b.lat);
 
-        // Select Laos Route 13 anchors lying strictly between latitude of A and B
         let midAnchors = laosCorridorAnchors.filter(anc => anc.lat < (maxLat - 0.15) && anc.lat > (minLat + 0.15));
         midAnchors.sort((p1, p2) => goingSouth ? (p2.lat - p1.lat) : (p1.lat - p2.lat));
 
@@ -592,7 +764,6 @@
       btnLaos.className = region === 'laos' ? active : inactive;
       btnCross.className = region === 'cross' ? active : inactive;
 
-      // Recalculate active route views immediately
       if (currentTab === 'p2p') calculateP2P();
       else if (currentTab === 'trip') renderTripStops();
       else updateWarehouseDistances();
@@ -780,6 +951,18 @@
       if (mode === 'all') modeLbl.textContent = "All Stations";
       else if (mode === 'truck') modeLbl.textContent = "E-Truck Only";
       else modeLbl.textContent = "Standard EV Only";
+
+      // Auto-select matching default vehicle preset when switching Truck / EV mode
+      const presetSel = document.getElementById('simVehiclePreset');
+      if (presetSel) {
+        if (mode === 'truck') {
+          presetSel.value = 'truck-jac-q7';
+          applyVehiclePreset();
+        } else if (mode === 'standard') {
+          presetSel.value = 'ev-byd-atto3';
+          applyVehiclePreset();
+        }
+      }
 
       tripStops = [];
       p2pWaypoints = [];
@@ -1049,7 +1232,6 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // Detect all active stations that lie within ~4.0 km of the driven road geometry
     function findStationsAlongGeometry(geometry, excludedIds) {
       if (!geometry || !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
         return [];
@@ -1129,7 +1311,6 @@
     async function fetchRoadRoute(coordsArray) {
       try {
         const directRoute = await queryOSRM(coordsArray);
-        // If 'Laos Only' mode is active and OSRM tried to cross into Thailand, re-route via Laos Route 13 anchors
         if (routeRegion === 'laos' && routeCrossesIntoThailand(directRoute.geometry)) {
           const domesticCoords = buildLaosDomesticCoords(coordsArray);
           const laosRoute = await queryOSRM(domesticCoords);
@@ -1294,22 +1475,28 @@
 
       section.classList.remove('hidden');
       countEl.textContent = p2pAlongStations.length;
-      listEl.innerHTML = p2pAlongStations.map(item => `
-        <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/80 rounded-xl px-2.5 py-2 text-xs gap-2">
-          <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13)">
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
-              <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
+      listEl.innerHTML = p2pAlongStations.map(item => {
+        const passMetrics = computeBatteryMetrics(item.kmFromStart);
+        const socColor = passMetrics.remainSoc < 15 ? 'text-rose-600' : (passMetrics.remainSoc < 30 ? 'text-amber-600' : 'text-emerald-700');
+        return `
+          <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/80 rounded-xl px-2.5 py-2 text-xs gap-2">
+            <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13)">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
+                <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5 truncate">
+                ${item.station.power} • Pass SoC: <span class="font-bold ${socColor}">${passMetrics.remainSoc.toFixed(0)}%</span>
+              </p>
             </div>
-            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.station.power} • ${item.station.connector} ${item.offRouteKm > 0.3 ? `(${item.offRouteKm.toFixed(1)} km off road)` : '(On Route 13)'}</p>
+            ${p2pWaypoints.length < 4 ? `
+              <button type="button" onclick="addSpecificP2PWaypoint('${item.station.id}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
+                + Stop
+              </button>
+            ` : ''}
           </div>
-          ${p2pWaypoints.length < 4 ? `
-            <button type="button" onclick="addSpecificP2PWaypoint('${item.station.id}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
-              + Stop
-            </button>
-          ` : ''}
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function refreshAllUI() {
@@ -1440,6 +1627,7 @@
         if (currentTab === 'p2p') renderMarkers();
         document.getElementById('p2pKm').textContent = '--';
         document.getElementById('p2pTime').textContent = '-- min';
+        updateBatterySimulationUI(0);
         return;
       }
 
@@ -1454,7 +1642,7 @@
       if (legLabel) {
         legLabel.textContent = p2pWaypoints.length > 0
           ? `${regionTag} • Via ${p2pWaypoints.length} Stop${p2pWaypoints.length > 1 ? 's' : ''}`
-          : `${regionTag} • Direct Route`;
+          : `${regionTag} • Direct`;
       }
 
       const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
@@ -1465,6 +1653,7 @@
         if (currentTab === 'p2p') renderMarkers();
         document.getElementById('p2pKm').textContent = '0.0';
         document.getElementById('p2pTime').textContent = '0 min';
+        updateBatterySimulationUI(0);
         routeLayer.clearLayers();
         if (currentTab === 'p2p') map.setView([origin.lat, origin.lng], 14);
         return;
@@ -1473,6 +1662,7 @@
       const route = await fetchRoadRoute(uniqueSeq);
       document.getElementById('p2pKm').textContent = route.km.toFixed(1);
       document.getElementById('p2pTime').textContent = `${route.min} min`;
+      updateBatterySimulationUI(route.km);
 
       const excludedIds = new Set([oId, dId, ...p2pWaypoints]);
       p2pAlongStations = findStationsAlongGeometry(route.geometry, excludedIds);
@@ -1544,8 +1734,11 @@
         if (currentTab === 'trip') map.setView([tripStops[0].lat, tripStops[0].lng], 14);
       } else if (tripStops.length >= 2) {
         const route = await fetchRoadRoute(tripStops);
+        const tripBattery = computeBatteryMetrics(route.km);
         document.getElementById('tripTotalKm').textContent = route.km.toFixed(1);
         document.getElementById('tripTotalMin').textContent = route.min;
+        document.getElementById('tripTotalBatteryPct').textContent = tripBattery.usedPct.toFixed(1);
+        document.getElementById('tripTotalKwh').textContent = tripBattery.usedKwh.toFixed(1);
         summaryBox.classList.remove('hidden');
         if (currentTab === 'trip') drawRouteOnMap(route.geometry, '#0284c7');
       }
@@ -1711,6 +1904,7 @@
       reader.readAsText(file);
     }
 
+    initVehiclePresets();
     refreshAllUI();
   </script>
 </body>
