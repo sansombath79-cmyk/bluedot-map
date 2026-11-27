@@ -36,7 +36,19 @@
       box-shadow: 0 2px 6px rgba(14, 165, 233, 0.15);
       white-space: nowrap;
     }
-    .station-label::before { display: none; }
+    .station-label-along {
+      background-color: rgba(236, 253, 245, 0.96);
+      color: #047857;
+      border: 1px solid #10b981;
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.18);
+      white-space: nowrap;
+    }
+    .station-label::before, .station-label-along::before { display: none; }
   </style>
 </head>
 <body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden">
@@ -190,7 +202,7 @@
           <div id="warehouseStationList" class="space-y-2 pb-6"></div>
         </div>
 
-        <!-- TAB 2: Station to Station (With up to 4 Waypoints / Stops) -->
+        <!-- TAB 2: Station to Station (With Auto Stations Along Route + up to 4 Waypoints) -->
         <div id="panel-p2p" class="hidden space-y-2.5 pb-6">
           <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div>
@@ -219,6 +231,18 @@
             <p class="text-[11px] font-semibold text-[#0369a1]">Total Distance (<span id="p2pLegCount">Direct Route</span>)</p>
             <div class="text-3xl font-bold text-[#0284c7]"><span id="p2pKm">--</span> <span class="text-base font-medium text-sky-600">km</span></div>
             <p class="text-xs text-slate-600">Est. Time: <span id="p2pTime" class="text-slate-900 font-bold">-- min</span></p>
+          </div>
+
+          <!-- Stations Passed Along the Route (Auto-Detected) -->
+          <div id="p2pAlongRouteSection" class="hidden bg-white border border-emerald-200 rounded-2xl p-3 space-y-2 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <h4 class="text-xs font-bold text-slate-800">Stations Along Route (<span id="p2pAlongCount">0</span>)</h4>
+              </div>
+              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">On Your Way</span>
+            </div>
+            <div id="p2pAlongRouteList" class="space-y-1.5"></div>
           </div>
         </div>
 
@@ -251,13 +275,11 @@
 
         <!-- TAB 4: Easy Admin Management -->
         <div id="panel-pins" class="hidden space-y-3 pb-8">
-          <!-- Save Notification Toast -->
           <div id="adminToast" class="hidden bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-md flex items-center justify-between">
             <span id="adminToastText">Saved successfully!</span>
             <i data-lucide="check-circle-2" class="w-4 h-4"></i>
           </div>
 
-          <!-- Easy Edit / Add Form -->
           <form id="adminPinForm" onsubmit="saveLocationForm(event)" class="bg-white border-2 border-sky-200 rounded-2xl p-3.5 space-y-3 shadow-sm transition-all">
             <div class="flex items-center justify-between border-b border-sky-100 pb-2">
               <div class="flex items-center gap-1.5">
@@ -270,13 +292,11 @@
             </div>
             <input type="hidden" id="editId" value="" />
 
-            <!-- Station Name -->
             <div>
               <label class="text-[11px] font-bold text-slate-600 block mb-1">Station Name (ชื่อสถานี)</label>
               <input id="pinName" type="text" required placeholder="e.g., PTT Phontong" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-[#0ea5e9]" />
             </div>
 
-            <!-- Type & E-Truck Switch -->
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="text-[11px] font-bold text-slate-600 block mb-1">Category</label>
@@ -294,7 +314,6 @@
               </div>
             </div>
 
-            <!-- Coordinates Helper (Paste Google Maps, Pick on Map, or Use My GPS) -->
             <div class="bg-sky-50/70 border border-sky-200/80 rounded-xl p-2.5 space-y-2">
               <div class="flex items-center justify-between">
                 <label class="text-[11px] font-bold text-[#0369a1]">Coordinates (พิกัด GPS)</label>
@@ -307,7 +326,6 @@
                   </button>
                 </div>
               </div>
-              <!-- One-Paste Google Maps Lat,Lng -->
               <div class="flex gap-1.5">
                 <input id="pinQuickCoords" type="text" placeholder="Paste Google Maps: 17.9934, 102.6247" class="flex-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
                 <button type="button" onclick="applyQuickCoords()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold shrink-0">Apply</button>
@@ -318,7 +336,6 @@
               </div>
             </div>
 
-            <!-- Power Quick Presets -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-[11px] font-bold text-slate-600">Power (กำลังไฟ)</label>
@@ -332,7 +349,6 @@
               <input id="pinPower" type="text" placeholder="e.g., 180 kW" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
             </div>
 
-            <!-- Connector Quick Presets -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-[11px] font-bold text-slate-600">Connector (หัวชาร์จ)</label>
@@ -344,7 +360,6 @@
               <input id="pinConnector" type="text" placeholder="e.g., GB/T + CCS2" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
             </div>
 
-            <!-- Notes / Guns Quick Presets -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-[11px] font-bold text-slate-600">Guns / Notes (จำนวนหัวชาร์จ)</label>
@@ -363,14 +378,12 @@
             </button>
           </form>
 
-          <!-- Search & Quick-Toggle Station List -->
           <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2.5 shadow-sm">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-bold text-slate-800">Manage Stations (<span id="totalPinCount">0</span>)</h4>
               <button onclick="resetToCleanDatabase(true)" class="text-[11px] font-semibold text-rose-600 underline">Clear All</button>
             </div>
 
-            <!-- Admin Filter Pills -->
             <div class="grid grid-cols-3 gap-1 bg-sky-50 p-1 rounded-xl border border-sky-100 text-[11px] font-semibold">
               <button type="button" id="adminFilterAll" onclick="setAdminFilter('all')" class="py-1 rounded-lg bg-[#0ea5e9] text-white">All</button>
               <button type="button" id="adminFilterTruck" onclick="setAdminFilter('truck')" class="py-1 rounded-lg text-slate-600">E-Truck</button>
@@ -382,7 +395,6 @@
             <div id="allPinsManageList" class="space-y-2"></div>
           </div>
 
-          <!-- Backup / Import JSON -->
           <div class="grid grid-cols-2 gap-2 pt-1">
             <button onclick="exportData()" class="bg-white text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-sky-200 shadow-sm">
               <i data-lucide="download" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Backup JSON
@@ -433,6 +445,10 @@
           <span class="w-2 h-2 rounded-full bg-[#38bdf8] inline-block"></span>
           <span class="text-slate-700">EV</span>
         </div>
+        <div id="legendAlongItem" class="hidden flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+          <span class="text-slate-700">Pass-by</span>
+        </div>
       </div>
     </main>
 
@@ -478,6 +494,7 @@
     let mobileSheetMode = 'split';
     let tripStops = [];
     let p2pWaypoints = [];
+    let p2pAlongStations = []; // Auto-detected stations passed along the P2P route
     let markersLayer = L.layerGroup();
     let routeLayer = L.layerGroup();
 
@@ -569,7 +586,6 @@
       renderAdminManageList();
     }
 
-    // Mobile 3-Level Sheet Mode Controller
     function setMobileSheetMode(mode) {
       if (window.innerWidth >= 768) return;
       mobileSheetMode = mode;
@@ -599,7 +615,6 @@
       setTimeout(() => map.invalidateSize(), 310);
     }
 
-    // Firebase Auth State Observer
     auth.onAuthStateChanged((user) => {
       if (user) {
         isAdmin = true;
@@ -626,7 +641,6 @@
       if (window.lucide) lucide.createIcons();
     });
 
-    // Real-Time Firebase Listener
     locationsRef.on("value", (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -685,6 +699,7 @@
 
       tripStops = [];
       p2pWaypoints = [];
+      p2pAlongStations = [];
       routeLayer.clearLayers();
       refreshAllUI();
     }
@@ -830,12 +845,12 @@
       renderMarkers();
     }
 
-    function createMarkerIcon(loc) {
+    function createMarkerIcon(loc, isPassBy = false) {
       const isWh = loc.type === 'warehouse';
       const isTruck = loc.truckReady === true;
       const bg = isWh ? '#f59e0b' : '#ffffff';
-      const border = isWh ? '#ffffff' : (isTruck ? '#0284c7' : '#38bdf8');
-      const ring = isWh ? 'rgba(245, 158, 11, 0.35)' : (isTruck ? 'rgba(2, 132, 199, 0.32)' : 'rgba(56, 189, 248, 0.35)');
+      const border = isWh ? '#ffffff' : (isPassBy ? '#10b981' : (isTruck ? '#0284c7' : '#38bdf8'));
+      const ring = isWh ? 'rgba(245, 158, 11, 0.35)' : (isPassBy ? 'rgba(16, 185, 129, 0.35)' : (isTruck ? 'rgba(2, 132, 199, 0.32)' : 'rgba(56, 189, 248, 0.35)'));
 
       let innerHtml = '';
       if (isWh) {
@@ -858,7 +873,8 @@
       if (currentTab === 'p2p') {
         const oId = document.getElementById('p2pOrigin').value;
         const dId = document.getElementById('p2pDest').value;
-        const selectedIds = new Set([oId, dId, ...p2pWaypoints]);
+        const alongIds = p2pAlongStations.map(a => a.station.id);
+        const selectedIds = new Set([oId, dId, ...p2pWaypoints, ...alongIds]);
         return active.filter(l => selectedIds.has(l.id));
       }
       if (currentTab === 'trip') {
@@ -871,30 +887,47 @@
     function renderMarkers() {
       markersLayer.clearLayers();
       const visibleLocations = getVisibleLocations();
+      const alongMap = new Map(p2pAlongStations.map(a => [a.station.id, a]));
+
+      const legendAlong = document.getElementById('legendAlongItem');
+      if (legendAlong) {
+        if (currentTab === 'p2p' && p2pAlongStations.length > 0) {
+          legendAlong.classList.remove('hidden');
+        } else {
+          legendAlong.classList.add('hidden');
+        }
+      }
 
       visibleLocations.forEach(loc => {
-        const marker = L.marker([loc.lat, loc.lng], { icon: createMarkerIcon(loc) });
+        const passByInfo = (currentTab === 'p2p') ? alongMap.get(loc.id) : null;
+        const isPassBy = !!passByInfo;
+        const marker = L.marker([loc.lat, loc.lng], { icon: createMarkerIcon(loc, isPassBy) });
 
         if (showLabels) {
           const shortName = loc.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim();
-          marker.bindTooltip(shortName, {
+          const labelText = isPassBy ? `${shortName} (${passByInfo.kmFromStart.toFixed(0)} km)` : shortName;
+          marker.bindTooltip(labelText, {
             permanent: true,
             direction: 'bottom',
             offset: [0, 14],
-            className: 'station-label'
+            className: isPassBy ? 'station-label-along' : 'station-label'
           });
         }
 
         const badge = loc.type === 'warehouse'
           ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Warehouse / Hub</span>`
-          : (loc.truckReady
-              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7] border border-sky-200">E-TRUCK STATION</span>`
-              : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV STATION</span>`);
+          : (isPassBy
+              ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">ALONG ROUTE • ${passByInfo.kmFromStart.toFixed(1)} KM</span>`
+              : (loc.truckReady
+                  ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7] border border-sky-200">E-TRUCK STATION</span>`
+                  : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV STATION</span>`));
 
         const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
         const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
           ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route on Map</button>`
-          : '';
+          : (isPassBy && p2pWaypoints.length < 4
+              ? `<button onclick="addSpecificP2PWaypoint('${loc.id}')" class="mt-2 w-full bg-emerald-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">+ Add as Stop on Route</button>`
+              : '');
 
         const editQuickBtn = isAdmin
           ? `<button onclick="editLocation('${loc.id}'); switchTab('pins');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
@@ -930,6 +963,70 @@
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLon/2) * Math.sin(dLon/2);
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Detect all active stations that lie within ~3.0 km of the driven road geometry
+    function findStationsAlongGeometry(geometry, excludedIds) {
+      if (!geometry || !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
+        return [];
+      }
+      const coords = geometry.coordinates; // [lng, lat]
+      const activeStations = getActiveLocations().filter(l => l.type === 'station' && !excludedIds.has(l.id));
+
+      // Pre-compute cumulative km along polyline vertices
+      const cumKm = [0];
+      for (let i = 1; i < coords.length; i++) {
+        const segKm = getHaversineKm(coords[i - 1][1], coords[i - 1][0], coords[i][1], coords[i][0]);
+        cumKm.push(cumKm[i - 1] + segKm);
+      }
+
+      const found = [];
+      const maxCorridorKm = 3.0; // Within 3 km of the highway/road
+
+      activeStations.forEach(st => {
+        let minDistKm = Infinity;
+        let bestAlongKm = 0;
+
+        for (let i = 0; i < coords.length - 1; i++) {
+          const lat1 = coords[i][1], lng1 = coords[i][0];
+          const lat2 = coords[i + 1][1], lng2 = coords[i + 1][0];
+
+          // Project station point onto segment [i, i+1] in local planar approximation
+          const cosLat = Math.cos(((lat1 + lat2) / 2) * Math.PI / 180);
+          const ax = lng1 * cosLat, ay = lat1;
+          const bx = lng2 * cosLat, by = lat2;
+          const px = st.lng * cosLat, py = st.lat;
+
+          const abx = bx - ax, aby = by - ay;
+          const abLenSq = abx * abx + aby * aby;
+          let t = 0;
+          if (abLenSq > 0) {
+            t = ((px - ax) * abx + (py - ay) * aby) / abLenSq;
+            t = Math.max(0, Math.min(1, t));
+          }
+
+          const projLng = lng1 + t * (lng2 - lng1);
+          const projLat = lat1 + t * (lat2 - lat1);
+          const distKm = getHaversineKm(st.lat, st.lng, projLat, projLng);
+
+          if (distKm < minDistKm) {
+            minDistKm = distKm;
+            const segLen = cumKm[i + 1] - cumKm[i];
+            bestAlongKm = cumKm[i] + t * segLen;
+          }
+        }
+
+        if (minDistKm <= maxCorridorKm) {
+          found.push({
+            station: st,
+            offRouteKm: minDistKm,
+            kmFromStart: bestAlongKm
+          });
+        }
+      });
+
+      // Sort in order from Origin to Destination
+      return found.sort((a, b) => a.kmFromStart - b.kmFromStart);
     }
 
     async function fetchRoadRoute(coordsArray) {
@@ -1062,9 +1159,20 @@
       if (p2pWaypoints.length >= 4) return;
       const activeLocs = getActiveLocations();
       const stations = activeLocs.filter(l => l.type === 'station');
-      const defaultPick = stations[Math.min(p2pWaypoints.length + 1, stations.length - 1)] || activeLocs[0];
+      const defaultPick = (p2pAlongStations[0] && p2pAlongStations[0].station) || stations[Math.min(p2pWaypoints.length + 1, stations.length - 1)] || activeLocs[0];
       if (!defaultPick) return;
       p2pWaypoints.push(defaultPick.id);
+      renderP2PWaypoints();
+      calculateP2P();
+    }
+
+    function addSpecificP2PWaypoint(stationId) {
+      if (p2pWaypoints.length >= 4) {
+        alert("Maximum 4 stops allowed.");
+        return;
+      }
+      if (p2pWaypoints.includes(stationId)) return;
+      p2pWaypoints.push(stationId);
       renderP2PWaypoints();
       calculateP2P();
     }
@@ -1078,6 +1186,37 @@
       p2pWaypoints.splice(index, 1);
       renderP2PWaypoints();
       calculateP2P();
+    }
+
+    function renderAlongRouteList() {
+      const section = document.getElementById('p2pAlongRouteSection');
+      const countEl = document.getElementById('p2pAlongCount');
+      const listEl = document.getElementById('p2pAlongRouteList');
+      if (!section || !countEl || !listEl) return;
+
+      if (p2pAlongStations.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      countEl.textContent = p2pAlongStations.length;
+      listEl.innerHTML = p2pAlongStations.map(item => `
+        <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/80 rounded-xl px-2.5 py-2 text-xs gap-2">
+          <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13)">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
+              <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.station.power} • ${item.station.connector} ${item.offRouteKm > 0.3 ? `(${item.offRouteKm.toFixed(1)} km off road)` : '(On highway)'}</p>
+          </div>
+          ${p2pWaypoints.length < 4 ? `
+            <button type="button" onclick="addSpecificP2PWaypoint('${item.station.id}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
+              + Stop
+            </button>
+          ` : ''}
+        </div>
+      `).join('');
     }
 
     function refreshAllUI() {
@@ -1195,7 +1334,6 @@
     }
 
     async function calculateP2P() {
-      if (currentTab === 'p2p') renderMarkers();
       const activeLocs = getActiveLocations();
       const oId = document.getElementById('p2pOrigin').value;
       const dId = document.getElementById('p2pDest').value;
@@ -1204,6 +1342,9 @@
       const legLabel = document.getElementById('p2pLegCount');
 
       if (!origin || !dest) {
+        p2pAlongStations = [];
+        renderAlongRouteList();
+        if (currentTab === 'p2p') renderMarkers();
         document.getElementById('p2pKm').textContent = '--';
         document.getElementById('p2pTime').textContent = '-- min';
         return;
@@ -1225,6 +1366,9 @@
       const uniqueSeq = routePoints.filter((pt, i) => i === 0 || pt.id !== routePoints[i - 1].id);
 
       if (uniqueSeq.length < 2) {
+        p2pAlongStations = [];
+        renderAlongRouteList();
+        if (currentTab === 'p2p') renderMarkers();
         document.getElementById('p2pKm').textContent = '0.0';
         document.getElementById('p2pTime').textContent = '0 min';
         routeLayer.clearLayers();
@@ -1235,7 +1379,16 @@
       const route = await fetchRoadRoute(uniqueSeq);
       document.getElementById('p2pKm').textContent = route.km.toFixed(1);
       document.getElementById('p2pTime').textContent = `${route.min} min`;
-      if (currentTab === 'p2p') drawRouteOnMap(route.geometry, '#0284c7');
+
+      // Detect intermediate pass-by stations along the road geometry
+      const excludedIds = new Set([oId, dId, ...p2pWaypoints]);
+      p2pAlongStations = findStationsAlongGeometry(route.geometry, excludedIds);
+      renderAlongRouteList();
+
+      if (currentTab === 'p2p') {
+        renderMarkers();
+        drawRouteOnMap(route.geometry, '#0284c7');
+      }
     }
 
     function swapP2P() {
