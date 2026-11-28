@@ -52,15 +52,34 @@
       white-space: nowrap;
     }
     .station-label::before, .station-label-along::before { display: none; }
-    /* Push Leaflet zoom controls slightly lower on mobile so they sit cleanly below the floating search bar */
+
+    /* GPU-Accelerated 60fps Smooth Mobile Bottom Sheet */
     @media (max-width: 767px) {
       .leaflet-top.leaflet-left { top: 68px; }
+      #controlPanel {
+        height: 86dvh;
+        will-change: transform;
+        transform: translate3d(0, calc(86dvh - 88px), 0);
+        transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      #controlPanel.is-dragging {
+        transition: none !important;
+      }
+      #sheetDragZone, #tabGrid {
+        touch-action: none;
+      }
+    }
+    @media (min-width: 768px) {
+      #controlPanel {
+        transform: none !important;
+        height: 100% !important;
+      }
     }
   </style>
 </head>
 <body class="bg-[#f4fbff] text-slate-800 h-[100dvh] flex flex-col overflow-hidden relative">
 
-  <!-- Desktop Header (Hidden on Mobile for Clean Full-Screen Map) -->
+  <!-- Desktop Header -->
   <header class="hidden md:flex bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] px-4 py-2.5 items-center justify-between z-30 shrink-0 shadow-sm">
     <div class="flex items-center gap-2.5 min-w-0">
       <img src="blue.png" alt="Blue Dot EV" class="w-9 h-9 rounded-full object-contain bg-white p-0.5 shadow shrink-0 ring-2 ring-white/60" />
@@ -126,7 +145,7 @@
   <!-- Main Workspace -->
   <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
 
-    <!-- MOBILE FLOATING TOP SEARCH BAR (Clean Map-First Experience) -->
+    <!-- MOBILE FLOATING TOP SEARCH BAR -->
     <div class="md:hidden fixed top-3 left-3 right-3 z-[1200] space-y-1.5">
       <div class="bg-white/95 backdrop-blur-md border border-sky-200/90 rounded-2xl shadow-lg px-2.5 py-1.5 flex items-center gap-2">
         <img src="blue.png" alt="Blue Dot EV" class="w-7 h-7 rounded-full object-contain shrink-0" />
@@ -148,11 +167,11 @@
       <div id="mobileSearchResults" class="hidden bg-white/98 backdrop-blur-md border border-sky-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar divide-y divide-sky-100"></div>
     </div>
 
-    <!-- Map Container (Full 100% Height on Mobile behind the Floating Bottom Sheet) -->
+    <!-- Map Container -->
     <main id="mapWrapper" class="w-full h-full md:flex-1 relative order-1 md:order-2">
       <div id="map"></div>
 
-      <!-- Map Layer & Label Buttons (Positioned cleanly below search bar on Mobile) -->
+      <!-- Map Layer & Label Buttons -->
       <div class="absolute top-[68px] md:top-3 right-3 z-[1000] flex flex-col gap-1.5">
         <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
           <i data-lucide="tag" class="w-3.5 h-3.5 text-[#0ea5e9]"></i>
@@ -170,8 +189,8 @@
         <span>Tap on map to pick Lat/Lng</span>
       </div>
 
-      <!-- Compact Legend (Sits cleanly just above the collapsed bottom bar) -->
-      <div id="mapLegendBox" class="absolute bottom-[96px] md:bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-2.5 py-1.5 text-[10px] md:text-[11px] font-medium flex items-center gap-2.5 shadow-md transition-all duration-300">
+      <!-- Compact Legend -->
+      <div id="mapLegendBox" class="fixed md:absolute bottom-[100px] md:bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur border border-sky-200 rounded-xl px-2.5 py-1.5 text-[10px] md:text-[11px] font-medium flex items-center gap-2.5 shadow-md transition-opacity duration-200">
         <div class="flex items-center gap-1">
           <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
           <span class="text-slate-700">Hub</span>
@@ -191,42 +210,42 @@
       </div>
     </main>
 
-    <!-- Slide-Up Bottom Sheet (Mobile) / Left Sidebar (Desktop) -->
-    <aside id="controlPanel" class="fixed md:static bottom-0 left-0 right-0 md:w-[440px] bg-white border-t md:border-t-0 md:border-r border-sky-200/80 flex flex-col h-[84px] md:h-full z-[1150] shrink-0 transition-all duration-300 rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(14,165,233,0.18)] md:shadow-none order-2 md:order-1">
+    <!-- 60fps GPU-Accelerated Slide-Up Bottom Sheet (Mobile) / Left Sidebar (Desktop) -->
+    <aside id="controlPanel" class="fixed md:static bottom-0 left-0 right-0 md:w-[440px] bg-white border-t md:border-t-0 md:border-r border-sky-200/80 flex flex-col z-[1150] shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(14,165,233,0.18)] md:shadow-none order-2 md:order-1">
       
       <!-- Swipeable Drag Handle Bar (Mobile Only) -->
-      <div id="sheetDragZone" class="md:hidden pt-2 pb-1 px-4 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none shrink-0 bg-white rounded-t-3xl">
-        <div class="w-11 h-1.5 rounded-full bg-sky-200 mb-1"></div>
+      <div id="sheetDragZone" class="md:hidden pt-2.5 pb-1 px-4 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none shrink-0 bg-white rounded-t-3xl">
+        <div class="w-12 h-1.5 rounded-full bg-sky-200/90 mb-1.5"></div>
         <div class="w-full flex items-center justify-between text-[10px] text-slate-400 font-semibold">
           <span id="sheetHintText">Swipe up or tap a function below</span>
-          <button type="button" id="btnToggleDrawer" onclick="toggleMobileDrawer()" class="text-[#0284c7] font-bold flex items-center gap-0.5">
+          <button type="button" id="btnToggleDrawer" onclick="toggleMobileDrawer()" class="text-[#0284c7] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-md active:bg-sky-50">
             <span id="drawerToggleLabel">Expand</span>
             <i id="drawerToggleIcon" data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </div>
 
-      <!-- Primary Function Tabs (Always Visible at Bottom on Mobile so user taps to slide up!) -->
+      <!-- Primary Function Tabs -->
       <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0 px-1">
-        <button onclick="onMobileFunctionTap('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="onMobileFunctionTap('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
           <i data-lucide="warehouse" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Nearest</span>
         </button>
-        <button onclick="onMobileFunctionTap('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="onMobileFunctionTap('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
           <i data-lucide="arrow-left-right" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Route</span>
         </button>
-        <button onclick="onMobileFunctionTap('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="onMobileFunctionTap('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
           <i data-lucide="route" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Multi-Stop</span>
         </button>
-        <button onclick="onMobileFunctionTap('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[42px]">
+        <button onclick="onMobileFunctionTap('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[44px]">
           <i data-lucide="settings-2" class="w-4 h-4"></i>
           <span>Admin</span>
         </button>
       </div>
 
-      <!-- Expandable Drawer Body (Revealed when swiped up or when a function tab is tapped) -->
+      <!-- Expandable Drawer Body -->
       <div id="drawerBodyWrapper" class="flex-1 flex flex-col overflow-hidden">
         
         <!-- Vehicle Filter & Route Region Bar -->
@@ -263,7 +282,7 @@
         </div>
 
         <!-- Scrollable Tab Panels -->
-        <div id="tabScrollArea" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5 bg-[#f7fcff]">
+        <div id="tabScrollArea" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5 bg-[#f7fcff] overscroll-contain">
 
           <!-- TAB 1: Nearest Stations from Starting Point -->
           <div id="panel-warehouse" class="space-y-2.5">
@@ -282,11 +301,11 @@
               <span class="text-[11px] font-semibold text-[#0ea5e9]">Tap card for map route</span>
             </div>
 
-            <div id="warehouseStationList" class="space-y-2 pb-8"></div>
+            <div id="warehouseStationList" class="space-y-2 pb-12"></div>
           </div>
 
           <!-- TAB 2: Route + EV Battery & Range Simulator -->
-          <div id="panel-p2p" class="hidden space-y-2.5 pb-8">
+          <div id="panel-p2p" class="hidden space-y-2.5 pb-12">
             
             <!-- EV / E-Truck Battery Simulation Card -->
             <div class="bg-white border border-sky-200 rounded-2xl p-3 space-y-2.5 shadow-sm">
@@ -400,7 +419,7 @@
           </div>
 
           <!-- TAB 3: Custom Multi-Stop Trip Planner -->
-          <div id="panel-trip" class="hidden space-y-2.5 pb-8">
+          <div id="panel-trip" class="hidden space-y-2.5 pb-12">
             <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700">Tap stations to add stops</span>
@@ -431,7 +450,7 @@
           </div>
 
           <!-- TAB 4: Easy Admin Management -->
-          <div id="panel-pins" class="hidden space-y-3 pb-10">
+          <div id="panel-pins" class="hidden space-y-3 pb-14">
             <div id="adminToast" class="hidden bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-md flex items-center justify-between">
               <span id="adminToastText">Saved successfully!</span>
               <i data-lucide="check-circle-2" class="w-4 h-4"></i>
@@ -625,7 +644,8 @@
     let mapPickMode = false;
     let isHybrid = false;
     let showLabels = true;
-    let mobileDrawerState = 'collapsed'; // 'collapsed' (map-first) | 'half' | 'full'
+    let mobileDrawerState = 'collapsed'; // 'collapsed' | 'half' | 'full'
+    let currentTranslateY = 0;
     let tripStops = [];
     let p2pWaypoints = [];
     let p2pAlongStations = [];
@@ -651,31 +671,67 @@
     routeLayer.addTo(map);
 
     // ==========================================
-    // MOBILE BOTTOM DRAWER & SWIPE GESTURES
+    // 60FPS GPU-ACCELERATED BOTTOM SHEET PHYSICS
     // ==========================================
+    function getSnapOffsets() {
+      const sheetHeight = window.innerHeight * 0.86;
+      return {
+        full: 0,
+        half: Math.round(sheetHeight - window.innerHeight * 0.54),
+        collapsed: Math.round(sheetHeight - 88)
+      };
+    }
+
+    function applySheetTransform(yPx, animate = true) {
+      const panel = document.getElementById('controlPanel');
+      if (!panel || window.innerWidth >= 768) return;
+      const snaps = getSnapOffsets();
+      const clampedY = Math.max(0, Math.min(snaps.collapsed, yPx));
+      currentTranslateY = clampedY;
+
+      if (animate) {
+        panel.classList.remove('is-dragging');
+      } else {
+        panel.classList.add('is-dragging');
+      }
+      panel.style.transform = `translate3d(0, ${clampedY}px, 0)`;
+
+      // Fade legend smoothly when drawer rises above half
+      const legend = document.getElementById('mapLegendBox');
+      if (legend) {
+        if (clampedY < snaps.collapsed - 40) {
+          legend.style.opacity = '0';
+          legend.style.pointerEvents = 'none';
+        } else {
+          legend.style.opacity = '1';
+          legend.style.pointerEvents = 'auto';
+        }
+      }
+    }
+
     function setMobileDrawerState(state) {
       if (window.innerWidth >= 768) return;
       mobileDrawerState = state;
-      const panel = document.getElementById('controlPanel');
-      const legend = document.getElementById('mapLegendBox');
+      const snaps = getSnapOffsets();
       const label = document.getElementById('drawerToggleLabel');
       const hint = document.getElementById('sheetHintText');
+      const icon = document.getElementById('drawerToggleIcon');
 
       if (state === 'collapsed') {
-        panel.style.height = '84px';
-        if (legend) legend.style.bottom = '96px';
+        applySheetTransform(snaps.collapsed, true);
         if (label) label.textContent = 'Expand';
         if (hint) hint.textContent = 'Swipe up or tap a function below';
+        if (icon) icon.style.transform = 'rotate(0deg)';
       } else if (state === 'half') {
-        panel.style.height = '54dvh';
-        if (legend) legend.style.bottom = 'calc(54dvh + 10px)';
+        applySheetTransform(snaps.half, true);
         if (label) label.textContent = 'Full';
         if (hint) hint.textContent = 'Swipe up for full list or down for map';
+        if (icon) icon.style.transform = 'rotate(0deg)';
       } else {
-        panel.style.height = '82dvh';
-        if (legend) legend.style.bottom = 'calc(82dvh + 10px)';
+        applySheetTransform(snaps.full, true);
         if (label) label.textContent = 'Map';
         if (hint) hint.textContent = 'Swipe down to view full map';
+        if (icon) icon.style.transform = 'rotate(180deg)';
       }
     }
 
@@ -697,29 +753,125 @@
       }
     }
 
-    // Touch swipe up / down detection on the drag handle bar
-    (function initDrawerSwipe() {
+    // Real-time Finger Tracking + Velocity Snapping
+    (function initSmoothSheetGestures() {
       const dragZone = document.getElementById('sheetDragZone');
-      if (!dragZone) return;
-      let startY = 0;
-      dragZone.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-      }, { passive: true });
+      const tabGrid = document.getElementById('tabGrid');
+      const scrollArea = document.getElementById('tabScrollArea');
+      if (!dragZone || !tabGrid) return;
 
-      dragZone.addEventListener('touchend', (e) => {
-        const endY = e.changedTouches[0].clientY;
-        const deltaY = startY - endY; // positive = swipe UP, negative = swipe DOWN
-        if (Math.abs(deltaY) < 25) return;
-        if (deltaY > 0) {
-          // Swiped UP
-          if (mobileDrawerState === 'collapsed') setMobileDrawerState('half');
-          else if (mobileDrawerState === 'half') setMobileDrawerState('full');
-        } else {
-          // Swiped DOWN
-          if (mobileDrawerState === 'full') setMobileDrawerState('half');
-          else if (mobileDrawerState === 'half') setMobileDrawerState('collapsed');
+      let isDragging = false;
+      let startY = 0;
+      let startTranslateY = 0;
+      let lastY = 0;
+      let lastTime = 0;
+      let velocityY = 0;
+
+      function onDragStart(clientY) {
+        if (window.innerWidth >= 768) return;
+        isDragging = true;
+        startY = clientY;
+        lastY = clientY;
+        lastTime = performance.now();
+        velocityY = 0;
+        startTranslateY = currentTranslateY;
+      }
+
+      function onDragMove(clientY) {
+        if (!isDragging) return;
+        const now = performance.now();
+        const dt = now - lastTime;
+        if (dt > 0) {
+          velocityY = (clientY - lastY) / dt; // px per ms (+ = downward, - = upward)
         }
-      }, { passive: true });
+        lastY = clientY;
+        lastTime = now;
+
+        const deltaY = clientY - startY;
+        const targetY = startTranslateY + deltaY;
+        requestAnimationFrame(() => {
+          if (isDragging) applySheetTransform(targetY, false);
+        });
+      }
+
+      function onDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        const snaps = getSnapOffsets();
+
+        // Fast flick detection (velocity > 0.35 px/ms)
+        if (velocityY < -0.35) {
+          if (currentTranslateY > snaps.half + 20) setMobileDrawerState('half');
+          else setMobileDrawerState('full');
+          return;
+        }
+        if (velocityY > 0.35) {
+          if (currentTranslateY < snaps.half - 20) setMobileDrawerState('half');
+          else setMobileDrawerState('collapsed');
+          return;
+        }
+
+        // Otherwise snap to nearest detent
+        const distFull = Math.abs(currentTranslateY - snaps.full);
+        const distHalf = Math.abs(currentTranslateY - snaps.half);
+        const distCollapsed = Math.abs(currentTranslateY - snaps.collapsed);
+        const minDist = Math.min(distFull, distHalf, distCollapsed);
+
+        if (minDist === distFull) setMobileDrawerState('full');
+        else if (minDist === distHalf) setMobileDrawerState('half');
+        else setMobileDrawerState('collapsed');
+      }
+
+      // Attach to Drag Handle & Function Tab Bar
+      [dragZone, tabGrid].forEach(el => {
+        el.addEventListener('touchstart', (e) => {
+          onDragStart(e.touches[0].clientY);
+        }, { passive: true });
+
+        el.addEventListener('touchmove', (e) => {
+          onDragMove(e.touches[0].clientY);
+        }, { passive: true });
+
+        el.addEventListener('touchend', onDragEnd, { passive: true });
+        el.addEventListener('touchcancel', onDragEnd, { passive: true });
+      });
+
+      // Seamless pull-down from top of scroll list to collapse sheet
+      if (scrollArea) {
+        let listStartY = 0;
+        let pullingSheetFromList = false;
+
+        scrollArea.addEventListener('touchstart', (e) => {
+          listStartY = e.touches[0].clientY;
+          pullingSheetFromList = false;
+        }, { passive: true });
+
+        scrollArea.addEventListener('touchmove', (e) => {
+          if (window.innerWidth >= 768) return;
+          const y = e.touches[0].clientY;
+          const dy = y - listStartY;
+          if (scrollArea.scrollTop <= 0 && dy > 8 && !pullingSheetFromList) {
+            pullingSheetFromList = true;
+            onDragStart(y);
+          }
+          if (pullingSheetFromList) {
+            onDragMove(y);
+          }
+        }, { passive: true });
+
+        scrollArea.addEventListener('touchend', () => {
+          if (pullingSheetFromList) {
+            pullingSheetFromList = false;
+            onDragEnd();
+          }
+        }, { passive: true });
+      }
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth < 768) {
+          setMobileDrawerState(mobileDrawerState);
+        }
+      });
     })();
 
     // Collapse drawer automatically when user taps directly on the map
