@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://www.gstatic.com https://*.firebasedatabase.app https://*.firebaseio.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.google.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com; connect-src 'self' https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://unpkg.com; frame-src 'self' https://*.firebaseapp.com;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://www.gstatic.com https://*.firebasedatabase.app https://*.firebaseio.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.google.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com https://commons.wikimedia.org https://upload.wikimedia.org; connect-src 'self' https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://unpkg.com; frame-src 'self' https://*.firebaseapp.com;" />
   <title>Blue Dot EV Charger — Laos Nationwide Network & Route Planner</title>
   <link rel="icon" type="image/png" href="blue.png" />
   <link rel="apple-touch-icon" href="blue.png" />
@@ -13,13 +13,16 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
     #map { height: 100%; width: 100%; z-index: 1; }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f0f9ff; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #7dd3fc; border-radius: 3px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
     .leaflet-popup-content-wrapper {
       background-color: #ffffff;
       color: #0c4a6e;
@@ -54,6 +57,35 @@
     }
     .station-label::before, .station-label-along::before { display: none; }
 
+    /* Smooth Automotive Showroom Animations */
+    @keyframes vehicleStageEnter {
+      0% { opacity: 0; transform: translate3d(18px, 0, 0) scale(0.97); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+    .animate-vehicle-stage {
+      animation: vehicleStageEnter 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes modalPopIn {
+      0% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.96); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+    .animate-modal-pop {
+      animation: modalPopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes barSheen {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(220%); }
+    }
+    .battery-sheen::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; width: 45%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+      animation: barSheen 2.4s infinite ease-in-out;
+    }
+
     /* GPU-Accelerated 60fps Smooth Mobile Bottom Sheet */
     @media (max-width: 767px) {
       .leaflet-top.leaflet-left { top: 68px; }
@@ -61,7 +93,7 @@
         height: 86dvh;
         will-change: transform;
         transform: translate3d(0, calc(86dvh - 88px), 0);
-        transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+        transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
       }
       #controlPanel.is-dragging {
         transition: none !important;
@@ -96,21 +128,56 @@
     </div>
 
     <div class="flex items-center gap-2 shrink-0">
-      <button onclick="useMyGPSLocation()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 text-white border border-white/40 transition">
+      <button onclick="useMyGPSLocation()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 active:scale-95 text-white border border-white/40 transition">
         <i data-lucide="locate-fixed" class="w-4 h-4"></i>
         <span>My GPS</span>
       </button>
 
-      <button id="btnAdminAuthDesktop" onclick="handleAdminAuth()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 shadow-sm transition">
+      <button id="btnAdminAuthDesktop" onclick="handleAdminAuth()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-[#0284c7] hover:bg-sky-50 active:scale-95 shadow-sm transition">
         <i data-lucide="lock" class="w-3.5 h-3.5 text-[#0284c7]"></i>
         <span id="adminAuthLabelDesktop">Admin</span>
       </button>
     </div>
   </header>
 
+  <!-- Vehicle Garage / Model Selector Modal -->
+  <div id="vehicleGarageModal" onclick="if(event.target===this) closeVehicleGarage()" class="hidden fixed inset-0 z-[3100] bg-slate-950/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4">
+    <div class="bg-white border border-sky-200 rounded-t-3xl md:rounded-3xl w-full max-w-lg max-h-[86dvh] flex flex-col shadow-2xl overflow-hidden animate-modal-pop">
+      
+      <!-- Modal Header -->
+      <div class="px-4 py-3.5 bg-gradient-to-r from-[#f0f9ff] to-white border-b border-sky-100 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-sky-100 text-[#0284c7]">
+            <i data-lucide="car-front" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-slate-900">Select EV / E-Truck Model</h3>
+            <p class="text-[11px] text-slate-500">Choose your vehicle for real-world battery simulation</p>
+          </div>
+        </div>
+        <button onclick="closeVehicleGarage()" class="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Search & Brand Filter Chips -->
+      <div class="p-3 bg-white border-b border-sky-100 space-y-2.5 shrink-0">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input id="garageSearchInput" type="text" maxlength="60" oninput="renderVehicleGarageList()" placeholder="Search brand or model (Audi, VW, Toyota, BYD, JAC...)" class="w-full bg-sky-50/70 border border-sky-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 font-medium focus:outline-none focus:border-[#0ea5e9]" />
+        </div>
+
+        <div id="garageBrandChips" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+      </div>
+
+      <!-- Scrollable Model Cards -->
+      <div id="garageVehicleList" class="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2 bg-[#f7fcff]"></div>
+    </div>
+  </div>
+
   <!-- Admin Login Modal -->
   <div id="adminLoginModal" class="hidden fixed inset-0 z-[3000] bg-sky-950/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white border border-sky-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
+    <div class="bg-white border border-sky-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 animate-modal-pop">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <div class="p-2 rounded-xl bg-sky-50 text-[#0ea5e9] border border-sky-200">
@@ -174,11 +241,11 @@
 
       <!-- Map Layer & Label Buttons -->
       <div class="absolute top-[68px] md:top-3 right-3 z-[1000] flex flex-col gap-1.5">
-        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+        <button onclick="toggleLabels()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5 active:scale-95 transition">
           <i data-lucide="tag" class="w-3.5 h-3.5 text-[#0ea5e9]"></i>
           <span id="labelToggleText">Labels: On</span>
         </button>
-        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+        <button onclick="toggleMapLayer()" class="bg-white/95 backdrop-blur border border-sky-200 text-slate-700 px-2.5 py-2 rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5 active:scale-95 transition">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-[#0284c7]"></i>
           <span id="mapStyleLabel">Street</span>
         </button>
@@ -212,7 +279,7 @@
     </main>
 
     <!-- 60fps GPU-Accelerated Slide-Up Bottom Sheet (Mobile) / Left Sidebar (Desktop) -->
-    <aside id="controlPanel" class="fixed md:static bottom-0 left-0 right-0 md:w-[440px] bg-white border-t md:border-t-0 md:border-r border-sky-200/80 flex flex-col z-[1150] shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(14,165,233,0.18)] md:shadow-none order-2 md:order-1">
+    <aside id="controlPanel" class="fixed md:static bottom-0 left-0 right-0 md:w-[450px] bg-white border-t md:border-t-0 md:border-r border-sky-200/80 flex flex-col z-[1150] shrink-0 rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(14,165,233,0.18)] md:shadow-none order-2 md:order-1">
       
       <!-- Swipeable Drag Handle Bar (Mobile Only) -->
       <div id="sheetDragZone" class="md:hidden pt-2.5 pb-1 px-4 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none shrink-0 bg-white rounded-t-3xl">
@@ -221,26 +288,26 @@
           <span id="sheetHintText">Swipe up or tap a function below</span>
           <button type="button" id="btnToggleDrawer" onclick="toggleMobileDrawer()" class="text-[#0284c7] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-md active:bg-sky-50">
             <span id="drawerToggleLabel">Expand</span>
-            <i id="drawerToggleIcon" data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+            <i id="drawerToggleIcon" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-300"></i>
           </button>
         </div>
       </div>
 
       <!-- Primary Function Tabs -->
       <div id="tabGrid" class="grid grid-cols-3 border-b border-sky-100 bg-white text-xs font-medium shrink-0 px-1">
-        <button onclick="onMobileFunctionTap('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
+        <button onclick="onMobileFunctionTap('warehouse')" id="tab-warehouse" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px] transition-colors">
           <i data-lucide="warehouse" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Nearest</span>
         </button>
-        <button onclick="onMobileFunctionTap('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
+        <button onclick="onMobileFunctionTap('p2p')" id="tab-p2p" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px] transition-colors">
           <i data-lucide="arrow-left-right" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Route</span>
         </button>
-        <button onclick="onMobileFunctionTap('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px]">
+        <button onclick="onMobileFunctionTap('trip')" id="tab-trip" class="tab-btn py-2 px-1 border-b-2 border-transparent text-slate-600 flex items-center justify-center gap-1.5 min-h-[44px] transition-colors">
           <i data-lucide="route" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Multi-Stop</span>
         </button>
-        <button onclick="onMobileFunctionTap('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[44px]">
+        <button onclick="onMobileFunctionTap('pins')" id="tab-pins" class="hidden tab-btn py-2 px-1 border-b-2 border-transparent text-amber-600 flex items-center justify-center gap-1.5 min-h-[44px] transition-colors">
           <i data-lucide="settings-2" class="w-4 h-4"></i>
           <span>Admin</span>
         </button>
@@ -252,15 +319,15 @@
         <!-- Vehicle Filter & Route Region Bar -->
         <div class="px-3 py-2 bg-white border-b border-sky-100 shrink-0 space-y-1.5">
           <div class="grid grid-cols-3 gap-1 bg-sky-50/90 p-1 rounded-xl border border-sky-200/70">
-            <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition">
+            <button id="btnModeAll" onclick="setVehicleMode('all')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition-all">
               <i data-lucide="layers" class="w-3.5 h-3.5 shrink-0"></i>
               <span class="truncate">All (<span id="countAllStations">0</span>)</span>
             </button>
-            <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+            <button id="btnModeTruck" onclick="setVehicleMode('truck')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition-all">
               <i data-lucide="truck" class="w-3.5 h-3.5 shrink-0"></i>
               <span class="truncate">Truck (<span id="countTruckStations">0</span>)</span>
             </button>
-            <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition">
+            <button id="btnModeStandard" onclick="setVehicleMode('standard')" class="flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition-all">
               <i data-lucide="car" class="w-3.5 h-3.5 shrink-0"></i>
               <span class="truncate">EV (<span id="countStandardStations">0</span>)</span>
             </button>
@@ -272,10 +339,10 @@
               <i data-lucide="compass" class="w-3.5 h-3.5 text-[#0284c7]"></i> Route Region:
             </span>
             <div class="grid grid-cols-2 gap-1 bg-white p-0.5 rounded-lg border border-sky-200/80 text-[10px] font-bold">
-              <button type="button" id="btnRegionLaos" onclick="setRouteRegion('laos')" class="px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition">
+              <button type="button" id="btnRegionLaos" onclick="setRouteRegion('laos')" class="px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition-all">
                 🇱🇦 Laos Only
               </button>
-              <button type="button" id="btnRegionCross" onclick="setRouteRegion('cross')" class="px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition">
+              <button type="button" id="btnRegionCross" onclick="setRouteRegion('cross')" class="px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition-all">
                 🇱🇦🇹🇭 Cross-Border
               </button>
             </div>
@@ -290,7 +357,7 @@
             <div class="bg-white border border-sky-200/80 rounded-2xl p-2.5 space-y-2 shadow-sm">
               <div class="flex items-center justify-between gap-2">
                 <label class="text-[11px] font-semibold text-slate-500">From:</label>
-                <button onclick="promptCustomWarehouse()" class="text-[11px] font-semibold text-[#0284c7] flex items-center gap-1 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200">
+                <button onclick="promptCustomWarehouse()" class="text-[11px] font-semibold text-[#0284c7] flex items-center gap-1 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200 active:scale-95 transition">
                   <i data-lucide="map-pin" class="w-3 h-3"></i> Custom Lat/Lng
                 </button>
               </div>
@@ -305,10 +372,10 @@
             <div id="warehouseStationList" class="space-y-2 pb-12"></div>
           </div>
 
-          <!-- TAB 2: Route + EV Battery & Range Simulator -->
+          <!-- TAB 2: Route + Automotive Showroom EV Battery Simulator -->
           <div id="panel-p2p" class="hidden space-y-2.5 pb-12">
             
-            <!-- EV / E-Truck Battery Simulation Card -->
+            <!-- Interactive Vehicle Showroom & Battery Simulator Card -->
             <div class="bg-white border border-sky-200 rounded-2xl p-3 space-y-2.5 shadow-sm">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5">
@@ -318,10 +385,46 @@
                 <span id="simMotorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Motor: 360 kW</span>
               </div>
 
-              <div>
-                <select id="simVehiclePreset" onchange="applyVehiclePreset()" class="w-full bg-sky-50/70 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:border-[#0ea5e9]"></select>
+              <!-- Real Photo Showroom Stage (Click to Open Garage or Cycle Models) -->
+              <div class="relative rounded-2xl overflow-hidden border border-sky-200/90 bg-gradient-to-br from-slate-900 via-[#0c4a6e] to-[#0284c7] text-white shadow-inner">
+                <div class="flex items-center justify-between px-3 pt-2.5">
+                  <span id="simBrandTag" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-xs border border-white/25 text-sky-100">
+                    JAC E-TRUCK
+                  </span>
+                  <span id="simMaxRangeTag" class="text-[10px] font-semibold text-sky-200">
+                    Est. Range: ~245 km
+                  </span>
+                </div>
+
+                <!-- Animated Vehicle Photo Container -->
+                <div id="simVehicleStage" onclick="openVehicleGarage()" class="cursor-pointer px-3 py-2 flex items-center justify-center min-h-[126px] relative group">
+                  <img id="simVehiclePhoto" src="" alt="Selected Vehicle" class="w-full max-h-[116px] object-contain rounded-xl drop-shadow-[0_12px_18px_rgba(0,0,0,0.45)] transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <div id="simVehicleSvgFallback" class="hidden w-full flex items-center justify-center"></div>
+                </div>
+
+                <!-- Previous / Select Model / Next Controls -->
+                <div class="px-2.5 pb-2.5 flex items-center gap-1.5">
+                  <button type="button" onclick="cycleVehiclePreset(-1)" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-90 text-white border border-white/20 transition shrink-0" title="Previous Vehicle">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  </button>
+
+                  <button type="button" onclick="openVehicleGarage()" class="flex-1 bg-white text-slate-900 hover:bg-sky-50 active:scale-[0.99] rounded-xl px-3 py-2 flex items-center justify-between gap-2 shadow-sm transition min-w-0">
+                    <div class="text-left min-w-0">
+                      <div id="simSelectedModelTitle" class="text-xs font-extrabold text-slate-900 truncate">JAC Q7 E-Truck</div>
+                      <div id="simSelectedModelSub" class="text-[10px] font-semibold text-[#0284c7] truncate">282 kWh • Max DC 240 kW</div>
+                    </div>
+                    <span class="text-[10px] font-bold bg-sky-100 text-[#0284c7] px-2 py-1 rounded-lg shrink-0 flex items-center gap-0.5">
+                      Change <i data-lucide="chevrons-up-down" class="w-3 h-3"></i>
+                    </span>
+                  </button>
+
+                  <button type="button" onclick="cycleVehiclePreset(1)" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-90 text-white border border-white/20 transition shrink-0" title="Next Vehicle">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
 
+              <!-- Fine-Tune Specs (kWh / kW / Consumption Rate) -->
               <div class="grid grid-cols-3 gap-1.5">
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
                   <label class="text-[9px] font-bold text-slate-500 block">Battery (kWh)</label>
@@ -337,6 +440,7 @@
                 </div>
               </div>
 
+              <!-- Starting SoC % & Load/Terrain Condition -->
               <div class="grid grid-cols-2 gap-2 pt-0.5">
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
                   <span class="text-[10px] font-bold text-slate-600">Start SoC:</span>
@@ -363,10 +467,10 @@
               <div id="p2pWaypointsContainer" class="space-y-2"></div>
 
               <div class="grid grid-cols-2 gap-2 pt-0.5">
-                <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="py-2 px-2.5 rounded-xl bg-sky-50 active:bg-sky-100 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
+                <button type="button" id="btnAddP2PStop" onclick="addP2PWaypoint()" class="py-2 px-2.5 rounded-xl bg-sky-50 active:bg-sky-100 active:scale-95 text-[#0284c7] border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
                   <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Add Stop (<span id="p2pWaypointCount">0</span>/4)
                 </button>
-                <button type="button" onclick="swapP2P()" class="py-2 px-2.5 rounded-xl bg-white active:bg-sky-50 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
+                <button type="button" onclick="swapP2P()" class="py-2 px-2.5 rounded-xl bg-white active:bg-sky-50 active:scale-95 text-slate-600 border border-sky-200 text-xs font-semibold flex items-center justify-center gap-1 transition">
                   <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-[#0ea5e9]"></i> Swap Ends
                 </button>
               </div>
@@ -397,8 +501,8 @@
                   <span class="font-semibold text-slate-600">Arrival Battery Remaining:</span>
                   <span id="simRemainBadge" class="font-bold text-emerald-700">--%</span>
                 </div>
-                <div class="w-full h-2.5 bg-white rounded-full overflow-hidden border border-sky-200">
-                  <div id="simRemainBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 75%"></div>
+                <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-sky-200 relative">
+                  <div id="simRemainBar" class="h-full bg-emerald-500 transition-all duration-500 ease-out relative battery-sheen" style="width: 75%"></div>
                 </div>
                 <p id="simWarningText" class="hidden text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 mt-1">
                   ⚠️ Battery insufficient for single-charge trip! Add a charging stop below.
@@ -424,7 +528,7 @@
             <div class="bg-white border border-sky-200/80 rounded-2xl p-3 space-y-2 shadow-sm">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700">Tap stations to add stops</span>
-                <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200">Clear</button>
+                <button onclick="clearTrip()" class="text-xs text-rose-600 font-semibold px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 active:scale-95 transition">Clear</button>
               </div>
               <div id="tripAvailableButtons" class="flex flex-wrap gap-1.5 pt-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
             </div>
@@ -667,22 +771,551 @@
     const locationsRef = db.ref("locations");
 
     // ==========================================
-    // REAL-WORLD VEHICLE DATABASE (E-TRUCKS & EVs)
+    // COMPREHENSIVE REAL-WORLD VEHICLE DATABASE
+    // (Real Wikimedia Commons Photos + Studio SVG Fallback)
     // ==========================================
     const vehiclePresets = [
-      { id: "truck-jac-q7", category: "E-Truck", name: "🚛 JAC Q7 E-Truck (282 kWh • 360 kW)", batteryKwh: 282, motorKw: 360, rateKwhPerKm: 1.15 },
-      { id: "truck-deepway", category: "E-Truck", name: "🚛 Deepway 49T E-Truck (466 kWh • 492 kW)", batteryKwh: 466, motorKw: 492, rateKwhPerKm: 1.35 },
-      { id: "truck-sany", category: "E-Truck", name: "🚛 SANY E-Truck 423 (423 kWh • 405 kW)", batteryKwh: 423, motorKw: 405, rateKwhPerKm: 1.30 },
-      { id: "truck-skywell", category: "E-Truck", name: "🚛 SKY WELL E-Truck (350 kWh • 350 kW)", batteryKwh: 350, motorKw: 350, rateKwhPerKm: 1.20 },
-      { id: "ev-zeekr-001", category: "EV", name: "🚗 Zeekr 001 (100 kWh • 400 kW)", batteryKwh: 100, motorKw: 400, rateKwhPerKm: 0.18 },
-      { id: "ev-leapmotor-c11", category: "EV", name: "🚗 Leapmotor C11 (78.5 kWh • 200 kW)", batteryKwh: 78.5, motorKw: 200, rateKwhPerKm: 0.17 },
-      { id: "ev-byd-atto3", category: "EV", name: "🚗 BYD Atto 3 Extended (60.5 kWh • 150 kW)", batteryKwh: 60.5, motorKw: 150, rateKwhPerKm: 0.16 },
-      { id: "ev-byd-dolphin", category: "EV", name: "🚗 BYD Dolphin Standard (44.9 kWh • 70 kW)", batteryKwh: 44.9, motorKw: 70, rateKwhPerKm: 0.14 },
-      { id: "ev-deepal-s07", category: "EV", name: "🚗 Deepal S07 (66.8 kWh • 190 kW)", batteryKwh: 66.8, motorKw: 190, rateKwhPerKm: 0.17 },
-      { id: "ev-mg4", category: "EV", name: "🚗 MG4 EV Long Range (64 kWh • 150 kW)", batteryKwh: 64, motorKw: 150, rateKwhPerKm: 0.16 },
-      { id: "ev-tesla-my", category: "EV", name: "🚗 Tesla Model Y LR (75 kWh • 331 kW)", batteryKwh: 75, motorKw: 331, rateKwhPerKm: 0.165 },
-      { id: "custom", category: "Custom", name: "⚙️ Custom Vehicle Specs (กำหนดค่าเอง)", batteryKwh: 100, motorKw: 150, rateKwhPerKm: 0.18 }
+      // Commercial E-Trucks
+      {
+        id: "truck-jac-q7",
+        brand: "JAC",
+        filterGroup: "E-Truck",
+        bodyType: "truck",
+        accent: "#0284c7",
+        name: "JAC Q7 E-Truck",
+        subtitle: "Heavy Electric Tractor • 282 kWh",
+        batteryKwh: 282,
+        motorKw: 360,
+        maxDcKw: 240,
+        rateKwhPerKm: 1.15,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/JAC_Gallop_K7_tractor_truck.jpg?width=640"
+      },
+      {
+        id: "truck-deepway",
+        brand: "Deepway",
+        filterGroup: "E-Truck",
+        bodyType: "truck",
+        accent: "#0369a1",
+        name: "Deepway 49T Smart E-Truck",
+        subtitle: "49-Ton Long-Haul • 466 kWh",
+        batteryKwh: 466,
+        motorKw: 492,
+        maxDcKw: 350,
+        rateKwhPerKm: 1.35,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Tesla_Semi_in_PepsiCo_livery.jpg?width=640"
+      },
+      {
+        id: "truck-sany",
+        brand: "SANY",
+        filterGroup: "E-Truck",
+        bodyType: "truck",
+        accent: "#dc2626",
+        name: "SANY EV490 E-Truck",
+        subtitle: "Heavy Cargo Tractor • 423 kWh",
+        batteryKwh: 423,
+        motorKw: 405,
+        maxDcKw: 300,
+        rateKwhPerKm: 1.30,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Sany_truck_in_China.jpg?width=640"
+      },
+      {
+        id: "truck-skywell",
+        brand: "SKY WELL",
+        filterGroup: "E-Truck",
+        bodyType: "truck",
+        accent: "#0ea5e9",
+        name: "SKY WELL E-Truck",
+        subtitle: "Commercial EV Fleet • 350 kWh",
+        batteryKwh: 350,
+        motorKw: 350,
+        maxDcKw: 250,
+        rateKwhPerKm: 1.20,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/BYD_Q1M_electric_truck.jpg?width=640"
+      },
+
+      // Audi
+      {
+        id: "audi-q4-etron",
+        brand: "Audi",
+        filterGroup: "Audi",
+        bodyType: "suv",
+        accent: "#334155",
+        name: "Audi Q4 e-tron 45",
+        subtitle: "Premium Compact SUV • 82 kWh",
+        batteryKwh: 82,
+        motorKw: 210,
+        maxDcKw: 175,
+        rateKwhPerKm: 0.175,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Audi_Q4_e-tron_IMG_5370.jpg?width=640"
+      },
+      {
+        id: "audi-q6-etron",
+        brand: "Audi",
+        filterGroup: "Audi",
+        bodyType: "suv",
+        accent: "#1e293b",
+        name: "Audi Q6 e-tron quattro",
+        subtitle: "800V Performance SUV • 100 kWh",
+        batteryKwh: 100,
+        motorKw: 285,
+        maxDcKw: 270,
+        rateKwhPerKm: 0.185,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Audi_Q6_e-tron_1X7A2439.jpg?width=640"
+      },
+      {
+        id: "audi-q8-etron",
+        brand: "Audi",
+        filterGroup: "Audi",
+        bodyType: "suv",
+        accent: "#0f172a",
+        name: "Audi Q8 e-tron 55",
+        subtitle: "Flagship Luxury SUV • 114 kWh",
+        batteryKwh: 114,
+        motorKw: 300,
+        maxDcKw: 170,
+        rateKwhPerKm: 0.215,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Audi_Q8_e-tron_IMG_8540.jpg?width=640"
+      },
+
+      // Volkswagen
+      {
+        id: "vw-id4",
+        brand: "Volkswagen",
+        filterGroup: "Volkswagen",
+        bodyType: "suv",
+        accent: "#1d4ed8",
+        name: "Volkswagen ID.4 Pro",
+        subtitle: "All-Electric Crossover • 82 kWh",
+        batteryKwh: 82,
+        motorKw: 210,
+        maxDcKw: 175,
+        rateKwhPerKm: 0.170,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_ID.4_IMG_4243.jpg?width=640"
+      },
+      {
+        id: "vw-id6",
+        brand: "Volkswagen",
+        filterGroup: "Volkswagen",
+        bodyType: "suv",
+        accent: "#2563eb",
+        name: "Volkswagen ID.6 Crozz",
+        subtitle: "7-Seater Family SUV • 84.8 kWh",
+        batteryKwh: 84.8,
+        motorKw: 150,
+        maxDcKw: 135,
+        rateKwhPerKm: 0.185,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_ID.6_Crozz_001.jpg?width=640"
+      },
+      {
+        id: "vw-id3",
+        brand: "Volkswagen",
+        filterGroup: "Volkswagen",
+        bodyType: "hatchback",
+        accent: "#0284c7",
+        name: "Volkswagen ID.3 Pro",
+        subtitle: "Compact Hatchback • 62 kWh",
+        batteryKwh: 62,
+        motorKw: 150,
+        maxDcKw: 120,
+        rateKwhPerKm: 0.155,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_ID.3_1X7A6711.jpg?width=640"
+      },
+
+      // Toyota
+      {
+        id: "toyota-bz4x",
+        brand: "Toyota",
+        filterGroup: "Toyota",
+        bodyType: "suv",
+        accent: "#dc2626",
+        name: "Toyota bZ4X AWD",
+        subtitle: "Electric Crossover SUV • 71.4 kWh",
+        batteryKwh: 71.4,
+        motorKw: 160,
+        maxDcKw: 150,
+        rateKwhPerKm: 0.175,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Toyota_bZ4X_IMG_5952.jpg?width=640"
+      },
+      {
+        id: "toyota-bz3",
+        brand: "Toyota",
+        filterGroup: "Toyota",
+        bodyType: "sedan",
+        accent: "#b91c1c",
+        name: "Toyota bZ3 Long Range",
+        subtitle: "Electric Fastback Sedan • 65.3 kWh",
+        batteryKwh: 65.3,
+        motorKw: 180,
+        maxDcKw: 90,
+        rateKwhPerKm: 0.145,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Toyota_bZ3_001.jpg?width=640"
+      },
+
+      // BYD
+      {
+        id: "byd-atto3",
+        brand: "BYD",
+        filterGroup: "BYD",
+        bodyType: "suv",
+        accent: "#0ea5e9",
+        name: "BYD Atto 3 Extended",
+        subtitle: "Popular Compact SUV • 60.5 kWh",
+        batteryKwh: 60.5,
+        motorKw: 150,
+        maxDcKw: 88,
+        rateKwhPerKm: 0.160,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/2023_BYD_Atto_3.jpg?width=640"
+      },
+      {
+        id: "byd-seal",
+        brand: "BYD",
+        filterGroup: "BYD",
+        bodyType: "sedan",
+        accent: "#0369a1",
+        name: "BYD Seal Performance AWD",
+        subtitle: "Sport Electric Sedan • 82.5 kWh",
+        batteryKwh: 82.5,
+        motorKw: 390,
+        maxDcKw: 150,
+        rateKwhPerKm: 0.165,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/BYD_Seal_1X7A6491.jpg?width=640"
+      },
+      {
+        id: "byd-dolphin",
+        brand: "BYD",
+        filterGroup: "BYD",
+        bodyType: "hatchback",
+        accent: "#38bdf8",
+        name: "BYD Dolphin Standard",
+        subtitle: "City Hatchback • 44.9 kWh",
+        batteryKwh: 44.9,
+        motorKw: 70,
+        maxDcKw: 60,
+        rateKwhPerKm: 0.140,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/2023_BYD_Dolphin.jpg?width=640"
+      },
+      {
+        id: "byd-m6",
+        brand: "BYD",
+        filterGroup: "BYD",
+        bodyType: "suv",
+        accent: "#0284c7",
+        name: "BYD M6 (7-Seater MPV)",
+        subtitle: "Family Electric MPV • 71.8 kWh",
+        batteryKwh: 71.8,
+        motorKw: 150,
+        maxDcKw: 115,
+        rateKwhPerKm: 0.175,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/BYD_e6_II_001.jpg?width=640"
+      },
+
+      // Tesla
+      {
+        id: "tesla-model-y",
+        brand: "Tesla",
+        filterGroup: "Tesla",
+        bodyType: "suv",
+        accent: "#e11d48",
+        name: "Tesla Model Y Long Range",
+        subtitle: "Dual Motor AWD SUV • 75 kWh",
+        batteryKwh: 75,
+        motorKw: 331,
+        maxDcKw: 250,
+        rateKwhPerKm: 0.165,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/2023_Tesla_Model_Y.jpg?width=640"
+      },
+      {
+        id: "tesla-model-3",
+        brand: "Tesla",
+        filterGroup: "Tesla",
+        bodyType: "sedan",
+        accent: "#be123c",
+        name: "Tesla Model 3 Highland",
+        subtitle: "Aerodynamic Sedan • 60 kWh",
+        batteryKwh: 60,
+        motorKw: 194,
+        maxDcKw: 170,
+        rateKwhPerKm: 0.140,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/2024_Tesla_Model_3_Highland.jpg?width=640"
+      },
+
+      // Zeekr & Geely
+      {
+        id: "zeekr-001",
+        brand: "Zeekr",
+        filterGroup: "Zeekr / Geely",
+        bodyType: "sedan",
+        accent: "#f97316",
+        name: "Zeekr 001 YOU (100 kWh)",
+        subtitle: "Shooting Brake EV • 100 kWh",
+        batteryKwh: 100,
+        motorKw: 400,
+        maxDcKw: 360,
+        rateKwhPerKm: 0.180,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Zeekr_001_001.jpg?width=640"
+      },
+      {
+        id: "zeekr-x",
+        brand: "Zeekr",
+        filterGroup: "Zeekr / Geely",
+        bodyType: "suv",
+        accent: "#ea580c",
+        name: "Zeekr X Flagship AWD",
+        subtitle: "Urban Luxury SUV • 66 kWh",
+        batteryKwh: 66,
+        motorKw: 315,
+        maxDcKw: 150,
+        rateKwhPerKm: 0.168,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Zeekr_X_1X7A1228.jpg?width=640"
+      },
+      {
+        id: "geely-galaxy-e5",
+        brand: "Geely",
+        filterGroup: "Zeekr / Geely",
+        bodyType: "suv",
+        accent: "#0284c7",
+        name: "Geely Galaxy E5",
+        subtitle: "Smart Electric SUV • 60.2 kWh",
+        batteryKwh: 60.2,
+        motorKw: 160,
+        maxDcKw: 100,
+        rateKwhPerKm: 0.155,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Geely_Galaxy_E5_001.jpg?width=640"
+      },
+
+      // Hyundai & Kia
+      {
+        id: "hyundai-ioniq5",
+        brand: "Hyundai",
+        filterGroup: "Hyundai / Kia",
+        bodyType: "suv",
+        accent: "#0284c7",
+        name: "Hyundai IONIQ 5 Long Range",
+        subtitle: "800V Ultra-Fast EV • 77.4 kWh",
+        batteryKwh: 77.4,
+        motorKw: 168,
+        maxDcKw: 235,
+        rateKwhPerKm: 0.170,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Hyundai_Ioniq_5_IMG_5375.jpg?width=640"
+      },
+      {
+        id: "kia-ev6",
+        brand: "Kia",
+        filterGroup: "Hyundai / Kia",
+        bodyType: "suv",
+        accent: "#1e293b",
+        name: "Kia EV6 GT-Line",
+        subtitle: "800V Crossover • 77.4 kWh",
+        batteryKwh: 77.4,
+        motorKw: 239,
+        maxDcKw: 235,
+        rateKwhPerKm: 0.172,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Kia_EV6_IMG_5378.jpg?width=640"
+      },
+      {
+        id: "kia-ev9",
+        brand: "Kia",
+        filterGroup: "Hyundai / Kia",
+        bodyType: "suv",
+        accent: "#0f172a",
+        name: "Kia EV9 Earth (7-Seater)",
+        subtitle: "Full-Size 3-Row SUV • 99.8 kWh",
+        batteryKwh: 99.8,
+        motorKw: 150,
+        maxDcKw: 210,
+        rateKwhPerKm: 0.210,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Kia_EV9_1X7A1274.jpg?width=640"
+      },
+
+      // Popular Laos / ASEAN EVs (Deepal, NETA, MG, Volvo, Leapmotor)
+      {
+        id: "deepal-s07",
+        brand: "Deepal",
+        filterGroup: "More EVs",
+        bodyType: "suv",
+        accent: "#0ea5e9",
+        name: "Deepal S07",
+        subtitle: "Changan Sport SUV • 66.8 kWh",
+        batteryKwh: 66.8,
+        motorKw: 190,
+        maxDcKw: 92,
+        rateKwhPerKm: 0.170,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Deepal_S7_001.jpg?width=640"
+      },
+      {
+        id: "neta-vii",
+        brand: "NETA",
+        filterGroup: "More EVs",
+        bodyType: "hatchback",
+        accent: "#0284c7",
+        name: "NETA V-II",
+        subtitle: "Compact City EV • 36.1 kWh",
+        batteryKwh: 36.1,
+        motorKw: 70,
+        maxDcKw: 45,
+        rateKwhPerKm: 0.130,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Neta_V_001.jpg?width=640"
+      },
+      {
+        id: "neta-x",
+        brand: "NETA",
+        filterGroup: "More EVs",
+        bodyType: "suv",
+        accent: "#0369a1",
+        name: "NETA X Comfort",
+        subtitle: "Compact Crossover • 62 kWh",
+        batteryKwh: 62,
+        motorKw: 120,
+        maxDcKw: 65,
+        rateKwhPerKm: 0.162,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Neta_X_001.jpg?width=640"
+      },
+      {
+        id: "mg4-ev",
+        brand: "MG",
+        filterGroup: "More EVs",
+        bodyType: "hatchback",
+        accent: "#dc2626",
+        name: "MG4 EV Long Range",
+        subtitle: "RWD Sport Hatchback • 64 kWh",
+        batteryKwh: 64,
+        motorKw: 150,
+        maxDcKw: 140,
+        rateKwhPerKm: 0.160,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/MG4_EV_IMG_8545.jpg?width=640"
+      },
+      {
+        id: "volvo-ex30",
+        brand: "Volvo",
+        filterGroup: "More EVs",
+        bodyType: "suv",
+        accent: "#334155",
+        name: "Volvo EX30 Twin Motor",
+        subtitle: "Nordic Compact SUV • 69 kWh",
+        batteryKwh: 69,
+        motorKw: 315,
+        maxDcKw: 153,
+        rateKwhPerKm: 0.168,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Volvo_EX30_1X7A1341.jpg?width=640"
+      },
+      {
+        id: "leapmotor-c11",
+        brand: "Leapmotor",
+        filterGroup: "More EVs",
+        bodyType: "suv",
+        accent: "#0284c7",
+        name: "Leapmotor C11",
+        subtitle: "Mid-Size Smart SUV • 78.5 kWh",
+        batteryKwh: 78.5,
+        motorKw: 200,
+        maxDcKw: 100,
+        rateKwhPerKm: 0.170,
+        imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Leapmotor_C11_001.jpg?width=640"
+      },
+
+      // Custom Spec Option
+      {
+        id: "custom",
+        brand: "Custom",
+        filterGroup: "Custom",
+        bodyType: "suv",
+        accent: "#0ea5e9",
+        name: "Custom Vehicle Specs",
+        subtitle: "กำหนดค่า kWh / kW / อัตราสิ้นเปลืองเอง",
+        batteryKwh: 100,
+        motorKw: 150,
+        maxDcKw: 150,
+        rateKwhPerKm: 0.18,
+        imageUrl: ""
+      }
     ];
+
+    // High-Precision Studio Vector Render Fallback (Ensures zero broken images offline or on restricted networks)
+    function buildStudioVehicleSVG(vehicle, compact = false) {
+      const body = vehicle ? vehicle.bodyType : 'suv';
+      const accent = vehicle ? vehicle.accent : '#0284c7';
+      const w = compact ? 92 : 240;
+      const h = compact ? 44 : 104;
+
+      if (body === 'truck') {
+        return `<svg viewBox="0 0 280 115" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cabGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#cbd5e1"/>
+            </linearGradient>
+            <linearGradient id="trailerGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f8fafc"/>
+              <stop offset="100%" stop-color="#94a3b8"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="140" cy="104" rx="125" ry="7" fill="rgba(0,0,0,0.45)"/>
+          <rect x="14" y="18" width="168" height="64" rx="6" fill="url(#trailerGrad)" stroke="#e2e8f0" stroke-width="1.5"/>
+          <rect x="24" y="34" width="148" height="10" rx="3" fill="${accent}"/>
+          <path d="M186 30 H232 L254 56 V84 H186 Z" fill="url(#cabGrad)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M214 35 H230 L247 55 H214 Z" fill="#0f172a"/>
+          <rect x="248" y="68" width="7" height="9" rx="2" fill="#38bdf8"/>
+          <circle cx="46" cy="88" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/><circle cx="46" cy="88" r="6" fill="#cbd5e1"/>
+          <circle cx="82" cy="88" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/><circle cx="82" cy="88" r="6" fill="#cbd5e1"/>
+          <circle cx="156" cy="88" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/><circle cx="156" cy="88" r="6" fill="#cbd5e1"/>
+          <circle cx="228" cy="88" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/><circle cx="228" cy="88" r="6" fill="#cbd5e1"/>
+        </svg>`;
+      }
+
+      if (body === 'sedan') {
+        return `<svg viewBox="0 0 260 105" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sedanPaint" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="65%" stop-color="#e2e8f0"/>
+              <stop offset="100%" stop-color="#94a3b8"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="130" cy="94" rx="112" ry="7" fill="rgba(0,0,0,0.45)"/>
+          <path d="M22 66 Q26 48 64 44 L106 24 Q146 20 184 42 L232 50 Q246 54 244 68 L236 76 H24 Z" fill="url(#sedanPaint)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M74 44 L108 27 Q142 24 174 43 Z" fill="#0f172a"/>
+          <path d="M234 55 L243 58 L236 62 Z" fill="#38bdf8"/>
+          <rect x="24" y="54" width="12" height="4" rx="2" fill="#f43f5e"/>
+          <circle cx="66" cy="76" r="16" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="66" cy="76" r="7" fill="${accent}"/>
+          <circle cx="198" cy="76" r="16" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="198" cy="76" r="7" fill="${accent}"/>
+        </svg>`;
+      }
+
+      if (body === 'hatchback') {
+        return `<svg viewBox="0 0 250 105" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="hatchPaint" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#cbd5e1"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="125" cy="94" rx="102" ry="7" fill="rgba(0,0,0,0.45)"/>
+          <path d="M30 68 L38 34 Q76 22 146 25 L192 46 L224 54 Q234 58 230 74 H30 Z" fill="url(#hatchPaint)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M46 38 Q78 27 142 29 L180 46 H46 Z" fill="#0f172a"/>
+          <path d="M220 56 L229 60 L221 64 Z" fill="#38bdf8"/>
+          <circle cx="68" cy="75" r="15" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="68" cy="75" r="6.5" fill="${accent}"/>
+          <circle cx="188" cy="75" r="15" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="188" cy="75" r="6.5" fill="${accent}"/>
+        </svg>`;
+      }
+
+      // Default SUV / Crossover Render
+      return `<svg viewBox="0 0 260 105" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="suvPaint" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="65%" stop-color="#e2e8f0"/>
+            <stop offset="100%" stop-color="#94a3b8"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="130" cy="95" rx="110" ry="7" fill="rgba(0,0,0,0.45)"/>
+        <path d="M24 66 L32 34 Q78 20 156 23 L196 44 L234 50 Q244 54 242 74 H24 Z" fill="url(#suvPaint)" stroke="#ffffff" stroke-width="1.5"/>
+        <path d="M42 38 Q80 25 152 27 L186 44 H42 Z" fill="#0f172a"/>
+        <path d="M232 54 L241 58 L233 62 Z" fill="#38bdf8"/>
+        <rect x="25" y="48" width="10" height="5" rx="2" fill="#f43f5e"/>
+        <circle cx="66" cy="75" r="16" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="66" cy="75" r="7" fill="${accent}"/>
+        <circle cx="196" cy="75" r="16" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/><circle cx="196" cy="75" r="7" fill="${accent}"/>
+      </svg>`;
+    }
 
     const defaultLocations = [
       { id: "wh-customer-main", type: "warehouse", truckReady: true, name: "Customer Warehouse (Thanaleng Zone)", lat: 17.9045, lng: 102.7112, power: "-", connector: "-", note: "Main Customer Logistics Hub" }
@@ -694,6 +1327,8 @@
     let vehicleMode = 'all';
     let routeRegion = 'laos';
     let adminFilterMode = 'all';
+    let selectedVehicleId = 'truck-jac-q7';
+    let garageBrandFilter = 'All';
     let isAdmin = false;
     let mapPickMode = false;
     let isHybrid = false;
@@ -723,6 +1358,161 @@
     googleStreets.addTo(map);
     markersLayer.addTo(map);
     routeLayer.addTo(map);
+
+    // ==========================================
+    // VEHICLE SHOWROOM & GARAGE MODAL LOGIC
+    // ==========================================
+    function selectVehicleById(id, animate = true) {
+      const chosen = vehiclePresets.find(v => v.id === id) || vehiclePresets[0];
+      selectedVehicleId = chosen.id;
+
+      if (chosen.id !== 'custom') {
+        document.getElementById('simBatteryKwh').value = chosen.batteryKwh;
+        document.getElementById('simMotorKw').value = chosen.motorKw;
+        document.getElementById('simConsumptionRate').value = chosen.rateKwhPerKm;
+      }
+
+      const bat = parseFloat(document.getElementById('simBatteryKwh').value) || chosen.batteryKwh;
+      const mot = parseFloat(document.getElementById('simMotorKw').value) || chosen.motorKw;
+      const rate = parseFloat(document.getElementById('simConsumptionRate').value) || chosen.rateKwhPerKm;
+      const estRange = Math.round(bat / Math.max(0.05, rate));
+
+      document.getElementById('simMotorBadge').textContent = `Motor: ${mot} kW`;
+      document.getElementById('simBrandTag').textContent = `${chosen.brand.toUpperCase()} • ${chosen.filterGroup.toUpperCase()}`;
+      document.getElementById('simMaxRangeTag').textContent = `Est. Range: ~${estRange} km`;
+      document.getElementById('simSelectedModelTitle').textContent = chosen.name;
+      document.getElementById('simSelectedModelSub').textContent = `${bat} kWh • Max DC ${chosen.maxDcKw} kW • ${rate} kWh/km`;
+
+      const stage = document.getElementById('simVehicleStage');
+      const imgEl = document.getElementById('simVehiclePhoto');
+      const svgEl = document.getElementById('simVehicleSvgFallback');
+
+      if (animate && stage) {
+        stage.classList.remove('animate-vehicle-stage');
+        void stage.offsetWidth;
+        stage.classList.add('animate-vehicle-stage');
+      }
+
+      if (chosen.imageUrl) {
+        svgEl.classList.add('hidden');
+        imgEl.classList.remove('hidden');
+        imgEl.onerror = function() {
+          imgEl.classList.add('hidden');
+          svgEl.innerHTML = buildStudioVehicleSVG(chosen, false);
+          svgEl.classList.remove('hidden');
+        };
+        imgEl.src = chosen.imageUrl;
+      } else {
+        imgEl.classList.add('hidden');
+        svgEl.innerHTML = buildStudioVehicleSVG(chosen, false);
+        svgEl.classList.remove('hidden');
+      }
+
+      updateBatterySimulationUI(lastP2PDistanceKm);
+      renderAlongRouteList();
+    }
+
+    function cycleVehiclePreset(step) {
+      const idx = vehiclePresets.findIndex(v => v.id === selectedVehicleId);
+      const nextIdx = (idx + step + vehiclePresets.length) % vehiclePresets.length;
+      selectVehicleById(vehiclePresets[nextIdx].id, true);
+    }
+
+    function onCustomVehicleSpecChange() {
+      selectedVehicleId = 'custom';
+      const customObj = vehiclePresets.find(v => v.id === 'custom');
+      const bat = Math.max(1, parseFloat(document.getElementById('simBatteryKwh').value) || 100);
+      const mot = Math.max(0, parseFloat(document.getElementById('simMotorKw').value) || 0);
+      const rate = Math.max(0.05, parseFloat(document.getElementById('simConsumptionRate').value) || 0.18);
+      const estRange = Math.round(bat / rate);
+
+      document.getElementById('simMotorBadge').textContent = `Motor: ${mot} kW`;
+      document.getElementById('simBrandTag').textContent = `CUSTOM • CONFIGURED`;
+      document.getElementById('simMaxRangeTag').textContent = `Est. Range: ~${estRange} km`;
+      document.getElementById('simSelectedModelTitle').textContent = customObj.name;
+      document.getElementById('simSelectedModelSub').textContent = `${bat} kWh • ${mot} kW • ${rate} kWh/km`;
+
+      updateBatterySimulationUI(lastP2PDistanceKm);
+      renderAlongRouteList();
+    }
+
+    function openVehicleGarage() {
+      const modal = document.getElementById('vehicleGarageModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      renderGarageBrandChips();
+      renderVehicleGarageList();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeVehicleGarage() {
+      const modal = document.getElementById('vehicleGarageModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setGarageBrandFilter(group) {
+      garageBrandFilter = group;
+      renderGarageBrandChips();
+      renderVehicleGarageList();
+    }
+
+    function renderGarageBrandChips() {
+      const chipsEl = document.getElementById('garageBrandChips');
+      if (!chipsEl) return;
+      const groups = ['All', 'E-Truck', 'Audi', 'Volkswagen', 'Toyota', 'BYD', 'Tesla', 'Zeekr / Geely', 'Hyundai / Kia', 'More EVs', 'Custom'];
+      chipsEl.innerHTML = groups.map(g => {
+        const active = garageBrandFilter === g;
+        return `<button type="button" onclick="setGarageBrandFilter('${escapeHTML(g)}')" class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition ${active ? 'bg-[#0284c7] text-white shadow-xs' : 'bg-sky-50 text-slate-600 hover:bg-sky-100 border border-sky-200/70'}">
+          ${escapeHTML(g)}
+        </button>`;
+      }).join('');
+    }
+
+    function renderVehicleGarageList() {
+      const listEl = document.getElementById('garageVehicleList');
+      const searchInp = document.getElementById('garageSearchInput');
+      if (!listEl) return;
+      const q = (searchInp ? searchInp.value : '').toLowerCase().trim();
+
+      const filtered = vehiclePresets.filter(v => {
+        const matchesBrand = (garageBrandFilter === 'All') || (v.filterGroup === garageBrandFilter);
+        if (!matchesBrand) return false;
+        if (!q) return true;
+        return v.name.toLowerCase().includes(q) ||
+               v.brand.toLowerCase().includes(q) ||
+               v.subtitle.toLowerCase().includes(q);
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="bg-white border border-sky-200 rounded-2xl p-6 text-center text-xs text-slate-500">No matching vehicle models found.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(v => {
+        const isSelected = v.id === selectedVehicleId;
+        const estRange = Math.round(v.batteryKwh / v.rateKwhPerKm);
+        const safeId = sanitizeId(v.id);
+        const fallbackSvgEncoded = encodeURIComponent(buildStudioVehicleSVG(v, true));
+        const imgTag = v.imageUrl
+          ? `<img src="${escapeHTML(v.imageUrl)}" alt="${escapeHTML(v.name)}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,${fallbackSvgEncoded}';" class="w-24 h-14 object-cover rounded-xl bg-slate-900 shrink-0 border border-sky-100" />`
+          : `<div class="w-24 h-14 rounded-xl bg-gradient-to-br from-slate-800 to-[#0284c7] flex items-center justify-center shrink-0">${buildStudioVehicleSVG(v, true)}</div>`;
+
+        return `
+          <button type="button" onclick="selectVehicleById('${safeId}', true); closeVehicleGarage();" class="w-full text-left bg-white hover:bg-sky-50/70 active:scale-[0.99] border-2 ${isSelected ? 'border-[#0284c7] bg-sky-50/40' : 'border-sky-100'} rounded-2xl p-2.5 flex items-center gap-3 shadow-xs transition">
+            ${imgTag}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-sky-100 text-[#0284c7]">${escapeHTML(v.brand)}</span>
+                <span class="text-[10px] font-bold text-slate-400">~${estRange} km</span>
+              </div>
+              <div class="text-xs font-extrabold text-slate-900 truncate mt-0.5">${escapeHTML(v.name)}</div>
+              <div class="text-[11px] text-slate-500 font-medium truncate">${v.batteryKwh} kWh • ${v.motorKw} kW • ${v.rateKwhPerKm} kWh/km</div>
+            </div>
+            ${isSelected ? '<span class="w-5 h-5 rounded-full bg-[#0284c7] text-white flex items-center justify-center text-xs font-bold shrink-0">✓</span>' : ''}
+          </button>
+        `;
+      }).join('');
+    }
 
     // ==========================================
     // 60FPS GPU-ACCELERATED BOTTOM SHEET PHYSICS
@@ -1007,39 +1797,6 @@
       }
     }
 
-    // Populate Vehicle Presets Dropdown
-    function initVehiclePresets() {
-      const sel = document.getElementById('simVehiclePreset');
-      if (!sel) return;
-      sel.innerHTML = vehiclePresets.map(v => `<option value="${escapeHTML(v.id)}">${escapeHTML(v.name)}</option>`).join('');
-      applyVehiclePreset();
-    }
-
-    function applyVehiclePreset() {
-      const sel = document.getElementById('simVehiclePreset');
-      if (!sel) return;
-      const chosen = vehiclePresets.find(v => v.id === sel.value);
-      if (!chosen) return;
-      if (chosen.id !== 'custom') {
-        document.getElementById('simBatteryKwh').value = chosen.batteryKwh;
-        document.getElementById('simMotorKw').value = chosen.motorKw;
-        document.getElementById('simConsumptionRate').value = chosen.rateKwhPerKm;
-      }
-      const motorVal = Math.max(0, parseFloat(document.getElementById('simMotorKw').value) || 0);
-      document.getElementById('simMotorBadge').textContent = `Motor: ${motorVal} kW`;
-      updateBatterySimulationUI(lastP2PDistanceKm);
-      renderAlongRouteList();
-    }
-
-    function onCustomVehicleSpecChange() {
-      const sel = document.getElementById('simVehiclePreset');
-      if (sel) sel.value = 'custom';
-      const motorVal = Math.max(0, parseFloat(document.getElementById('simMotorKw').value) || 0);
-      document.getElementById('simMotorBadge').textContent = `Motor: ${motorVal} kW`;
-      updateBatterySimulationUI(lastP2PDistanceKm);
-      renderAlongRouteList();
-    }
-
     function computeBatteryMetrics(distanceKm) {
       const rawCap = parseFloat(document.getElementById('simBatteryKwh').value);
       const rawRate = parseFloat(document.getElementById('simConsumptionRate').value);
@@ -1076,17 +1833,17 @@
       if (m.remainSoc < 10) {
         remainBadge.textContent = `${m.remainSoc.toFixed(1)}% (Recharge Required)`;
         remainBadge.className = "font-bold text-rose-600";
-        remainBar.className = "h-full bg-rose-500 transition-all duration-300";
+        remainBar.className = "h-full bg-rose-500 transition-all duration-500 ease-out relative battery-sheen";
         warnText.classList.remove('hidden');
       } else if (m.remainSoc < 25) {
         remainBadge.textContent = `${m.remainSoc.toFixed(1)}% (Low Reserve)`;
         remainBadge.className = "font-bold text-amber-600";
-        remainBar.className = "h-full bg-amber-500 transition-all duration-300";
+        remainBar.className = "h-full bg-amber-500 transition-all duration-500 ease-out relative battery-sheen";
         warnText.classList.add('hidden');
       } else {
         remainBadge.textContent = `${m.remainSoc.toFixed(1)}%`;
         remainBadge.className = "font-bold text-emerald-700";
-        remainBar.className = "h-full bg-emerald-500 transition-all duration-300";
+        remainBar.className = "h-full bg-emerald-500 transition-all duration-500 ease-out relative battery-sheen";
         warnText.classList.add('hidden');
       }
     }
@@ -1141,8 +1898,8 @@
       routeRegion = region === 'cross' ? 'cross' : 'laos';
       const btnLaos = document.getElementById('btnRegionLaos');
       const btnCross = document.getElementById('btnRegionCross');
-      const active = "px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition";
-      const inactive = "px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition";
+      const active = "px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition-all";
+      const inactive = "px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition-all";
 
       btnLaos.className = routeRegion === 'laos' ? active : inactive;
       btnCross.className = routeRegion === 'cross' ? active : inactive;
@@ -1303,8 +2060,8 @@
       const btnStd = document.getElementById('btnModeStandard');
       const modeLbl = document.getElementById('listModeLabel');
 
-      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition";
-      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition";
+      const activeBlue = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white shadow-sm transition-all";
+      const inactive = "flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition-all";
 
       btnAll.className = mode === 'all' ? activeBlue : inactive;
       btnTruck.className = mode === 'truck' ? activeBlue : inactive;
@@ -1314,15 +2071,10 @@
       else if (mode === 'truck') modeLbl.textContent = "E-Truck Only";
       else modeLbl.textContent = "Standard EV Only";
 
-      const presetSel = document.getElementById('simVehiclePreset');
-      if (presetSel) {
-        if (mode === 'truck') {
-          presetSel.value = 'truck-jac-q7';
-          applyVehiclePreset();
-        } else if (mode === 'standard') {
-          presetSel.value = 'ev-byd-atto3';
-          applyVehiclePreset();
-        }
+      if (mode === 'truck') {
+        selectVehicleById('truck-jac-q7', true);
+      } else if (mode === 'standard') {
+        selectVehicleById('byd-atto3', true);
       }
 
       tripStops = [];
@@ -2328,7 +3080,7 @@
       reader.readAsText(file);
     }
 
-    initVehiclePresets();
+    selectVehicleById('truck-jac-q7', false);
     refreshAllUI();
     if (window.innerWidth < 768) {
       setMobileDrawerState('collapsed');
