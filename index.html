@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://www.gstatic.com https://*.firebasedatabase.app https://*.firebaseio.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.google.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com; connect-src 'self' https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://unpkg.com; frame-src 'self' https://*.firebaseapp.com;" />
   <title>Blue Dot EV Charger — Laos Nationwide Network & Route Planner</title>
   <link rel="icon" type="image/png" href="blue.png" />
   <link rel="apple-touch-icon" href="blue.png" />
@@ -125,14 +126,14 @@
         </button>
       </div>
 
-      <form onsubmit="submitAdminLogin(event)" class="space-y-3">
+      <form onsubmit="submitAdminLogin(event)" class="space-y-3" autocomplete="off">
         <div>
           <label class="text-[11px] font-medium text-slate-600 block mb-1">Admin Email</label>
-          <input id="adminEmailInput" type="email" required placeholder="sansombath@gmail.com" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
+          <input id="adminEmailInput" type="email" required maxlength="120" placeholder="sansombath@gmail.com" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
         </div>
         <div>
           <label class="text-[11px] font-medium text-slate-600 block mb-1">Password</label>
-          <input id="adminPasswordInput" type="password" required placeholder="••••••••" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
+          <input id="adminPasswordInput" type="password" required maxlength="128" placeholder="••••••••" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#0ea5e9]" />
         </div>
         <p id="adminLoginError" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
         <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] hover:opacity-95 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow">
@@ -150,7 +151,7 @@
       <div class="bg-white/95 backdrop-blur-md border border-sky-200/90 rounded-2xl shadow-lg px-2.5 py-1.5 flex items-center gap-2">
         <img src="blue.png" alt="Blue Dot EV" class="w-7 h-7 rounded-full object-contain shrink-0" />
         <div class="flex-1 relative min-w-0">
-          <input id="mobileTopSearch" type="text" oninput="handleTopSearch(this.value)" onfocus="handleTopSearch(this.value)" placeholder="Search BlueDot station..." class="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none pr-6" />
+          <input id="mobileTopSearch" type="text" maxlength="80" oninput="handleTopSearch(this.value)" onfocus="handleTopSearch(this.value)" placeholder="Search BlueDot station..." class="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none pr-6" />
           <button id="btnClearTopSearch" onclick="clearTopSearch()" class="hidden absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1">
             <i data-lucide="x-circle" class="w-4 h-4"></i>
           </button>
@@ -324,15 +325,15 @@
               <div class="grid grid-cols-3 gap-1.5">
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
                   <label class="text-[9px] font-bold text-slate-500 block">Battery (kWh)</label>
-                  <input id="simBatteryKwh" type="number" step="0.1" min="10" value="282" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-[#0284c7] focus:outline-none" />
+                  <input id="simBatteryKwh" type="number" step="0.1" min="5" max="2000" value="282" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-[#0284c7] focus:outline-none" />
                 </div>
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
                   <label class="text-[9px] font-bold text-slate-500 block">Motor (kW)</label>
-                  <input id="simMotorKw" type="number" step="1" min="10" value="360" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+                  <input id="simMotorKw" type="number" step="1" min="5" max="3000" value="360" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
                 </div>
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl p-1.5">
                   <label class="text-[9px] font-bold text-slate-500 block">Rate (kWh/km)</label>
-                  <input id="simConsumptionRate" type="number" step="0.01" min="0.05" value="1.15" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
+                  <input id="simConsumptionRate" type="number" step="0.01" min="0.05" max="10" value="1.15" oninput="onCustomVehicleSpecChange()" class="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none" />
                 </div>
               </div>
 
@@ -340,7 +341,7 @@
                 <div class="bg-sky-50/40 border border-sky-200/80 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
                   <span class="text-[10px] font-bold text-slate-600">Start SoC:</span>
                   <div class="flex items-center gap-0.5">
-                    <input id="simStartSoc" type="number" min="5" max="100" value="100" oninput="calculateP2P()" class="w-10 text-right bg-white border border-sky-200 rounded px-1 py-0.5 text-xs font-bold text-[#0284c7]" />
+                    <input id="simStartSoc" type="number" min="1" max="100" value="100" oninput="calculateP2P()" class="w-10 text-right bg-white border border-sky-200 rounded px-1 py-0.5 text-xs font-bold text-[#0284c7]" />
                     <span class="text-xs font-bold text-slate-600">%</span>
                   </div>
                 </div>
@@ -470,7 +471,7 @@
 
               <div>
                 <label class="text-[11px] font-bold text-slate-600 block mb-1">Station Name (ชื่อสถานี)</label>
-                <input id="pinName" type="text" required placeholder="e.g., PTT Phontong" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-[#0ea5e9]" />
+                <input id="pinName" type="text" required maxlength="100" placeholder="e.g., PTT Phontong" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-[#0ea5e9]" />
               </div>
 
               <div class="grid grid-cols-2 gap-2">
@@ -503,12 +504,12 @@
                   </div>
                 </div>
                 <div class="flex gap-1.5">
-                  <input id="pinQuickCoords" type="text" placeholder="Paste Google Maps: 17.9934, 102.6247" class="flex-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
+                  <input id="pinQuickCoords" type="text" maxlength="60" placeholder="Paste Google Maps: 17.9934, 102.6247" class="flex-1 bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
                   <button type="button" onclick="applyQuickCoords()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold shrink-0">Apply</button>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                  <input id="pinLat" type="number" step="any" required placeholder="Latitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
-                  <input id="pinLng" type="number" step="any" required placeholder="Longitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
+                  <input id="pinLat" type="number" step="any" min="-90" max="90" required placeholder="Latitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
+                  <input id="pinLng" type="number" step="any" min="-180" max="180" required placeholder="Longitude" class="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium" />
                 </div>
               </div>
 
@@ -522,7 +523,7 @@
                     <button type="button" onclick="setQuickValue('pinPower', '400 kW')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">400kW</button>
                   </div>
                 </div>
-                <input id="pinPower" type="text" placeholder="e.g., 180 kW" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
+                <input id="pinPower" type="text" maxlength="40" placeholder="e.g., 180 kW" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
               </div>
 
               <div>
@@ -533,7 +534,7 @@
                     <button type="button" onclick="setQuickValue('pinConnector', 'GB/T + GB/T')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">GB/T x2</button>
                   </div>
                 </div>
-                <input id="pinConnector" type="text" placeholder="e.g., GB/T + CCS2" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
+                <input id="pinConnector" type="text" maxlength="50" placeholder="e.g., GB/T + CCS2" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium" />
               </div>
 
               <div>
@@ -546,7 +547,7 @@
                     <button type="button" onclick="setQuickValue('pinNote', '8 Charging Guns')" class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-[#0284c7]">8 Guns</button>
                   </div>
                 </div>
-                <input id="pinNote" type="text" placeholder="e.g., 4 Charging Guns" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
+                <input id="pinNote" type="text" maxlength="150" placeholder="e.g., 4 Charging Guns" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-sm text-slate-900" />
               </div>
 
               <button type="submit" id="btnSubmitPin" class="w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] active:opacity-90 text-white font-bold py-3 rounded-xl text-sm shadow-md">
@@ -566,7 +567,7 @@
                 <button type="button" id="adminFilterStd" onclick="setAdminFilter('standard')" class="py-1 rounded-lg text-slate-600">Standard</button>
               </div>
 
-              <input id="adminSearchInput" type="text" oninput="renderAdminManageList()" placeholder="🔍 Search station name to edit..." class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
+              <input id="adminSearchInput" type="text" maxlength="80" oninput="renderAdminManageList()" placeholder="🔍 Search station name to edit..." class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0ea5e9]" />
 
               <div id="allPinsManageList" class="space-y-2"></div>
             </div>
@@ -594,6 +595,59 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
+    // ==========================================
+    // SECURITY & INPUT SANITIZATION UTILITIES
+    // ==========================================
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function sanitizeId(rawId) {
+      const cleaned = String(rawId || '').replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
+      return cleaned || ('bd-' + Date.now());
+    }
+
+    function isValidLatLng(lat, lng) {
+      return Number.isFinite(lat) && Number.isFinite(lng) &&
+             lat >= -90 && lat <= 90 &&
+             lng >= -180 && lng <= 180;
+    }
+
+    function sanitizeTextField(val, maxLen, fallback = '') {
+      const trimmed = String(val || '').replace(/[\u0000-\u001F\u007F]/g, '').trim();
+      if (!trimmed) return fallback;
+      return trimmed.slice(0, maxLen);
+    }
+
+    function normalizeLocationRecord(key, raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      const lat = parseFloat(raw.lat);
+      const lng = parseFloat(raw.lng);
+      if (!isValidLatLng(lat, lng)) return null;
+      const safeId = sanitizeId(key || raw.id);
+      const safeType = raw.type === 'warehouse' ? 'warehouse' : 'station';
+      const safeName = sanitizeTextField(raw.name, 100);
+      if (!safeName) return null;
+
+      return {
+        id: safeId,
+        type: safeType,
+        truckReady: raw.truckReady === true,
+        name: safeName,
+        lat: lat,
+        lng: lng,
+        power: sanitizeTextField(raw.power, 40, safeType === 'warehouse' ? '-' : '120 kW'),
+        connector: sanitizeTextField(raw.connector, 50, safeType === 'warehouse' ? '-' : 'GB/T + CCS2'),
+        note: sanitizeTextField(raw.note, 150, '')
+      };
+    }
+
     // ==========================================
     // FIREBASE CONFIGURATION (bluedot-ev-map)
     // ==========================================
@@ -644,7 +698,7 @@
     let mapPickMode = false;
     let isHybrid = false;
     let showLabels = true;
-    let mobileDrawerState = 'collapsed'; // 'collapsed' | 'half' | 'full'
+    let mobileDrawerState = 'collapsed';
     let currentTranslateY = 0;
     let tripStops = [];
     let p2pWaypoints = [];
@@ -696,7 +750,6 @@
       }
       panel.style.transform = `translate3d(0, ${clampedY}px, 0)`;
 
-      // Fade legend smoothly when drawer rises above half
       const legend = document.getElementById('mapLegendBox');
       if (legend) {
         if (clampedY < snaps.collapsed - 40) {
@@ -753,7 +806,6 @@
       }
     }
 
-    // Real-time Finger Tracking + Velocity Snapping
     (function initSmoothSheetGestures() {
       const dragZone = document.getElementById('sheetDragZone');
       const tabGrid = document.getElementById('tabGrid');
@@ -782,7 +834,7 @@
         const now = performance.now();
         const dt = now - lastTime;
         if (dt > 0) {
-          velocityY = (clientY - lastY) / dt; // px per ms (+ = downward, - = upward)
+          velocityY = (clientY - lastY) / dt;
         }
         lastY = clientY;
         lastTime = now;
@@ -799,7 +851,6 @@
         isDragging = false;
         const snaps = getSnapOffsets();
 
-        // Fast flick detection (velocity > 0.35 px/ms)
         if (velocityY < -0.35) {
           if (currentTranslateY > snaps.half + 20) setMobileDrawerState('half');
           else setMobileDrawerState('full');
@@ -811,7 +862,6 @@
           return;
         }
 
-        // Otherwise snap to nearest detent
         const distFull = Math.abs(currentTranslateY - snaps.full);
         const distHalf = Math.abs(currentTranslateY - snaps.half);
         const distCollapsed = Math.abs(currentTranslateY - snaps.collapsed);
@@ -822,7 +872,6 @@
         else setMobileDrawerState('collapsed');
       }
 
-      // Attach to Drag Handle & Function Tab Bar
       [dragZone, tabGrid].forEach(el => {
         el.addEventListener('touchstart', (e) => {
           onDragStart(e.touches[0].clientY);
@@ -836,7 +885,6 @@
         el.addEventListener('touchcancel', onDragEnd, { passive: true });
       });
 
-      // Seamless pull-down from top of scroll list to collapse sheet
       if (scrollArea) {
         let listStartY = 0;
         let pullingSheetFromList = false;
@@ -874,7 +922,6 @@
       });
     })();
 
-    // Collapse drawer automatically when user taps directly on the map
     map.on('click', function(e) {
       if (isAdmin && mapPickMode) {
         document.getElementById('pinLat').value = e.latlng.lat.toFixed(6);
@@ -891,7 +938,7 @@
     });
 
     // ==========================================
-    // FLOATING TOP SEARCH BAR (MOBILE)
+    // FLOATING TOP SEARCH BAR (XSS-SAFE)
     // ==========================================
     function handleTopSearch(rawQuery) {
       const resultsBox = document.getElementById('mobileSearchResults');
@@ -918,18 +965,21 @@
         return;
       }
 
-      resultsBox.innerHTML = matches.map(loc => `
-        <button type="button" onclick="selectTopSearchStation('${loc.id}')" class="w-full text-left px-3.5 py-2.5 hover:bg-sky-50 active:bg-sky-100 flex items-center justify-between gap-2 transition">
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${loc.type === 'warehouse' ? 'bg-amber-500' : (loc.truckReady ? 'bg-[#0284c7]' : 'bg-[#38bdf8]')} shrink-0"></span>
-              <span class="text-xs font-bold text-slate-800 truncate">${loc.name}</span>
+      resultsBox.innerHTML = matches.map(loc => {
+        const safeId = sanitizeId(loc.id);
+        return `
+          <button type="button" onclick="selectTopSearchStation('${safeId}')" class="w-full text-left px-3.5 py-2.5 hover:bg-sky-50 active:bg-sky-100 flex items-center justify-between gap-2 transition">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${loc.type === 'warehouse' ? 'bg-amber-500' : (loc.truckReady ? 'bg-[#0284c7]' : 'bg-[#38bdf8]')} shrink-0"></span>
+                <span class="text-xs font-bold text-slate-800 truncate">${escapeHTML(loc.name)}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate pl-3.5">${escapeHTML(loc.power)} • ${escapeHTML(loc.connector)}</p>
             </div>
-            <p class="text-[11px] text-slate-500 truncate pl-3.5">${loc.power} • ${loc.connector}</p>
-          </div>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">View</span>
-        </button>
-      `).join('');
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">View</span>
+          </button>
+        `;
+      }).join('');
       resultsBox.classList.remove('hidden');
     }
 
@@ -961,7 +1011,7 @@
     function initVehiclePresets() {
       const sel = document.getElementById('simVehiclePreset');
       if (!sel) return;
-      sel.innerHTML = vehiclePresets.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      sel.innerHTML = vehiclePresets.map(v => `<option value="${escapeHTML(v.id)}">${escapeHTML(v.name)}</option>`).join('');
       applyVehiclePreset();
     }
 
@@ -975,7 +1025,8 @@
         document.getElementById('simMotorKw').value = chosen.motorKw;
         document.getElementById('simConsumptionRate').value = chosen.rateKwhPerKm;
       }
-      document.getElementById('simMotorBadge').textContent = `Motor: ${document.getElementById('simMotorKw').value} kW`;
+      const motorVal = Math.max(0, parseFloat(document.getElementById('simMotorKw').value) || 0);
+      document.getElementById('simMotorBadge').textContent = `Motor: ${motorVal} kW`;
       updateBatterySimulationUI(lastP2PDistanceKm);
       renderAlongRouteList();
     }
@@ -983,20 +1034,25 @@
     function onCustomVehicleSpecChange() {
       const sel = document.getElementById('simVehiclePreset');
       if (sel) sel.value = 'custom';
-      const motorVal = parseFloat(document.getElementById('simMotorKw').value) || 0;
+      const motorVal = Math.max(0, parseFloat(document.getElementById('simMotorKw').value) || 0);
       document.getElementById('simMotorBadge').textContent = `Motor: ${motorVal} kW`;
       updateBatterySimulationUI(lastP2PDistanceKm);
       renderAlongRouteList();
     }
 
     function computeBatteryMetrics(distanceKm) {
-      const batteryKwh = Math.max(1, parseFloat(document.getElementById('simBatteryKwh').value) || 100);
-      const baseRate = Math.max(0.01, parseFloat(document.getElementById('simConsumptionRate').value) || 0.18);
-      const factor = parseFloat(document.getElementById('simLoadFactor').value) || 1.0;
-      const startSoc = Math.min(100, Math.max(1, parseFloat(document.getElementById('simStartSoc').value) || 100));
+      const rawCap = parseFloat(document.getElementById('simBatteryKwh').value);
+      const rawRate = parseFloat(document.getElementById('simConsumptionRate').value);
+      const rawFactor = parseFloat(document.getElementById('simLoadFactor').value);
+      const rawSoc = parseFloat(document.getElementById('simStartSoc').value);
+
+      const batteryKwh = (Number.isFinite(rawCap) && rawCap >= 1) ? Math.min(5000, rawCap) : 100;
+      const baseRate = (Number.isFinite(rawRate) && rawRate >= 0.01) ? Math.min(20, rawRate) : 0.18;
+      const factor = (Number.isFinite(rawFactor) && rawFactor > 0) ? rawFactor : 1.0;
+      const startSoc = Number.isFinite(rawSoc) ? Math.min(100, Math.max(1, rawSoc)) : 100;
 
       const effectiveRate = baseRate * factor;
-      const usedKwh = distanceKm * effectiveRate;
+      const usedKwh = Math.max(0, distanceKm) * effectiveRate;
       const usedPct = (usedKwh / batteryKwh) * 100;
       const remainSoc = startSoc - usedPct;
 
@@ -1082,14 +1138,14 @@
     }
 
     function setRouteRegion(region) {
-      routeRegion = region;
+      routeRegion = region === 'cross' ? 'cross' : 'laos';
       const btnLaos = document.getElementById('btnRegionLaos');
       const btnCross = document.getElementById('btnRegionCross');
       const active = "px-2 py-0.5 rounded-md bg-[#0284c7] text-white transition";
       const inactive = "px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition";
 
-      btnLaos.className = region === 'laos' ? active : inactive;
-      btnCross.className = region === 'cross' ? active : inactive;
+      btnLaos.className = routeRegion === 'laos' ? active : inactive;
+      btnCross.className = routeRegion === 'cross' ? active : inactive;
 
       if (currentTab === 'p2p') calculateP2P();
       else if (currentTab === 'trip') renderTripStops();
@@ -1116,12 +1172,12 @@
     function applyQuickCoords() {
       const raw = document.getElementById('pinQuickCoords').value.trim();
       const parts = raw.split(',').map(s => parseFloat(s.trim()));
-      if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-        alert("Please paste coordinates as: 17.9934, 102.6247");
+      if (parts.length !== 2 || !isValidLatLng(parts[0], parts[1])) {
+        alert("Invalid coordinates. Please paste as: 17.9934, 102.6247");
         return;
       }
-      document.getElementById('pinLat').value = parts[0];
-      document.getElementById('pinLng').value = parts[1];
+      document.getElementById('pinLat').value = parts[0].toFixed(6);
+      document.getElementById('pinLng').value = parts[1].toFixed(6);
       document.getElementById('pinQuickCoords').value = "";
       map.setView([parts[0], parts[1]], 15);
     }
@@ -1135,6 +1191,7 @@
         (pos) => {
           const lat = parseFloat(pos.coords.latitude.toFixed(6));
           const lng = parseFloat(pos.coords.longitude.toFixed(6));
+          if (!isValidLatLng(lat, lng)) return;
           document.getElementById('pinLat').value = lat;
           document.getElementById('pinLng').value = lng;
           map.setView([lat, lng], 16);
@@ -1147,8 +1204,9 @@
 
     function quickToggleTruckReady(id, currentState) {
       if (!isAdmin) return;
+      const safeId = sanitizeId(id);
       const newState = !currentState;
-      locationsRef.child(id).update({ truckReady: newState })
+      locationsRef.child(safeId).update({ truckReady: newState })
         .then(() => {
           showAdminToast(newState ? "Updated to E-Truck Ready" : "Updated to Standard EV");
         })
@@ -1200,11 +1258,13 @@
 
     locationsRef.on("value", (snapshot) => {
       const data = snapshot.val();
-      if (data) {
-        cloudLocations = Object.keys(data).map(key => ({
-          id: key,
-          ...data[key]
-        }));
+      if (data && typeof data === 'object') {
+        const sanitizedList = [];
+        Object.keys(data).forEach(key => {
+          const normalized = normalizeLocationRecord(key, data[key]);
+          if (normalized) sanitizedList.push(normalized);
+        });
+        cloudLocations = sanitizedList.length > 0 ? sanitizedList : [...defaultLocations];
       } else {
         cloudLocations = [...defaultLocations];
       }
@@ -1219,7 +1279,7 @@
       if (askConfirm && !confirm("Clear ALL existing stations in the database and keep only the Warehouse?")) return;
       const updates = {};
       defaultLocations.forEach(loc => {
-        updates[loc.id] = loc;
+        updates[sanitizeId(loc.id)] = loc;
       });
       locationsRef.set(updates)
         .then(() => { if (askConfirm) showAdminToast("Database cleared!"); })
@@ -1295,6 +1355,8 @@
       const errBox = document.getElementById('adminLoginError');
       const btn = document.getElementById('btnLoginSubmit');
 
+      if (!email || !password) return;
+
       btn.disabled = true;
       btn.textContent = "Signing in...";
       errBox.classList.add('hidden');
@@ -1334,8 +1396,8 @@
       const input = prompt("Enter custom coordinates (Lat, Lng) e.g. 17.9045, 102.7112:");
       if (!input) return;
       const parts = input.split(',').map(s => parseFloat(s.trim()));
-      if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-        alert("Invalid format. Please enter as: 17.9045, 102.7112");
+      if (parts.length !== 2 || !isValidLatLng(parts[0], parts[1])) {
+        alert("Invalid coordinates. Latitude must be -90 to 90 and Longitude -180 to 180.");
         return;
       }
       const customId = 'wh-custom-' + Date.now();
@@ -1365,6 +1427,7 @@
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
+          if (!isValidLatLng(lat, lng)) return;
           const gpsId = 'wh-my-gps';
           const existingIdx = localCustomWarehouses.findIndex(l => l.id === gpsId);
           const gpsLoc = {
@@ -1469,13 +1532,16 @@
       }
 
       visibleLocations.forEach(loc => {
+        const safeId = sanitizeId(loc.id);
+        const safeLat = Number(loc.lat);
+        const safeLng = Number(loc.lng);
         const passByInfo = (currentTab === 'p2p') ? alongMap.get(loc.id) : null;
         const isPassBy = !!passByInfo;
-        const marker = L.marker([loc.lat, loc.lng], { icon: createMarkerIcon(loc, isPassBy) });
+        const marker = L.marker([safeLat, safeLng], { icon: createMarkerIcon(loc, isPassBy) });
 
         if (showLabels) {
           const shortName = loc.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim();
-          const labelText = isPassBy ? `${shortName} (${passByInfo.kmFromStart.toFixed(0)} km)` : shortName;
+          const labelText = isPassBy ? `${escapeHTML(shortName)} (${passByInfo.kmFromStart.toFixed(0)} km)` : escapeHTML(shortName);
           marker.bindTooltip(labelText, {
             permanent: true,
             direction: 'bottom',
@@ -1492,28 +1558,28 @@
                   ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7] border border-sky-200">E-TRUCK STATION</span>`
                   : `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200">STANDARD EV STATION</span>`));
 
-        const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+        const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(safeLat + ',' + safeLng)}`;
         const actionBtn = loc.type === 'station' && currentTab === 'warehouse'
-          ? `<button onclick="focusRouteFromWarehouse('${loc.id}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route on Map</button>`
+          ? `<button onclick="focusRouteFromWarehouse('${safeId}')" class="mt-2 w-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">Show Route on Map</button>`
           : (isPassBy && p2pWaypoints.length < 4
-              ? `<button onclick="addSpecificP2PWaypoint('${loc.id}')" class="mt-2 w-full bg-emerald-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">+ Add as Stop on Route</button>`
+              ? `<button onclick="addSpecificP2PWaypoint('${safeId}')" class="mt-2 w-full bg-emerald-600 text-white text-xs font-semibold py-2 px-3 rounded-xl transition shadow-sm">+ Add as Stop on Route</button>`
               : '');
 
         const editQuickBtn = isAdmin
-          ? `<button onclick="editLocation('${loc.id}'); switchTab('pins'); setMobileDrawerState('half');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
+          ? `<button onclick="editLocation('${safeId}'); switchTab('pins'); setMobileDrawerState('half');" class="mt-1.5 w-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold py-1.5 px-3 rounded-xl transition">Edit Pin (Admin)</button>`
           : '';
 
         marker.bindPopup(`
           <div class="min-w-[220px] space-y-1.5 p-1">
             ${badge}
-            <h3 class="font-bold text-sm text-slate-900 leading-snug pt-0.5">${loc.name}</h3>
+            <h3 class="font-bold text-sm text-slate-900 leading-snug pt-0.5">${escapeHTML(loc.name)}</h3>
             ${loc.type === 'station' ? `
               <div class="flex justify-between text-xs pt-1 border-t border-sky-100">
-                <span class="text-[#0284c7] font-bold">${loc.power}</span>
-                <span class="text-emerald-600 font-semibold">${loc.connector}</span>
+                <span class="text-[#0284c7] font-bold">${escapeHTML(loc.power)}</span>
+                <span class="text-emerald-600 font-semibold">${escapeHTML(loc.connector)}</span>
               </div>
             ` : ''}
-            ${loc.note ? `<p class="text-xs text-slate-500">${loc.note}</p>` : ''}
+            ${loc.note ? `<p class="text-xs text-slate-500">${escapeHTML(loc.note)}</p>` : ''}
             ${actionBtn}
             ${editQuickBtn}
             <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" class="block text-center mt-1.5 w-full bg-sky-50 hover:bg-sky-100 text-[#0284c7] text-xs font-semibold py-2 px-3 rounded-xl border border-sky-200 transition">
@@ -1597,7 +1663,7 @@
     }
 
     async function queryOSRM(points) {
-      const coordString = points.map(c => `${c.lng},${c.lat}`).join(';');
+      const coordString = points.map(c => `${Number(c.lng)},${Number(c.lat)}`).join(';');
       const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
       if (!res.ok) throw new Error('OSRM failed');
       const data = await res.json();
@@ -1658,36 +1724,39 @@
       });
 
       const manageList = document.getElementById('allPinsManageList');
-      manageList.innerHTML = filtered.map(l => `
-        <div class="bg-sky-50/50 border border-sky-200/80 rounded-xl p-2.5 text-xs space-y-2">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="${l.type === 'warehouse' ? 'text-amber-500' : (l.truckReady ? 'text-[#0284c7]' : 'text-[#38bdf8]')} font-bold">●</span>
-                <span class="text-slate-900 font-bold truncate">${l.name}</span>
+      manageList.innerHTML = filtered.map(l => {
+        const safeId = sanitizeId(l.id);
+        return `
+          <div class="bg-sky-50/50 border border-sky-200/80 rounded-xl p-2.5 text-xs space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="${l.type === 'warehouse' ? 'text-amber-500' : (l.truckReady ? 'text-[#0284c7]' : 'text-[#38bdf8]')} font-bold">●</span>
+                  <span class="text-slate-900 font-bold truncate">${escapeHTML(l.name)}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5 truncate">${escapeHTML(l.power)} • ${escapeHTML(l.connector)} ${l.note ? `• ${escapeHTML(l.note)}` : ''}</p>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5 truncate">${l.power} • ${l.connector} ${l.note ? `• ${l.note}` : ''}</p>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" onclick="editLocation('${safeId}')" class="bg-white border border-sky-200 text-[#0284c7] px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 shadow-xs">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                </button>
+                <button type="button" onclick="deleteLocation('${safeId}')" class="bg-white border border-rose-200 text-rose-500 p-1.5 rounded-lg shadow-xs">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
             </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button type="button" onclick="editLocation('${l.id}')" class="bg-white border border-sky-200 text-[#0284c7] px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 shadow-xs">
-                <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
-              </button>
-              <button type="button" onclick="deleteLocation('${l.id}')" class="bg-white border border-rose-200 text-rose-500 p-1.5 rounded-lg shadow-xs">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-          </div>
 
-          ${l.type === 'station' ? `
-            <div class="flex items-center justify-between pt-1.5 border-t border-sky-100">
-              <span class="text-[10px] text-slate-500 font-mono">${Number(l.lat).toFixed(4)}, ${Number(l.lng).toFixed(4)}</span>
-              <button type="button" onclick="quickToggleTruckReady('${l.id}', ${l.truckReady === true})" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition ${l.truckReady ? 'bg-[#0284c7] text-white' : 'bg-white text-slate-600 border border-sky-200'}">
-                ${l.truckReady ? '✓ E-Truck Ready' : 'Standard EV (Tap for Truck)'}
-              </button>
-            </div>
-          ` : ''}
-        </div>
-      `).join('');
+            ${l.type === 'station' ? `
+              <div class="flex items-center justify-between pt-1.5 border-t border-sky-100">
+                <span class="text-[10px] text-slate-500 font-mono">${Number(l.lat).toFixed(4)}, ${Number(l.lng).toFixed(4)}</span>
+                <button type="button" onclick="quickToggleTruckReady('${safeId}', ${l.truckReady === true})" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition ${l.truckReady ? 'bg-[#0284c7] text-white' : 'bg-white text-slate-600 border border-sky-200'}">
+                  ${l.truckReady ? '✓ E-Truck Ready' : 'Standard EV (Tap for Truck)'}
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
       if (window.lucide) lucide.createIcons();
     }
 
@@ -1708,7 +1777,7 @@
         }
       }
 
-      const optionsHtml = activeLocs.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+      const optionsHtml = activeLocs.map(l => `<option value="${sanitizeId(l.id)}">${escapeHTML(l.name)}</option>`).join('');
 
       container.innerHTML = p2pWaypoints.map((wpId, idx) => `
         <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-2 space-y-1">
@@ -1749,14 +1818,15 @@
         alert("Maximum 4 stops allowed.");
         return;
       }
-      if (p2pWaypoints.includes(stationId)) return;
-      p2pWaypoints.push(stationId);
+      const safeId = sanitizeId(stationId);
+      if (p2pWaypoints.includes(safeId)) return;
+      p2pWaypoints.push(safeId);
       renderP2PWaypoints();
       calculateP2P();
     }
 
     function updateP2PWaypoint(index, newId) {
-      p2pWaypoints[index] = newId;
+      p2pWaypoints[index] = sanitizeId(newId);
       calculateP2P();
     }
 
@@ -1780,21 +1850,24 @@
       section.classList.remove('hidden');
       countEl.textContent = p2pAlongStations.length;
       listEl.innerHTML = p2pAlongStations.map(item => {
+        const safeId = sanitizeId(item.station.id);
+        const safeLat = Number(item.station.lat);
+        const safeLng = Number(item.station.lng);
         const passMetrics = computeBatteryMetrics(item.kmFromStart);
         const socColor = passMetrics.remainSoc < 15 ? 'text-rose-600' : (passMetrics.remainSoc < 30 ? 'text-amber-600' : 'text-emerald-700');
         return `
           <div class="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/80 rounded-xl px-2.5 py-2 text-xs gap-2">
-            <div class="min-w-0 flex-1" onclick="map.setView([${item.station.lat}, ${item.station.lng}], 13); setMobileDrawerState('collapsed');">
+            <div class="min-w-0 flex-1" onclick="map.setView([${safeLat}, ${safeLng}], 13); setMobileDrawerState('collapsed');">
               <div class="flex items-center gap-1.5">
                 <span class="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shrink-0">${item.kmFromStart.toFixed(0)} km</span>
-                <span class="font-bold text-slate-800 truncate">${item.station.name}</span>
+                <span class="font-bold text-slate-800 truncate">${escapeHTML(item.station.name)}</span>
               </div>
               <p class="text-[11px] text-slate-500 mt-0.5 truncate">
-                ${item.station.power} • Pass SoC: <span class="font-bold ${socColor}">${passMetrics.remainSoc.toFixed(0)}%</span>
+                ${escapeHTML(item.station.power)} • Pass SoC: <span class="font-bold ${socColor}">${passMetrics.remainSoc.toFixed(0)}%</span>
               </p>
             </div>
             ${p2pWaypoints.length < 4 ? `
-              <button type="button" onclick="addSpecificP2PWaypoint('${item.station.id}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
+              <button type="button" onclick="addSpecificP2PWaypoint('${safeId}')" class="px-2 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] shrink-0 active:bg-emerald-100">
                 + Stop
               </button>
             ` : ''}
@@ -1819,10 +1892,10 @@
 
       const whSelect = document.getElementById('selectWarehouse');
       const prevWh = whSelect.value;
-      whSelect.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+      whSelect.innerHTML = warehouses.map(w => `<option value="${sanitizeId(w.id)}">${escapeHTML(w.name)}</option>`).join('');
       if (prevWh && warehouses.some(w => w.id === prevWh)) whSelect.value = prevWh;
 
-      const allOptions = activeLocs.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+      const allOptions = activeLocs.map(l => `<option value="${sanitizeId(l.id)}">${escapeHTML(l.name)}</option>`).join('');
       const p2pOrigin = document.getElementById('p2pOrigin');
       const p2pDest = document.getElementById('p2pDest');
       const prevO = p2pOrigin.value;
@@ -1837,11 +1910,15 @@
       renderP2PWaypoints();
 
       const tripBtns = document.getElementById('tripAvailableButtons');
-      tripBtns.innerHTML = activeLocs.map(l => `
-        <button onclick="addTripStop('${l.id}')" class="text-xs font-medium px-2.5 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#0284c7]'}">
-          + ${l.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim()}
-        </button>
-      `).join('');
+      tripBtns.innerHTML = activeLocs.map(l => {
+        const safeId = sanitizeId(l.id);
+        const cleanShort = l.name.replace(/^Blue\s*Dot(\s*EV)?\s*[-—]\s*/i, '').split('(')[0].trim();
+        return `
+          <button onclick="addTripStop('${safeId}')" class="text-xs font-medium px-2.5 py-1.5 rounded-xl border ${l.type === 'warehouse' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-[#0284c7]'}">
+            + ${escapeHTML(cleanShort)}
+          </button>
+        `;
+      }).join('');
 
       renderAdminManageList();
       if (window.lucide) lucide.createIcons();
@@ -1869,48 +1946,53 @@
         approxKm: getHaversineKm(wh.lat, wh.lng, st.lat, st.lng) * 1.25
       })).sort((a, b) => a.approxKm - b.approxKm);
 
-      container.innerHTML = withHaversine.map((item, idx) => `
-        <div onclick="focusRouteFromWarehouse('${item.station.id}')" class="cursor-pointer bg-white active:bg-sky-50 border border-sky-200/80 rounded-2xl p-3 transition shadow-sm">
-          <div class="flex justify-between items-center gap-2.5">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[11px] font-bold bg-sky-100 text-[#0284c7] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
-                <h4 class="font-bold text-sm text-slate-800 truncate">${item.station.name}</h4>
+      container.innerHTML = withHaversine.map((item, idx) => {
+        const safeId = sanitizeId(item.station.id);
+        return `
+          <div onclick="focusRouteFromWarehouse('${safeId}')" class="cursor-pointer bg-white active:bg-sky-50 border border-sky-200/80 rounded-2xl p-3 transition shadow-sm">
+            <div class="flex justify-between items-center gap-2.5">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-bold bg-sky-100 text-[#0284c7] px-1.5 py-0.5 rounded-md shrink-0">#${idx + 1}</span>
+                  <h4 class="font-bold text-sm text-slate-800 truncate">${escapeHTML(item.station.name)}</h4>
+                </div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  ${item.station.truckReady
+                    ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">E-TRUCK</span>'
+                    : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200 shrink-0">STANDARD</span>'}
+                  <span class="text-xs font-medium text-slate-500 truncate">${escapeHTML(item.station.power)} • ${escapeHTML(item.station.connector)}</span>
+                </div>
               </div>
-              <div class="flex items-center gap-1.5 mt-1.5">
-                ${item.station.truckReady
-                  ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#0284c7] border border-sky-200 shrink-0">E-TRUCK</span>'
-                  : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0891b2] border border-cyan-200 shrink-0">STANDARD</span>'}
-                <span class="text-xs font-medium text-slate-500 truncate">${item.station.power} • ${item.station.connector}</span>
+              <div class="text-right shrink-0 pl-2 border-l border-sky-100">
+                <div class="text-base font-bold text-[#0284c7]" id="dist-km-${safeId}">~${item.approxKm.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span></div>
+                <div class="text-[11px] font-medium text-slate-500" id="dist-min-${safeId}">~${Math.round((item.approxKm / 45) * 60)} min</div>
               </div>
-            </div>
-            <div class="text-right shrink-0 pl-2 border-l border-sky-100">
-              <div class="text-base font-bold text-[#0284c7]" id="dist-km-${item.station.id}">~${item.approxKm.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span></div>
-              <div class="text-[11px] font-medium text-slate-500" id="dist-min-${item.station.id}">~${Math.round((item.approxKm / 45) * 60)} min</div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       const topNearest = withHaversine.slice(0, 15);
       await Promise.all(topNearest.map(async item => {
+        const safeId = sanitizeId(item.station.id);
         const route = await fetchRoadRoute([wh, item.station]);
-        const kmEl = document.getElementById(`dist-km-${item.station.id}`);
-        const minEl = document.getElementById(`dist-min-${item.station.id}`);
+        const kmEl = document.getElementById(`dist-km-${safeId}`);
+        const minEl = document.getElementById(`dist-min-${safeId}`);
         if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span>`;
         if (minEl) minEl.textContent = `~${route.min} min`;
       }));
     }
 
     async function focusRouteFromWarehouse(stationId) {
+      const safeId = sanitizeId(stationId);
       const activeLocs = getActiveLocations();
       const whId = document.getElementById('selectWarehouse').value;
       const wh = activeLocs.find(l => l.id === whId);
-      const st = activeLocs.find(l => l.id === stationId);
+      const st = activeLocs.find(l => l.id === safeId);
       if (!wh || !st) return;
       const route = await fetchRoadRoute([wh, st]);
-      const kmEl = document.getElementById(`dist-km-${st.id}`);
-      const minEl = document.getElementById(`dist-min-${st.id}`);
+      const kmEl = document.getElementById(`dist-km-${safeId}`);
+      const minEl = document.getElementById(`dist-min-${safeId}`);
       if (kmEl) kmEl.innerHTML = `${route.km.toFixed(1)} <span class="text-[11px] font-normal text-slate-500">km</span>`;
       if (minEl) minEl.textContent = `~${route.min} min`;
       setMobileDrawerState('collapsed');
@@ -1990,8 +2072,9 @@
     }
 
     function addTripStop(locId) {
+      const safeId = sanitizeId(locId);
       const activeLocs = getActiveLocations();
-      const loc = activeLocs.find(l => l.id === locId);
+      const loc = activeLocs.find(l => l.id === safeId);
       if (loc) {
         tripStops.push(loc);
         renderTripStops();
@@ -2026,7 +2109,7 @@
         <div class="flex items-center justify-between bg-white border border-sky-200 rounded-xl px-3 py-2 text-xs shadow-sm">
           <div class="flex items-center gap-2 truncate">
             <span class="w-5 h-5 rounded-full bg-sky-100 text-[#0284c7] font-bold flex items-center justify-center shrink-0">${i + 1}</span>
-            <span class="truncate text-slate-800 font-medium">${stop.name}</span>
+            <span class="truncate text-slate-800 font-medium">${escapeHTML(stop.name)}</span>
           </div>
           <button onclick="removeTripStop(${i})" class="text-slate-400 hover:text-rose-500 p-1">✕</button>
         </div>
@@ -2079,7 +2162,8 @@
     }
 
     function editLocation(id) {
-      const loc = cloudLocations.find(l => l.id === id);
+      const safeId = sanitizeId(id);
+      const loc = cloudLocations.find(l => l.id === safeId);
       if (!loc) return;
       document.getElementById('editId').value = loc.id;
       document.getElementById('pinType').value = loc.type;
@@ -2130,24 +2214,42 @@
     function saveLocationForm(e) {
       e.preventDefault();
       if (!isAdmin) return;
-      const editId = document.getElementById('editId').value;
-      const id = editId || ('bd-' + Date.now());
-      const isTruck = document.getElementById('pinTruckReady').checked;
+
+      const rawEditId = document.getElementById('editId').value;
+      const id = rawEditId ? sanitizeId(rawEditId) : ('bd-' + Date.now());
+      const type = document.getElementById('pinType').value === 'warehouse' ? 'warehouse' : 'station';
+      const isTruck = document.getElementById('pinTruckReady').checked === true;
+      const name = sanitizeTextField(document.getElementById('pinName').value, 100);
+      const lat = parseFloat(document.getElementById('pinLat').value);
+      const lng = parseFloat(document.getElementById('pinLng').value);
+      const power = sanitizeTextField(document.getElementById('pinPower').value, 40, type === 'warehouse' ? '-' : '120 kW');
+      const connector = sanitizeTextField(document.getElementById('pinConnector').value, 50, type === 'warehouse' ? '-' : 'GB/T + CCS2');
+      const note = sanitizeTextField(document.getElementById('pinNote').value, 150, '');
+
+      if (!name) {
+        alert("Please enter a valid Station Name.");
+        return;
+      }
+      if (!isValidLatLng(lat, lng)) {
+        alert("Invalid GPS coordinates. Latitude must be -90..90 and Longitude -180..180.");
+        return;
+      }
+
       const locData = {
         id: id,
-        type: document.getElementById('pinType').value,
+        type: type,
         truckReady: isTruck,
-        name: document.getElementById('pinName').value.trim(),
-        lat: parseFloat(document.getElementById('pinLat').value),
-        lng: parseFloat(document.getElementById('pinLng').value),
-        power: document.getElementById('pinPower').value.trim() || '120 kW',
-        connector: document.getElementById('pinConnector').value.trim() || 'GB/T + CCS2',
-        note: document.getElementById('pinNote').value.trim()
+        name: name,
+        lat: parseFloat(lat.toFixed(6)),
+        lng: parseFloat(lng.toFixed(6)),
+        power: power,
+        connector: connector,
+        note: note
       };
 
       locationsRef.child(id).set(locData)
         .then(() => {
-          showAdminToast(editId ? "Station updated live!" : "New station added live!");
+          showAdminToast(rawEditId ? "Station updated live!" : "New station added live!");
           cancelEdit();
           map.setView([locData.lat, locData.lng], 14);
         })
@@ -2156,9 +2258,11 @@
 
     function deleteLocation(id) {
       if (!isAdmin) return;
+      const safeId = sanitizeId(id);
       if (!confirm('Delete this station from the live database?')) return;
-      locationsRef.child(id).remove()
-        .then(() => showAdminToast("Station deleted."));
+      locationsRef.child(safeId).remove()
+        .then(() => showAdminToast("Station deleted."))
+        .catch(err => alert("Delete failed: " + err.message));
     }
 
     function exportData() {
@@ -2168,32 +2272,57 @@
       a.href = url;
       a.download = 'bluedot-ev-backup.json';
       a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function importDataToCloud(event) {
       if (!isAdmin) return;
       const file = event.target.files[0];
       if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File too large. Maximum allowed JSON size is 2 MB.");
+        event.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            const updates = {};
-            imported.forEach(item => {
-              const id = item.id || ('bd-' + Date.now() + Math.floor(Math.random() * 1000));
-              updates[id] = {
-                truckReady: false,
-                ...item,
-                id: id
-              };
-            });
-            locationsRef.update(updates).then(() => {
-              showAdminToast('Stations imported to live database!');
-            });
+          if (!Array.isArray(imported)) {
+            alert('Invalid JSON structure: expected an array of stations.');
+            return;
           }
+
+          const updates = {};
+          let validCount = 0;
+          let skippedCount = 0;
+
+          imported.forEach((item, idx) => {
+            const candidateId = sanitizeId(item && item.id ? item.id : ('bd-' + Date.now() + '-' + idx));
+            const normalized = normalizeLocationRecord(candidateId, item);
+            if (normalized) {
+              updates[normalized.id] = normalized;
+              validCount++;
+            } else {
+              skippedCount++;
+            }
+          });
+
+          if (validCount === 0) {
+            alert('No valid station records found in the JSON file.');
+            return;
+          }
+
+          locationsRef.update(updates)
+            .then(() => {
+              showAdminToast(`Imported ${validCount} stations` + (skippedCount > 0 ? ` (${skippedCount} skipped)` : '!'));
+            })
+            .catch(err => alert("Import failed: " + err.message));
         } catch (err) {
-          alert('Invalid JSON file.');
+          alert('Invalid JSON file format.');
+        } finally {
+          event.target.value = '';
         }
       };
       reader.readAsText(file);
